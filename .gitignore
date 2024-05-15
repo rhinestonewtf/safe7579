@@ -1,0 +1,17 @@
+# Compiler files
+cache/
+out/
+
+# Ignores development broadcast logs
+!/broadcast
+/broadcast/*/31337/
+/broadcast/**/dry-run/
+
+packages/modulekit/gas_calculations/*.json
+
+# Docs
+docs/
+
+# Dotenv file
+.env
+node_modules
