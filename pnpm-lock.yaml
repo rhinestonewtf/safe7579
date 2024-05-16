@@ -22,7 +22,7 @@ importers:
         version: 4.0.2
       '@rhinestone/modulekit':
         specifier: github:rhinestonewtf/modulekit#dev
-        version: https://codeload.github.com/rhinestonewtf/modulekit/tar.gz/50ceeb85bb9d8c3df96fe05b153c8491909d6c47
+        version: https://codeload.github.com/rhinestonewtf/modulekit/tar.gz/3954cbf62c3d14661bbfcf07f709579c1014925d
       '@safe-global/safe-contracts':
         specifier: ^1.4.1
         version: 1.4.1(ethers@5.7.2)
@@ -365,9 +365,9 @@ packages:
     resolution: {tarball: https://codeload.github.com/rhinestonewtf/erc4337-validation/tar.gz/abaff656852e3a4b9790e458e17165adf00e3e54}
     version: 0.0.1-alpha.1
 
-  '@rhinestone/modulekit@https://codeload.github.com/rhinestonewtf/modulekit/tar.gz/50ceeb85bb9d8c3df96fe05b153c8491909d6c47':
-    resolution: {tarball: https://codeload.github.com/rhinestonewtf/modulekit/tar.gz/50ceeb85bb9d8c3df96fe05b153c8491909d6c47}
-    version: 0.3.7
+  '@rhinestone/modulekit@https://codeload.github.com/rhinestonewtf/modulekit/tar.gz/3954cbf62c3d14661bbfcf07f709579c1014925d':
+    resolution: {tarball: https://codeload.github.com/rhinestonewtf/modulekit/tar.gz/3954cbf62c3d14661bbfcf07f709579c1014925d}
+    version: 0.3.1
 
   '@safe-global/safe-contracts@1.4.1':
     resolution: {integrity: sha512-fP1jewywSwsIniM04NsqPyVRFKPMAuirC3ftA/TA4X3Zc5EnwQp/UCJUU2PL/37/z/jMo8UUaJ+pnFNWmMU7dQ==}
@@ -2479,7 +2479,7 @@ snapshots:
       '@openzeppelin/contracts': 5.0.1
       solady: https://codeload.github.com/vectorized/solady/tar.gz/183a5c9cc3ca982492ae5fcca9e7ed6668ddb6ac
 
-  '@rhinestone/modulekit@https://codeload.github.com/rhinestonewtf/modulekit/tar.gz/50ceeb85bb9d8c3df96fe05b153c8491909d6c47': {}
+  '@rhinestone/modulekit@https://codeload.github.com/rhinestonewtf/modulekit/tar.gz/3954cbf62c3d14661bbfcf07f709579c1014925d': {}
 
   '@safe-global/safe-contracts@1.4.1(ethers@5.7.2)':
     dependencies:
