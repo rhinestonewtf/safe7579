@@ -1,9 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.23;
 
-import { MockFallback as MockFallbackBase } from "modulekit/src/mocks/MockFallback.sol";
-
-import "forge-std/console2.sol";
+import { MockFallback as MockFallbackBase } from "modulekit/mocks/MockFallback.sol";
 
 contract MockFallback is MockFallbackBase {
     function target(uint256 value)
