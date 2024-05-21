@@ -26,7 +26,7 @@
     "test:optimized": "pnpm run build:optimized && FOUNDRY_PROFILE=test-optimized forge test"
   },
   "dependencies": {
-    "@rhinestone/module-base": "github:rhinestonewtf/module-base",
+    "@rhinestone/module-bases": "github:rhinestonewtf/module-bases",
     "@ERC4337/account-abstraction": "github:kopy-kat/account-abstraction#develop",
     "@rhinestone/sentinellist": "github:rhinestonewtf/sentinellist",
     "@safe-global/safe-contracts": "^1.4.1",
