@@ -6,10 +6,8 @@ on:
   pull_request:
 
 jobs:
-  lint-safe7579:
+  lint:
     uses: "rhinestonewtf/reusable-workflows/.github/workflows/forge-lint.yaml@main"
 
-  build-safe7579:
-    uses: "rhinestonewtf/reusable-workflows/.github/workflows/forge-test.yaml@main"
-    with:
-      match-path: "test/**/*.sol"
+  build:
+    uses: "rhinestonewtf/reusable-workflows/.github/workflows/forge-build.yaml@main"
