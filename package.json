@@ -25,8 +25,18 @@
     "test:lite": "FOUNDRY_PROFILE=lite forge test",
     "test:optimized": "pnpm run build:optimized && FOUNDRY_PROFILE=test-optimized forge test"
   },
-  "devDependencies": {
-    "@rhinestone/modulekit": "github:rhinestonewtf/modulekit#dev"
+  "dependencies": {
+    "@rhinestone/module-base": "github:rhinestonewtf/module-base",
+    "@ERC4337/account-abstraction": "github:kopy-kat/account-abstraction#develop",
+    "@rhinestone/sentinellist": "github:rhinestonewtf/sentinellist",
+    "@safe-global/safe-contracts": "^1.4.1",
+    "ds-test": "github:dapphub/ds-test",
+    "erc7579": "github:erc7579/erc7579-implementation",
+    "forge-std": "github:foundry-rs/forge-std",
+    "prettier": "^2.8.8",
+    "solady": "github:vectorized/solady",
+    "solarray": "github:sablier-labs/solarray",
+    "solhint": "^4.1.1"
   },
   "files": [
     "src",

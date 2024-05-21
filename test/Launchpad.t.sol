@@ -7,7 +7,7 @@ import { ISafe7579 } from "src/ISafe7579.sol";
 import { IERC7484 } from "src/interfaces/IERC7484.sol";
 import "src/DataTypes.sol";
 import { ModuleManager } from "src/core/ModuleManager.sol";
-import { MockValidator } from "./mocks/MockValidator.sol";
+import { MockValidator } from "modulekit-modules/mocks/MockValidator.sol";
 import { MockRegistry } from "./mocks/MockRegistry.sol";
 import { MockExecutor } from "./mocks/MockExecutor.sol";
 import { MockFallback } from "./mocks/MockFallback.sol";
