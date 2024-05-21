@@ -1,7 +1,7 @@
 {
   "name": "@rhinestone/safe7579",
-  "version": "1.0.1",
-  "description": "Safe ERC7579 implementation",
+  "version": "1.0.0",
+  "description": "An ERC-7579 adapter for Safe Accounts",
   "license": "GPL-3.0",
   "author": {
     "name": "Rhinestone",
@@ -33,17 +33,22 @@
     "ds-test": "github:dapphub/ds-test",
     "erc7579": "github:erc7579/erc7579-implementation",
     "forge-std": "github:foundry-rs/forge-std",
-    "prettier": "^2.8.8",
     "solady": "github:vectorized/solady",
-    "solarray": "github:sablier-labs/solarray",
-    "solhint": "^4.1.1"
+    "solarray": "github:sablier-labs/solarray"
+  },
+  "devDependencies": {
+    "prettier": "^2.8.8",
+    "solhint": "^5.0.1"
   },
   "files": [
     "src",
     "foundry.toml"
   ],
   "homepage": "https://github.com/rhinestonewtf/safe7579#readme",
-  "repository": "github:rhinestonewtf/safe7579",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/rhinestonewtf/safe7579.git"
+  },
   "bugs": {
     "url": "https://github.com/rhinestonewtf/safe7579/issues"
   },

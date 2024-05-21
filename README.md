@@ -1,3 +1,7 @@
+# Safe7579
+
+**An ERC-7579 adapter for Safe Accounts**
+
 ## How Safe7579 works
 
 Safe7579 provides full `ERC4337` and `ERC7579` compliance to Safe accounts by serving as the Safe's `FallbackHandler` and an enabled module. This setup allows Safe accounts to utilize all `ERC7579` modules. A launchpad is developed to facilitate the setup of new safes with Safe7579 using the EntryPoint factory.
