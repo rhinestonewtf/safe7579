@@ -9,6 +9,16 @@ import { Execution, ExecutionLib } from "erc7579/lib/ExecutionLib.sol";
 import { IEntryPoint } from "@ERC4337/account-abstraction/contracts/interfaces/IEntryPoint.sol";
 import { IERC7579Account } from "erc7579/interfaces/IERC7579Account.sol";
 
+interface IPermissionChecker {
+    function checkPermissionForSmartAccount(
+        address smartAccount,
+        bytes calldata permissionDataFromContext
+    )
+        external
+        view
+        returns (bytes32 permissionPrefix);
+}
+
 contract Safe7579UserOperationBuilder is IUserOperationBuilder {
     IEntryPoint internal immutable _entryPoint;
 
@@ -85,6 +95,19 @@ contract Safe7579UserOperationBuilder is IUserOperationBuilder {
         view
         returns (bytes memory signature)
     {
-        signature = userOperation.signature;
+        address permissionValidator = address(bytes20(context[0:20]));
+
+        // What if permission has already been set?
+        bytes32 result = IPermissionChecker(permissionValidator).checkPermissionForSmartAccount(
+            smartAccount, context[20:]
+        );
+
+        if (result == keccak256("Permission Not Enabled")) {
+            // just use the full data required to enable the permission
+            signature = abi.encode(context[20:], userOperation.signature);
+        } else {
+            // just use the permissionId returned as result
+            signature = abi.encode(result, userOperation.signature);
+        }
     }
 }
