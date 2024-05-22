@@ -47,7 +47,7 @@
   "homepage": "https://github.com/rhinestonewtf/safe7579#readme",
   "repository": {
     "type": "git",
-    "url": "https://github.com/rhinestonewtf/safe7579.git"
+    "url": "git+https://github.com/rhinestonewtf/safe7579.git"
   },
   "bugs": {
     "url": "https://github.com/rhinestonewtf/safe7579/issues"
