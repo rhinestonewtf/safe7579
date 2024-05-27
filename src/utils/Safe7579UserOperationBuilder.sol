@@ -20,6 +20,7 @@ interface IPermissionChecker {
 }
 
 type ValidAfter is uint48;
+
 type ValidUntil is uint48;
 
 struct SingleSignerPermission {
@@ -121,46 +122,46 @@ contract Safe7579UserOperationBuilder is IUserOperationBuilder {
             // just use the full data required to enable the permission
             signature = getEnablePermissionValidatorSignatureFromContext(
                 context[20:], userOperation.signature
-                );
-
-            
+            );
         } else {
             /* commented this out bc currently deployed permission validator is hardcode to 
              the check _isSessionEnableTransaction to alway return true */
             // just use the permissionId returned as result
             //signature = abi.encode(result, userOperation.signature);
-            
+
             //so for now returning same signature as enable permissions
             signature = getEnablePermissionValidatorSignatureFromContext(
                 context[20:], userOperation.signature
-                );
+            );
         }
     }
 
     function getEnablePermissionValidatorSignatureFromContext(
-        bytes calldata permissionDataFromContext, 
+        bytes calldata permissionDataFromContext,
         bytes calldata rawSignature
-        ) private pure 
-        returns(bytes memory) {
-            (
-                uint256 permissionIndex,
-                SingleSignerPermission memory permission,
-                bytes memory permissionEnableData,
-                bytes memory permissionEnableSignature
-            ) = abi.decode(
-                permissionDataFromContext[1:],
-                (uint256, SingleSignerPermission, bytes, bytes)
-            );
+    )
+        private
+        pure
+        returns (bytes memory)
+    {
+        (
+            uint256 permissionIndex,
+            SingleSignerPermission memory permission,
+            bytes memory permissionEnableData,
+            bytes memory permissionEnableSignature
+        ) = abi.decode(
+            permissionDataFromContext[1:], (uint256, SingleSignerPermission, bytes, bytes)
+        );
 
-            return abi.encodePacked(
-                permissionDataFromContext[:1], //enable tx flag
-                abi.encode(
-                    permissionIndex,
-                    permission,
-                    permissionEnableData,
-                    permissionEnableSignature,
-                    rawSignature
-                )
-            );
+        return abi.encodePacked(
+            permissionDataFromContext[:1], //enable tx flag
+            abi.encode(
+                permissionIndex,
+                permission,
+                permissionEnableData,
+                permissionEnableSignature,
+                rawSignature
+            )
+        );
     }
 }
