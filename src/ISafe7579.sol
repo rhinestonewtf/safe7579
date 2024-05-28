@@ -4,7 +4,7 @@ pragma solidity ^0.8.20;
 import "./DataTypes.sol";
 import { IERC7579Account } from "./interfaces//IERC7579Account.sol";
 
-import { CallType, ExecType, ModeCode } from "./lib/ModeLib.sol";
+import { ModeCode } from "./lib/ModeLib.sol";
 import { PackedUserOperation } from
     "@ERC4337/account-abstraction/contracts/core/UserOperationLib.sol";
 
@@ -204,7 +204,10 @@ interface ISafe7579 is IERC7579Account {
     function launchpadValidators(ModuleInit[] memory validators) external payable;
 
     /**
-     * TODO:
+     * Configure the Safe7579 with a IERC7484 registry
+     * @param registry IERC7484 registry
+     * @param attesters list of attesters
+     * @param threshold number of attesters required
      */
     function setRegistry(IERC7484 registry, address[] memory attesters, uint8 threshold) external;
 
@@ -219,8 +222,16 @@ interface ISafe7579 is IERC7579Account {
         view
         returns (address[] memory array, address next);
 
+    /**
+     * Get the current active global hook
+     */
     function getActiveHook() external view returns (address hook);
+
+    /**
+     * Get the current active selector hook
+     */
     function getActiveHook(bytes4 selector) external view returns (address hook);
+
     function getExecutorsPaginated(
         address cursor,
         uint256 size

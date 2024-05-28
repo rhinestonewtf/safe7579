@@ -6,6 +6,25 @@
 
 Safe7579 provides full `ERC4337` and `ERC7579` compliance to Safe accounts by serving as the Safe's `FallbackHandler` and an enabled module. This setup allows Safe accounts to utilize all `ERC7579` modules. A launchpad is developed to facilitate the setup of new safes with Safe7579 using the EntryPoint factory.
 
+The Safe7579 adapter can be added to existing Safe accounts, enabling them to interact with `ERC7579` modules. The adapter is installed as a module on the Safe account, allowing the Safe to interact with external contracts and modules.
+
+Furthermore, this repository includes a launchpad that allows the creation of new Safe accounts with Safe7579. The launchpad is a factory that creates Safe accounts with Safe7579 and initializes them with the required modules.
+
+### Validator Modules
+
+Safe7579 allows the installation of validator modules to validate user operations. Validator modules can be selected by encoding the module address in the userOp.nonce key. If a validator module is not installed, the Safe's `checkSignature` is used as a fallback.
+
+### Fallback Modules
+
+Safe7579 allows the installation of fallback modules to handle user operations when no validator module is selected. Fallback modules can be selected by encoding the module address in the userOp.nonce key. If a fallback module is not installed, the Safe's `checkSignature` is used as a fallback.
+
+### Hook Modules
+
+Safe7579 supports the usage of the `IERC7579Hooks` interface to allow modules to hook into the 7579 execution flow.
+
+To enable flexiblity, Safe7579 implements global an function selector specific hooks.
+global hooks always run, selector hooks only run if specific function is called.
+
 ## How does the Launchpad work
 
 1. **Creation by Factory:**

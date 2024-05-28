@@ -8,7 +8,6 @@ import { ISafe } from "../interfaces/ISafe.sol";
 import { ISafe7579 } from "../ISafe7579.sol";
 import "../DataTypes.sol";
 
-import { ModuleInstallUtil } from "../utils/DCUtil.sol";
 import { RegistryAdapter } from "./RegistryAdapter.sol";
 import { Receiver } from "erc7579/core/Receiver.sol";
 import { AccessControl } from "./AccessControl.sol";
@@ -46,6 +45,9 @@ abstract contract ModuleManager is ISafe7579, AccessControl, Receiver, RegistryA
 
     /**
      * install and initialize validator module
+     * @dev This function will install a validator module and return the moduleInitData
+     * @param validator address of the validator module
+     * @param data initialization data for the validator module
      */
     function _installValidator(
         address validator,
@@ -122,6 +124,12 @@ abstract contract ModuleManager is ISafe7579, AccessControl, Receiver, RegistryA
         _;
     }
 
+    /**
+     * Install and initialize executor module
+     * @dev This function will install an executor module and return the moduleInitData
+     * @param executor address of the executor module
+     * @param data initialization data for the executor module
+     */
     function _installExecutor(
         address executor,
         bytes calldata data
@@ -135,6 +143,12 @@ abstract contract ModuleManager is ISafe7579, AccessControl, Receiver, RegistryA
         return data;
     }
 
+    /**
+     * Uninstall executor module
+     * @dev This function will uninstall an executor module
+     * @param executor address of executor module to be uninstalled
+     * @param data abi encoded previous address and deinit data
+     */
     function _uninstallExecutor(
         address executor,
         bytes calldata data
@@ -153,6 +167,9 @@ abstract contract ModuleManager is ISafe7579, AccessControl, Receiver, RegistryA
         return $executors.contains(executor);
     }
 
+    /**
+     * Get paginated list of installed executors
+     */
     function getExecutorsPaginated(
         address cursor,
         uint256 size
@@ -324,7 +341,9 @@ abstract contract ModuleManager is ISafe7579, AccessControl, Receiver, RegistryA
         }
     }
 
-    // Run post hooks (global and function sig)
+    /**
+     * Run post hooks (global and function sig)
+     */
     function _postHooks(
         address globalHook,
         address sigHook,
@@ -362,6 +381,12 @@ abstract contract ModuleManager is ISafe7579, AccessControl, Receiver, RegistryA
         _postHooks(globalHook, sigHook, global, sig);
     }
 
+    /**
+     * Install and initialize hook module
+     * @dev This function will install a hook module and return the moduleInitData
+     * @param hook address of the hook module
+     * @param data initialization data for the hook module
+     */
     function _installHook(
         address hook,
         bytes calldata data
@@ -458,6 +483,14 @@ abstract contract ModuleManager is ISafe7579, AccessControl, Receiver, RegistryA
     }
 
     // solhint-disable-next-line code-complexity
+    /**
+     * To make it easier to install multiple modules at once, this function will
+     * install multiple modules at once. The init data is expected to be a abi encoded tuple
+     * of (uint[] types, bytes[] contexts, bytes[] moduleInitData)
+     * @dev Install multiple modules at once
+     * @param module address of the module
+     * @param initData initialization data for the module
+     */
     function _multiTypeInstall(
         address module,
         bytes calldata initData
@@ -494,6 +527,7 @@ abstract contract ModuleManager is ISafe7579, AccessControl, Receiver, RegistryA
         uint256 length = types.length;
         if (contexts.length != length) revert InvalidInput();
 
+        // iterate over all module types and install the module as a type accordingly
         for (uint256 i; i < length; i++) {
             uint256 _type = types[i];
 
@@ -522,6 +556,8 @@ abstract contract ModuleManager is ISafe7579, AccessControl, Receiver, RegistryA
                 _installHook(module, contexts[i]);
             }
         }
+        // memory allocate the moduleInitData to return. This data should be used by the caller to
+        // initialize the module
         _moduleInitData = moduleInitData;
     }
 }
