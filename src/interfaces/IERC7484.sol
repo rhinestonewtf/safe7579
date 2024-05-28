@@ -2,9 +2,11 @@
 pragma solidity ^0.8.0;
 
 interface IERC7484 {
+    event NewTrustedAttesters();
     /*´:°•.°+.*•´.*:˚.°*.˚•´.°:°•.°•.*•´.*:˚.°*.˚•´.°:°•.°+.*•´.*:*/
     /*          Check with Registry internal attesters            */
     /*.•°:°.´+˚.*°.˚:*.´•*.+°.•°:´*.´•*.•°.•°:°.´:•˚°.*°.˚:*.´+°.•*/
+
     function check(address module) external view;
 
     function checkForAccount(address smartAccount, address module) external view;
@@ -19,23 +21,24 @@ interface IERC7484 {
         external
         view;
 
+    /**
+     * Allows Smart Accounts - the end users of the registry - to appoint
+     * one or many attesters as trusted.
+     * @dev this function reverts, if address(0), or duplicates are provided in attesters[]
+     *
+     * @param threshold The minimum number of attestations required for a module
+     *                  to be considered secure.
+     * @param attesters The addresses of the attesters to be trusted.
+     */
+    function trustAttesters(uint8 threshold, address[] calldata attesters) external;
+
     /*´:°•.°+.*•´.*:˚.°*.˚•´.°:°•.°•.*•´.*:˚.°*.˚•´.°:°•.°+.*•´.*:*/
     /*              Check with external attester(s)               */
     /*.•°:°.´+˚.*°.˚:*.´•*.+°.•°:´*.´•*.•°.•°:°.´:•˚°.*°.˚:*.´+°.•*/
 
-    function check(address module, address attester) external view;
+    function check(address module, address[] calldata attesters, uint256 threshold) external view;
 
-    function check(address module, uint256 moduleType, address attester) external view;
-
-    function checkN(
-        address module,
-        address[] calldata attesters,
-        uint256 threshold
-    )
-        external
-        view;
-
-    function checkN(
+    function check(
         address module,
         uint256 moduleType,
         address[] calldata attesters,
@@ -43,6 +46,4 @@ interface IERC7484 {
     )
         external
         view;
-
-    function trustAttesters(uint8 threshold, address[] calldata attesters) external;
 }

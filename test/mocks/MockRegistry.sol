@@ -4,14 +4,13 @@ pragma solidity ^0.8.23;
 import { IERC7484 } from "src/interfaces/IERC7484.sol";
 
 contract MockRegistry is IERC7484 {
-    event NewTrustedAttesters();
     event Log(address sender);
 
-    function check(address module) external view override { }
+    function check(address module) external view { }
 
-    function checkForAccount(address smartAccount, address module) external view override { }
+    function checkForAccount(address smartAccount, address module) external view { }
 
-    function check(address module, uint256 moduleType) external view override { }
+    function check(address module, uint256 moduleType) external view { }
 
     function checkForAccount(
         address smartAccount,
@@ -23,21 +22,9 @@ contract MockRegistry is IERC7484 {
         override
     { }
 
-    function check(address module, address attester) external view override { }
+    function check(address module, address[] calldata attesters, uint256 threshold) external view { }
 
-    function check(address module, uint256 moduleType, address attester) external view override { }
-
-    function checkN(
-        address module,
-        address[] calldata attesters,
-        uint256 threshold
-    )
-        external
-        view
-        override
-    { }
-
-    function checkN(
+    function check(
         address module,
         uint256 moduleType,
         address[] calldata attesters,
@@ -45,10 +32,9 @@ contract MockRegistry is IERC7484 {
     )
         external
         view
-        override
     { }
 
-    function trustAttesters(uint8 threshold, address[] calldata attesters) external override {
+    function trustAttesters(uint8 threshold, address[] calldata attesters) external {
         emit Log(msg.sender);
         emit NewTrustedAttesters();
     }
