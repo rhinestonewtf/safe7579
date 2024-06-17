@@ -157,7 +157,7 @@ contract Safe7579 is ISafe7579, ISafeOp, AccessControl, Initializer {
         override
         onlyExecutorModule
         withHook(IERC7579Account.executeFromExecutor.selector)
-        withRegistry(msg.sender, MODULE_TYPE_EXECUTOR)
+        withRegistry(_msgSender(), MODULE_TYPE_EXECUTOR)
         returns (bytes[] memory returnDatas)
     {
         CallType callType;
