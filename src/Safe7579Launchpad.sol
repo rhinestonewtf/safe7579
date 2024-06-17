@@ -52,6 +52,7 @@ contract Safe7579Launchpad is IAccount, SafeStorage {
     IERC7484 public immutable REGISTRY;
 
     error InvalidEntryPoint();
+    error InvalidSetup();
     error Safe7579LaunchpadAlreadyInitialized();
     error OnlyDelegatecall();
     error OnlyProxy();
@@ -231,9 +232,11 @@ contract Safe7579Launchpad is IAccount, SafeStorage {
         // from now on, ISafe can be used to interact with the SafeProxy
         SafeStorage.singleton = initData.singleton;
 
-        // setup SafeAccount
         // setupTo should be this launchpad
-        // setupData should be a call to this.initSafe7579()
+        if (initData.setupTo != SELF) revert InvalidSetup();
+        // // setupData should be a call to this.initSafe7579()
+        if (bytes4(initData.setupData[:4]) != this.initSafe7579.selector) revert InvalidSetup();
+        // setup SafeAccount
         ISafe(address(this)).setup({
             _owners: initData.owners,
             _threshold: initData.threshold,
