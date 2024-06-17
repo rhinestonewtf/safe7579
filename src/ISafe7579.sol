@@ -255,6 +255,7 @@ interface ISafe7579 is IERC7579Account {
     /*.•°:°.´+˚.*°.˚:*.´•*.+°.•°:´*.´•*.•°.•°:°.´:•˚°.*°.˚:*.´+°.•*/
     error InvalidModule(address module);
     error LinkedListError();
+    error InvalidModuleType(address module, uint256 moduleType);
     error InitializerError();
     error ValidatorStorageHelperError();
 

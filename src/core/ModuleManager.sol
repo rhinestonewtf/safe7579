@@ -560,6 +560,8 @@ abstract contract ModuleManager is ISafe7579, AccessControl, Receiver, RegistryA
             /*.•°:°.´+˚.*°.˚:*.´•*.+°.•°:´*.´•*.•°.•°:°.´:•˚°.*°.˚:*.´+°.•*/
             else if (_type == MODULE_TYPE_HOOK) {
                 _installHook(module, contexts[i]);
+            } else {
+                revert InvalidModuleType(module, _type);
             }
         }
         // memory allocate the moduleInitData to return. This data should be used by the caller to
