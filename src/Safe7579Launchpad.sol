@@ -127,7 +127,7 @@ contract Safe7579Launchpad is IAccount, SafeStorage {
         external
         onlyProxy
     {
-        if (_initHash() != bytes32(0)) revert Safe7579LaunchpadAlreadyInitialized();
+        if (getInitHash() != bytes32(0)) revert Safe7579LaunchpadAlreadyInitialized();
 
         // sstore inithash
         _setInitHash(initHash);
@@ -175,7 +175,7 @@ contract Safe7579Launchpad is IAccount, SafeStorage {
 
         InitData memory initData = abi.decode(userOp.callData[4:], (InitData));
         // read stored initHash from SafeProxy storage. only proceed if the InitData hash matches
-        if (hash(initData) != _initHash()) revert InvalidInitHash();
+        if (hash(initData) != getInitHash()) revert InvalidInitHash();
 
         // get validator from nonce encoding
         address validator;
@@ -272,7 +272,7 @@ contract Safe7579Launchpad is IAccount, SafeStorage {
     }
 
     // sload inithash from SafeProxy storage
-    function _initHash() public view returns (bytes32 value) {
+    function getInitHash() public view returns (bytes32 value) {
         // solhint-disable-next-line no-inline-assembly
         assembly ("memory-safe") {
             value := sload(INIT_HASH_SLOT)
