@@ -87,12 +87,12 @@ contract Safe7579 is ISafe7579, ISafeOp, AccessControl, Initializer {
         /*.•°:°.´+˚.*°.˚:*.´•*.+°.•°:´*.´•*.•°.•°:°.´:•˚°.*°.˚:*.´+°.•*/
         ISafe safe = ISafe(msg.sender);
         if (execType == EXECTYPE_DEFAULT) {
-            // DEFAULT EXEC & SINGLE CALL
+            // DEFAULT EXEC & BATCH CALL
             if (callType == CALLTYPE_BATCH) {
                 Execution[] calldata executions = executionCalldata.decodeBatch();
                 _exec(safe, executions);
             }
-            // DEFAULT EXEC & BATCH CALL
+            // DEFAULT EXEC & SINGLE CALL
             else if (callType == CALLTYPE_SINGLE) {
                 (address target, uint256 value, bytes calldata callData) =
                     executionCalldata.decodeSingle();
@@ -171,7 +171,7 @@ contract Safe7579 is ISafe7579, ISafeOp, AccessControl, Initializer {
 
     /**
      * Internal function that will be solely called by executeFromExecutor. Not super uniform code,
-     * but we need need the JUMPI to avoid stack too deep, due to the modifiers in the
+     * but we need the JUMPI to avoid stack too deep, due to the modifiers in the
      * executeFromExecutor function
      */
     function _executeReturn(
@@ -187,12 +187,12 @@ contract Safe7579 is ISafe7579, ISafeOp, AccessControl, Initializer {
         /*.•°:°.´+˚.*°.˚:*.´•*.+°.•°:´*.´•*.•°.•°:°.´:•˚°.*°.˚:*.´+°.•*/
 
         if (execType == EXECTYPE_DEFAULT) {
-            // DEFAULT EXEC & SINGLE CALL
+            // DEFAULT EXEC & BATCH CALL
             if (callType == CALLTYPE_BATCH) {
                 Execution[] calldata executions = executionCalldata.decodeBatch();
                 returnDatas = _execReturn(ISafe(msg.sender), executions);
             }
-            // DEFAULT EXEC & BATCH CALL
+            // DEFAULT EXEC & SINGLE CALL
             else if (callType == CALLTYPE_SINGLE) {
                 (address target, uint256 value, bytes calldata callData) =
                     executionCalldata.decodeSingle();
@@ -215,12 +215,12 @@ contract Safe7579 is ISafe7579, ISafeOp, AccessControl, Initializer {
         /*                           TRY EXEC                         */
         /*.•°:°.´+˚.*°.˚:*.´•*.+°.•°:´*.´•*.•°.•°:°.´:•˚°.*°.˚:*.´+°.•*/
         else if (execType == EXECTYPE_TRY) {
-            // TRY EXEC & SINGLE CALL
+            // TRY EXEC & BATCH CALL
             if (callType == CALLTYPE_BATCH) {
                 Execution[] calldata executions = executionCalldata.decodeBatch();
                 (, returnDatas) = _tryExecReturn(ISafe(msg.sender), executions);
             }
-            // TRY EXEC & BATCH CALL
+            // TRY EXEC & SINGLE CALL
             else if (callType == CALLTYPE_SINGLE) {
                 (address target, uint256 value, bytes calldata callData) =
                     executionCalldata.decodeSingle();
@@ -383,7 +383,7 @@ contract Safe7579 is ISafe7579, ISafeOp, AccessControl, Initializer {
         withHook(IERC7579Account.installModule.selector)
         onlyEntryPointOrSelf
     {
-        // internal install functions will decode the initData param, and return sanitzied
+        // internal install functions will decode the initData param, and return sanitized
         // moduleInitData. This is the initData that will be passed to Module.onInstall()
         bytes memory moduleInitData;
         if (moduleType == MODULE_TYPE_VALIDATOR) {
@@ -423,7 +423,7 @@ contract Safe7579 is ISafe7579, ISafeOp, AccessControl, Initializer {
         withHook(IERC7579Account.uninstallModule.selector)
         onlyEntryPointOrSelf
     {
-        // internal uninstall functions will decode the deInitData param, and return sanitzied
+        // internal uninstall functions will decode the deInitData param, and return sanitized
         // moduleDeInitData. This is the initData that will be passed to Module.onUninstall()
         bytes memory moduleDeInitData;
         if (moduleType == MODULE_TYPE_VALIDATOR) {

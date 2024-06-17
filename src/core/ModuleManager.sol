@@ -97,8 +97,8 @@ abstract contract ModuleManager is ISafe7579, AccessControl, Receiver, RegistryA
     /**
      * Get paginated list of installed validators
      */
-    function getValidatorPaginated(
-        address start,
+    function getValidatorsPaginated(
+        address cursor,
         uint256 pageSize
     )
         external
@@ -108,7 +108,7 @@ abstract contract ModuleManager is ISafe7579, AccessControl, Receiver, RegistryA
     {
         return $validators.getEntriesPaginated({
             account: msg.sender,
-            start: start,
+            start: cursor,
             pageSize: pageSize
         });
     }
@@ -492,7 +492,7 @@ abstract contract ModuleManager is ISafe7579, AccessControl, Receiver, RegistryA
     /**
      * To make it easier to install multiple modules at once, this function will
      * install multiple modules at once. The init data is expected to be a abi encoded tuple
-     * of (uint[] types, bytes[] contexts, bytes[] moduleInitData)
+     * of (uint[] types, bytes[] contexts, bytes moduleInitData)
      * @dev Install multiple modules at once
      * @param module address of the module
      * @param initData initialization data for the module

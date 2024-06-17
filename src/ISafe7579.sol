@@ -204,8 +204,8 @@ interface ISafe7579 is IERC7579Account {
     /*´:°•.°+.*•´.*:˚.°*.˚•´.°:°•.°•.*•´.*:˚.°*.˚•´.°:°•.°+.*•´.*:*/
     /*                   Query Account Details                    */
     /*.•°:°.´+˚.*°.˚:*.´•*.+°.•°:´*.´•*.•°.•°:°.´:•˚°.*°.˚:*.´+°.•*/
-    function getValidatorPaginated(
-        address start,
+    function getValidatorsPaginated(
+        address cursor,
         uint256 pageSize
     )
         external
