@@ -410,12 +410,12 @@ abstract contract ModuleManager is ISafe7579, AccessControl, Receiver, RegistryA
             }
             $globalHook[msg.sender] = hook;
         } else if (hookType == HookType.SIG) {
+            currentHook = $hookManager[msg.sender][selector];
             // Dont allow hooks to be overwritten. If a hook is currently installed, it must be
             // uninstalled first
             if (currentHook != address(0)) {
                 revert HookAlreadyInstalled(currentHook);
             }
-            currentHook = $hookManager[msg.sender][selector];
             $hookManager[msg.sender][selector] = hook;
         } else {
             revert InvalidHookType();
