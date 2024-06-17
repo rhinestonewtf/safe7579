@@ -52,6 +52,7 @@ contract Safe7579Launchpad is IAccount, SafeStorage {
     IERC7484 public immutable REGISTRY;
 
     error InvalidEntryPoint();
+    error Safe7579LaunchpadAlreadyInitialized();
     error OnlyDelegatecall();
     error OnlyProxy();
     error PreValidationSetupFailed();
@@ -100,7 +101,7 @@ contract Safe7579Launchpad is IAccount, SafeStorage {
         onlyDelegatecall
     {
         ISafe(address(this)).enableModule(safe7579);
-        ISafe7579(payable(safe7579)).initializeAccount({
+        ISafe7579(payable(this)).initializeAccount({
             validators: new ModuleInit[](0),
             executors: executors,
             fallbacks: fallbacks,
@@ -125,6 +126,8 @@ contract Safe7579Launchpad is IAccount, SafeStorage {
         external
         onlyProxy
     {
+        if (_initHash() != bytes32(0)) revert Safe7579LaunchpadAlreadyInitialized();
+
         // sstore inithash
         _setInitHash(initHash);
 

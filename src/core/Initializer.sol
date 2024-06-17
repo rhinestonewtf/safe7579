@@ -46,8 +46,9 @@ abstract contract Initializer is ISafe7579, ModuleManager {
         ModuleInit[] calldata hooks,
         RegistryInit calldata registryInit
     )
-        public
+        external
         payable
+        onlyEntryPointOrSelf
     {
         _configureRegistry(registryInit.registry, registryInit.attesters, registryInit.threshold);
         // this will revert if already initialized
