@@ -59,12 +59,14 @@ abstract contract ExecutionHelper is Safe7579DCUtilSetup {
         internal
         returns (bytes[] memory retDatas)
     {
-        bytes memory tmp = _delegatecallReturn({
-            safe: safe,
-            target: UTIL,
-            callData: abi.encodeCall(BatchedExecUtil.executeReturn, executions)
-        });
-        retDatas = abi.decode(tmp, (bytes[]));
+        retDatas = abi.decode(
+            _delegatecallReturn({
+                safe: safe,
+                target: UTIL,
+                callData: abi.encodeCall(BatchedExecUtil.executeReturn, executions)
+            }),
+            (bytes[])
+        );
     }
 
     function _execReturn(
