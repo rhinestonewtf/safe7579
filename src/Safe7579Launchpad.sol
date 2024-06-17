@@ -11,6 +11,8 @@ import { IValidator } from "erc7579/interfaces/IERC7579Module.sol";
 
 import { SafeStorage } from "@safe-global/safe-contracts/contracts/libraries/SafeStorage.sol";
 
+import { MODULE_TYPE_VALIDATOR } from "erc7579/interfaces/IERC7579Module.sol";
+
 /**
  * Launchpad to deploy a Safe account and connect the Safe7579 adapter.
  * Check Readme.md for more information.
@@ -196,7 +198,7 @@ contract Safe7579Launchpad is IAccount, SafeStorage {
         for (uint256 i; i < validatorsLength; i++) {
             address validatorModule = initData.validators[i].module;
             IValidator(validatorModule).onInstall(initData.validators[i].initData);
-            emit ModuleInstalled(1, validatorModule);
+            emit ModuleInstalled(MODULE_TYPE_VALIDATOR, validatorModule);
 
             if (validatorModule == validator) userOpValidatorInstalled = true;
         }
