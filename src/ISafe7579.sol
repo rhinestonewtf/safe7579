@@ -30,7 +30,6 @@ interface ISafe7579 is IERC7579Account {
         uint256 missingAccountFunds
     )
         external
-        payable
         returns (uint256 packedValidSig);
 
     /**
@@ -71,7 +70,7 @@ interface ISafe7579 is IERC7579Account {
      * @param mode The encoded execution mode of the transaction. See ModeLib.sol for details
      * @param executionCalldata The encoded execution call data
      */
-    function execute(ModeCode mode, bytes memory executionCalldata) external payable;
+    function execute(ModeCode mode, bytes memory executionCalldata) external;
 
     /**
      * @dev Executes a transaction on behalf of the Safe account.
@@ -95,7 +94,6 @@ interface ISafe7579 is IERC7579Account {
         bytes memory executionCalldata
     )
         external
-        payable
         returns (bytes[] memory returnDatas);
 
     /*´:°•.°+.*•´.*:˚.°*.˚•´.°:°•.°•.*•´.*:˚.°*.˚•´.°:°•.°+.*•´.*:*/
@@ -117,13 +115,7 @@ interface ISafe7579 is IERC7579Account {
      * @param initData arbitrary data that may be required on the module during `onInstall`
      * initialization.
      */
-    function installModule(
-        uint256 moduleType,
-        address module,
-        bytes memory initData
-    )
-        external
-        payable;
+    function installModule(uint256 moduleType, address module, bytes memory initData) external;
 
     /**
      * Uninstalls a Module of a certain type on the smart account.
@@ -142,8 +134,7 @@ interface ISafe7579 is IERC7579Account {
         address module,
         bytes memory deInitData
     )
-        external
-        payable;
+        external;
 
     /**
      * Function to check if the account has a certain module installed
@@ -190,8 +181,7 @@ interface ISafe7579 is IERC7579Account {
         ModuleInit[] memory hooks,
         RegistryInit memory registryInit
     )
-        external
-        payable;
+        external;
 
     /**
      * This function is intended to be called by Launchpad.validateUserOp()
@@ -201,7 +191,7 @@ interface ISafe7579 is IERC7579Account {
      * @dev Note: this function DOES NOT call onInstall() on the validator modules or emit
      * ModuleInstalled events. this has to be done by the launchpad
      */
-    function launchpadValidators(ModuleInit[] memory validators) external payable;
+    function launchpadValidators(ModuleInit[] memory validators) external;
 
     /**
      * Configure the Safe7579 with a IERC7484 registry

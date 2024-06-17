@@ -72,7 +72,6 @@ contract Safe7579 is ISafe7579, ISafeOp, AccessControl, Initializer {
         bytes calldata executionCalldata
     )
         external
-        payable
         withHook(IERC7579Account.execute.selector)
         onlyEntryPointOrSelf
     {
@@ -153,7 +152,6 @@ contract Safe7579 is ISafe7579, ISafeOp, AccessControl, Initializer {
         bytes calldata executionCalldata
     )
         external
-        payable
         override
         onlyExecutorModule
         withHook(IERC7579Account.executeFromExecutor.selector)
@@ -259,7 +257,6 @@ contract Safe7579 is ISafe7579, ISafeOp, AccessControl, Initializer {
         uint256 missingAccountFunds
     )
         external
-        payable
         onlyEntryPoint
         returns (uint256 validSignature)
     {
@@ -311,9 +308,8 @@ contract Safe7579 is ISafe7579, ISafeOp, AccessControl, Initializer {
             uint48 validUntil,
             bytes calldata signatures
         ) = _getSafeOp(userOp);
-        try ISafe(payable(msg.sender)).checkSignatures(
-            keccak256(operationData), operationData, signatures
-        ) {
+        try ISafe((msg.sender)).checkSignatures(keccak256(operationData), operationData, signatures)
+        {
             // The timestamps are validated by the entry point,
             // therefore we will not check them again
             validationData = _packValidationData(false, validUntil, validAfter);
@@ -375,7 +371,6 @@ contract Safe7579 is ISafe7579, ISafeOp, AccessControl, Initializer {
         bytes calldata initData
     )
         external
-        payable
         override
         withHook(IERC7579Account.installModule.selector)
         onlyEntryPointOrSelf
@@ -416,7 +411,6 @@ contract Safe7579 is ISafe7579, ISafeOp, AccessControl, Initializer {
         bytes calldata deInitData
     )
         external
-        payable
         override
         withHook(IERC7579Account.uninstallModule.selector)
         onlyEntryPointOrSelf

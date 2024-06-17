@@ -82,7 +82,7 @@ contract Safe7579Launchpad is IAccount, SafeStorage {
         _;
     }
 
-    receive() external payable { }
+    receive() external payable onlyProxy { }
 
     /**
      * This function is intended to be delegatecalled by the ISafe.setup function. It configures the

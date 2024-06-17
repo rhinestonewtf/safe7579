@@ -34,7 +34,7 @@ interface IERC7579Account is IERC7579AccountEvents {
      * @param executionCalldata The encoded execution call data
      */
 
-    function execute(ModeCode mode, bytes calldata executionCalldata) external payable;
+    function execute(ModeCode mode, bytes calldata executionCalldata) external;
 
     /**
      * @dev Executes a transaction on behalf of the account.
@@ -51,7 +51,6 @@ interface IERC7579Account is IERC7579AccountEvents {
         bytes calldata executionCalldata
     )
         external
-        payable
         returns (bytes[] memory returnData);
 
     /**
@@ -77,8 +76,7 @@ interface IERC7579Account is IERC7579AccountEvents {
         address module,
         bytes calldata initData
     )
-        external
-        payable;
+        external;
 
     /**
      * @dev uninstalls a Module of a certain type on the smart account
@@ -93,8 +91,7 @@ interface IERC7579Account is IERC7579AccountEvents {
         address module,
         bytes calldata deInitData
     )
-        external
-        payable;
+        external;
 
     /**
      * Function to check if the account supports a certain CallType or ExecType (see ModeLib.sol)

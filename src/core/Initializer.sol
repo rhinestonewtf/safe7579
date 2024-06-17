@@ -33,7 +33,7 @@ abstract contract Initializer is ISafe7579, ModuleManager {
     /**
      * @inheritdoc ISafe7579
      */
-    function launchpadValidators(ModuleInit[] calldata validators) external payable override {
+    function launchpadValidators(ModuleInit[] calldata validators) external override {
         // this will revert if already initialized
         $validators.init({ account: msg.sender });
         uint256 length = validators.length;
@@ -57,7 +57,6 @@ abstract contract Initializer is ISafe7579, ModuleManager {
         RegistryInit calldata registryInit
     )
         external
-        payable
         onlyEntryPointOrSelf
     {
         _configureRegistry(registryInit.registry, registryInit.attesters, registryInit.threshold);
