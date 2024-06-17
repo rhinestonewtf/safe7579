@@ -32,12 +32,12 @@ contract ModuleInstallUtil {
 }
 
 contract BatchedExecUtil {
-    function tryExecute(Execution[] calldata executions) external returns (bool success) {
+    function tryExecute(Execution[] calldata executions) external {
         uint256 length = executions.length;
 
         for (uint256 i; i < length; i++) {
             Execution calldata _exec = executions[i];
-            (success,) = _tryExecute(_exec.target, _exec.value, _exec.callData);
+            _tryExecute(_exec.target, _exec.value, _exec.callData);
         }
     }
 
@@ -115,7 +115,7 @@ contract BatchedExecUtil {
         assembly {
             result := mload(0x40)
             calldatacopy(result, callData.offset, callData.length)
-            success := iszero(call(gas(), target, value, result, callData.length, codesize(), 0x00))
+            success := call(gas(), target, value, result, callData.length, codesize(), 0x00)
             mstore(result, returndatasize()) // Store the length.
             let o := add(result, 0x20)
             returndatacopy(o, 0x00, returndatasize()) // Copy the returndata.
