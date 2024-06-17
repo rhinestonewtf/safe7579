@@ -207,6 +207,12 @@ abstract contract ModuleManager is ISafe7579, AccessControl, Receiver, RegistryA
         if (
             functionSig == IModule.onInstall.selector || functionSig == IModule.onUninstall.selector
         ) revert InvalidFallbackHandler(functionSig);
+
+        // disallow unsupported calltypes
+        if (calltype != CALLTYPE_SINGLE && calltype != CALLTYPE_STATIC) {
+            revert InvalidCallType(calltype);
+        }
+
         if (_isFallbackHandlerInstalled(functionSig)) revert FallbackInstalled(functionSig);
 
         FallbackHandler storage $fallbacks = $fallbackStorage[msg.sender][functionSig];

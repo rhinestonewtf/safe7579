@@ -260,6 +260,7 @@ interface ISafe7579 is IERC7579Account {
 
     // fallback handlers
     error InvalidInput();
+    error InvalidCallType(CallType callType);
     error NoFallbackHandler(bytes4 msgSig);
     error InvalidFallbackHandler(bytes4 msgSig);
     error FallbackInstalled(bytes4 msgSig);
