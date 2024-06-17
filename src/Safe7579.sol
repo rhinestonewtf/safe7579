@@ -332,7 +332,16 @@ contract Safe7579 is ISafe7579, ISafeOp, AccessControl, Initializer {
         ISafe safe = ISafe(msg.sender);
 
         // check for safe's approved hashes
-        if (data.length == 0 && safe.signedMessages(hash) != 0) {
+        if (data.length == 0) {
+            bytes32 messageHash = keccak256(
+                EIP712.encodeMessageData(
+                    safe.domainSeparator(),
+                    SAFE_MSG_TYPEHASH,
+                    abi.encode(keccak256(abi.encode(hash)))
+                )
+            );
+
+            require(safe.signedMessages(messageHash) != 0, "Hash not approved");
             // return magic value
             return IERC1271.isValidSignature.selector;
         }
