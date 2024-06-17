@@ -23,9 +23,6 @@ import { MODULE_TYPE_VALIDATOR } from "erc7579/interfaces/IERC7579Module.sol";
 contract Safe7579Launchpad is IAccount, SafeStorage {
     event ModuleInstalled(uint256 moduleTypeId, address module);
 
-    bytes32 private constant DOMAIN_SEPARATOR_TYPEHASH =
-        keccak256("EIP712Domain(uint256 chainId,address verifyingContract)");
-
     // keccak256("Safe7579Launchpad.initHash") - 1
     uint256 private constant INIT_HASH_SLOT =
         0x982e06ee6a56dfc0f1ac189a5d23506361ca0a3ce45a9c7b8d33d65d43746a24;
@@ -43,11 +40,6 @@ contract Safe7579Launchpad is IAccount, SafeStorage {
         ModuleInit[] validators;
         bytes callData;
     }
-
-    // solhint-disable max-line-length
-    bytes32 private constant SAFE_INIT_TYPEHASH = keccak256(
-        "InitData(address singleton,address[] owners,uint256 threshold,address setupTo,bytes setupData,address safe7579,ModuleInit[] validators,bytes callData)"
-    );
 
     address private immutable SELF;
     address public immutable SUPPORTED_ENTRYPOINT;
@@ -267,10 +259,6 @@ contract Safe7579Launchpad is IAccount, SafeStorage {
                 revert(add(returnData, 0x20), mload(returnData))
             }
         }
-    }
-
-    function _domainSeparator() internal view returns (bytes32) {
-        return keccak256(abi.encode(DOMAIN_SEPARATOR_TYPEHASH, block.chainid, SELF));
     }
 
     // sload inithash from SafeProxy storage

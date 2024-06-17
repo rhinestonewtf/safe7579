@@ -254,10 +254,7 @@ interface ISafe7579 is IERC7579Account {
     /*                       Custom Errors                        */
     /*.•°:°.´+˚.*°.˚:*.´•*.+°.•°:´*.´•*.•°.•°:°.´:•˚°.*°.˚:*.´+°.•*/
     error InvalidModule(address module);
-    error LinkedListError();
     error InvalidModuleType(address module, uint256 moduleType);
-    error InitializerError();
-    error ValidatorStorageHelperError();
 
     // fallback handlers
     error InvalidInput();
@@ -267,7 +264,6 @@ interface ISafe7579 is IERC7579Account {
     error FallbackInstalled(bytes4 msgSig);
 
     // Hooks
-    error HookPostCheckFailed();
     error HookAlreadyInstalled(address currentHook);
     error InvalidHookType();
 

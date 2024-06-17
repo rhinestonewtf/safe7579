@@ -21,8 +21,6 @@ interface IERC7579Account is IERC7579AccountEvents {
     error UnsupportedCallType(CallType callType);
     // Error thrown when an execution with an unsupported ExecType was made
     error UnsupportedExecType(ExecType execType);
-    // Error thrown when account initialization fails
-    error AccountInitializationFailed();
     /**
      * @dev Executes a transaction on behalf of the account.
      *         This function is intended to be called by ERC-4337 EntryPoint.sol

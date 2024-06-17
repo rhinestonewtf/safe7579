@@ -2,12 +2,10 @@
 pragma solidity ^0.8.22;
 
 import { Execution } from "../interfaces/IERC7579Account.sol";
-import { IModule as IERC7579Module } from "erc7579/interfaces/IERC7579Module.sol";
+import { IModule as IERC7579Module } from "../interfaces/IERC7579Module.sol";
+import { IERC7579AccountEvents } from "../interfaces/IERC7579Account.sol";
 
-contract ModuleInstallUtil {
-    event ModuleInstalled(uint256 moduleTypeId, address module);
-    event ModuleUninstalled(uint256 moduleTypeId, address module);
-
+contract ModuleInstallUtil is IERC7579AccountEvents {
     function installModule(
         uint256 moduleTypeId,
         address module,

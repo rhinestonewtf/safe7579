@@ -2,7 +2,6 @@
 pragma solidity ^0.8.0;
 
 interface IERC7484 {
-    event NewTrustedAttesters();
     /*´:°•.°+.*•´.*:˚.°*.˚•´.°:°•.°•.*•´.*:˚.°*.˚•´.°:°•.°+.*•´.*:*/
     /*          Check with Registry internal attesters            */
     /*.•°:°.´+˚.*°.˚:*.´•*.+°.•°:´*.´•*.•°.•°:°.´:•˚°.*°.˚:*.´+°.•*/
