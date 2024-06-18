@@ -1,7 +1,13 @@
 // SPDX-License-Identifier: GPL-3.0
 pragma solidity ^0.8.20;
 
-import { IAccount, PackedUserOperation } from "account-abstraction/interfaces/IAccount.sol";
+import { _packValidationData } from "@ERC4337/account-abstraction/contracts/core/Helpers.sol";
+import {
+    PackedUserOperation,
+    UserOperationLib
+} from "@ERC4337/account-abstraction/contracts/core/UserOperationLib.sol";
+
+import { IAccount } from "@ERC4337/account-abstraction/contracts/interfaces/IAccount.sol";
 import { ISafe } from "./interfaces/ISafe.sol";
 import { ISafe7579 } from "./ISafe7579.sol";
 import { IERC7484 } from "./interfaces/IERC7484.sol";
@@ -21,6 +27,8 @@ import { MODULE_TYPE_VALIDATOR } from "erc7579/interfaces/IERC7579Module.sol";
  * @author rhinestone | zeroknots.eth
  */
 contract Safe7579Launchpad is IAccount, SafeStorage {
+    using UserOperationLib for PackedUserOperation;
+
     event ModuleInstalled(uint256 moduleTypeId, address module);
 
     // keccak256("Safe7579Launchpad.initHash") - 1
@@ -180,7 +188,18 @@ contract Safe7579Launchpad is IAccount, SafeStorage {
         }
 
         // initialize validator on behalf of the safe account
-        ISafe7579(initData.safe7579).launchpadValidators(initData.validators);
+        // the call below is equivalent to:
+        // ISafe7579(initData.safe7579).launchpadValidators(initData.validators);
+        // but we need to append userOp.sender to ERC2771 style access control, to protect the
+        // launchpadValidator function
+        (bool success,) = address(initData.safe7579).call(
+            abi.encodePacked(
+                abi.encodeCall(ISafe7579.launchpadValidators, (initData.validators)), // ISafe7579.launchpadValidators
+                userOp.getSender() // ERC2771 access control
+            )
+        );
+        // ensure that the call was successful
+        if (!success) revert InvalidUserOperationData();
 
         // Call onInstall on each validator module to set up the validators.
         // Since this function is delegatecalled by the SafeProxy, the Validator Module is called
@@ -196,7 +215,9 @@ contract Safe7579Launchpad is IAccount, SafeStorage {
         }
         // Ensure that the validator module selected in the userOp was
         // part of the validators in InitData
-        if (!userOpValidatorInstalled) return 1;
+        if (!userOpValidatorInstalled) {
+            return _packValidationData({ sigFailed: true, validUntil: 0, validAfter: 0 });
+        }
 
         // validate userOp with selected validation module.
         validationData = IValidator(validator).validateUserOp(userOp, userOpHash);
