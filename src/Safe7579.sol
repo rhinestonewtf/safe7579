@@ -311,9 +311,17 @@ contract Safe7579 is ISafe7579, ISafeOp, AccessControl, Initializer {
         {
             // The timestamps are validated by the entry point,
             // therefore we will not check them again
-            validationData = _packValidationData(false, validUntil, validAfter);
+            validationData = _packValidationData({
+                sigFailed: false,
+                validUntil: validUntil,
+                validAfter: validAfter
+            });
         } catch {
-            validationData = _packValidationData(true, validUntil, validAfter);
+            validationData = _packValidationData({
+                sigFailed: true,
+                validUntil: validUntil,
+                validAfter: validAfter
+            });
         }
     }
 
