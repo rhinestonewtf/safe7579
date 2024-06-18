@@ -568,4 +568,76 @@ abstract contract ModuleManager is ISafe7579, AccessControl, Receiver, RegistryA
         // initialize the module
         _moduleInitData = moduleInitData;
     }
+
+    function _multiTypeUninstall(
+        address module,
+        bytes calldata initData
+    )
+        internal
+        returns (bytes memory _moduleInitData)
+    {
+        uint256[] calldata types;
+        bytes[] calldata contexts;
+        bytes calldata moduleDeInitData;
+
+        // equivalent of:
+        // (types, contexs, moduleInitData) = abi.decode(initData,(uint[],bytes[],bytes)
+        // solhint-disable-next-line no-inline-assembly
+        assembly ("memory-safe") {
+            let offset := initData.offset
+            let baseOffset := offset
+            let dataPointer := add(baseOffset, calldataload(offset))
+
+            types.offset := add(dataPointer, 32)
+            types.length := calldataload(dataPointer)
+            offset := add(offset, 32)
+
+            dataPointer := add(baseOffset, calldataload(offset))
+            contexts.offset := add(dataPointer, 32)
+            contexts.length := calldataload(dataPointer)
+            offset := add(offset, 32)
+
+            dataPointer := add(baseOffset, calldataload(offset))
+            moduleDeInitData.offset := add(dataPointer, 32)
+            moduleDeInitData.length := calldataload(dataPointer)
+        }
+
+        uint256 length = types.length;
+        if (contexts.length != length) revert InvalidInput();
+
+        // iterate over all module types and install the module as a type accordingly
+        for (uint256 i; i < length; i++) {
+            uint256 _type = types[i];
+
+            /*´:°•.°+.*•´.*:˚.°*.˚•´.°:°•.°•.*•´.*:˚.°*.˚•´.°:°•.°+.*•´.*:*/
+            /*                      INSTALL VALIDATORS                    */
+            /*.•°:°.´+˚.*°.˚:*.´•*.+°.•°:´*.´•*.•°.•°:°.´:•˚°.*°.˚:*.´+°.•*/
+            if (_type == MODULE_TYPE_VALIDATOR) {
+                _uninstallValidator(module, contexts[i]);
+            }
+            /*´:°•.°+.*•´.*:˚.°*.˚•´.°:°•.°•.*•´.*:˚.°*.˚•´.°:°•.°+.*•´.*:*/
+            /*                       INSTALL EXECUTORS                    */
+            /*.•°:°.´+˚.*°.˚:*.´•*.+°.•°:´*.´•*.•°.•°:°.´:•˚°.*°.˚:*.´+°.•*/
+            else if (_type == MODULE_TYPE_EXECUTOR) {
+                _uninstallExecutor(module, contexts[i]);
+            }
+            /*´:°•.°+.*•´.*:˚.°*.˚•´.°:°•.°•.*•´.*:˚.°*.˚•´.°:°•.°+.*•´.*:*/
+            /*                       INSTALL FALLBACK                     */
+            /*.•°:°.´+˚.*°.˚:*.´•*.+°.•°:´*.´•*.•°.•°:°.´:•˚°.*°.˚:*.´+°.•*/
+            else if (_type == MODULE_TYPE_FALLBACK) {
+                _uninstallFallbackHandler(module, contexts[i]);
+            }
+            /*´:°•.°+.*•´.*:˚.°*.˚•´.°:°•.°•.*•´.*:˚.°*.˚•´.°:°•.°+.*•´.*:*/
+            /*          INSTALL HOOK (global or sig specific)             */
+            /*.•°:°.´+˚.*°.˚:*.´•*.+°.•°:´*.´•*.•°.•°:°.´:•˚°.*°.˚:*.´+°.•*/
+            else if (_type == MODULE_TYPE_HOOK) {
+                _uninstallHook(module, contexts[i]);
+            } else {
+                revert InvalidModuleType(module, _type);
+            }
+        }
+        // memory allocate the moduleInitData to return. This data should be used by the caller to
+        // initialize the module
+        _moduleInitData = moduleDeInitData;
+    }
 }

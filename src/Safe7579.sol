@@ -442,6 +442,8 @@ contract Safe7579 is ISafe7579, ISafeOp, AccessControl, Initializer {
             moduleDeInitData = _uninstallFallbackHandler(module, deInitData);
         } else if (moduleType == MODULE_TYPE_HOOK) {
             moduleDeInitData = _uninstallHook(module, deInitData);
+        } else if (moduleType == MULTITYPE_MODULE) {
+            moduleDeInitData = _multiTypeUninstall(module, deInitData);
         } else {
             revert UnsupportedModuleType(moduleType);
         }
