@@ -148,6 +148,11 @@ abstract contract ExecutionHelper is Safe7579DCUtilSetup {
             callData: abi.encodeCall(BatchedExecUtil.tryExecuteReturn, executions)
         });
         (success, retDatas) = abi.decode(tmp, (bool[], bytes[]));
+
+        uint256 length = success.length;
+        for (uint256 i; i < length; i++) {
+            if (!success[i]) emit TryExecutionFailed(safe, i);
+        }
     }
 
     function _tryExecReturn(
