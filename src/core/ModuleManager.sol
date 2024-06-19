@@ -391,7 +391,7 @@ abstract contract ModuleManager is ISafe7579, AccessControl, Receiver, RegistryA
         address globalHook = $globalHook[msg.sender];
         address sigHook = $hookManager[msg.sender][selector];
 
-        if (module == globalHook || module == sigHook) {
+        if (module != globalHook && module != sigHook) {
             (bytes memory global, bytes memory sig) = _preHooks(globalHook, sigHook);
             _;
             _postHooks(globalHook, sigHook, global, sig);
