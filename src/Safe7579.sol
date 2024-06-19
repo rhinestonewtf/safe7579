@@ -428,7 +428,7 @@ contract Safe7579 is ISafe7579, ISafeOp, AccessControl, Initializer {
     )
         external
         override
-        withHook(IERC7579Account.uninstallModule.selector)
+        tryWithHook(module, IERC7579Account.uninstallModule.selector)
         onlyEntryPointOrSelf
     {
         // internal uninstall functions will decode the deInitData param, and return sanitized

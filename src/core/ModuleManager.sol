@@ -387,6 +387,19 @@ abstract contract ModuleManager is ISafe7579, AccessControl, Receiver, RegistryA
         _postHooks(globalHook, sigHook, global, sig);
     }
 
+    modifier tryWithHook(address module, bytes4 selector) {
+        address globalHook = $globalHook[msg.sender];
+        address sigHook = $hookManager[msg.sender][selector];
+
+        if (module != globalHook && module != sigHook) {
+            (bytes memory global, bytes memory sig) = _preHooks(globalHook, sigHook);
+            _;
+            _postHooks(globalHook, sigHook, global, sig);
+        } else {
+            _;
+        }
+    }
+
     /**
      * Install and initialize hook module
      * @dev This function will install a hook module and return the moduleInitData
