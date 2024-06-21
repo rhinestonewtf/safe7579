@@ -139,7 +139,7 @@ abstract contract Initializer is ISafe7579, ModuleManager {
                 target: UTIL,
                 callData: abi.encodeCall(
                     ModuleInstallUtil.installModule,
-                    (MODULE_TYPE_EXECUTOR, _fallback.module, moduleInitData)
+                    (MODULE_TYPE_FALLBACK, _fallback.module, moduleInitData)
                 )
             });
         }

@@ -587,7 +587,7 @@ abstract contract ModuleManager is ISafe7579, AccessControl, Receiver, RegistryA
         bytes calldata initData
     )
         internal
-        returns (bytes memory _moduleInitData)
+        returns (bytes memory _moduleDeInitData)
     {
         uint256[] calldata types;
         bytes[] calldata contexts;
@@ -651,6 +651,6 @@ abstract contract ModuleManager is ISafe7579, AccessControl, Receiver, RegistryA
         }
         // memory allocate the moduleInitData to return. This data should be used by the caller to
         // initialize the module
-        _moduleInitData = moduleDeInitData;
+        _moduleDeInitData = moduleDeInitData;
     }
 }
