@@ -81,9 +81,8 @@ abstract contract Initializer is ISafe7579, ModuleManager {
             revert InvalidInitData(msg.sender);
         }
 
-        SentinelListLib.SentinelList storage $executors = $executorStorage[msg.sender];
         // this will revert if already initialized.
-        $executors.init();
+        $executors.init({ account: msg.sender });
 
         length = executors.length;
         for (uint256 i; i < length; i++) {
