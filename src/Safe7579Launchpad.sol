@@ -110,6 +110,24 @@ contract Safe7579Launchpad is IAccount, SafeStorage {
         });
     }
 
+    function addSafe7579(
+        address safe7579,
+        ModuleInit[] calldata validators,
+        address[] calldata attesters,
+        uint8 threshold
+    )
+        external
+    {
+        ISafe(address(this)).enableModule(safe7579);
+        ISafe7579(payable(this)).initializeAccount({
+            validators: validators,
+            executors: new ModuleInit[](0),
+            fallbacks: new ModuleInit[](0),
+            hooks: new ModuleInit[](0),
+            registryInit: RegistryInit({ registry: REGISTRY, attesters: attesters, threshold: threshold })
+        });
+    }
+
     /**
      * SafeProxyFactory will create a SafeProxy and using this contract as the singleton
      * implementation and call this function to initialize the account.
