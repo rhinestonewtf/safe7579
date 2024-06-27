@@ -27,7 +27,11 @@ import { Safe7579Launchpad } from "src/Safe7579Launchpad.sol";
 import { Solarray } from "solarray/Solarray.sol";
 import "./dependencies/EntryPoint.sol";
 
+import { Simulator } from "@rhinestone/erc4337-validation/src/Simulator.sol";
+
 contract LaunchpadBase is Test {
+    using Simulator for PackedUserOperation; // or UserOperation
+
     Safe7579 safe7579;
     Safe singleton;
     Safe safe;
@@ -139,6 +143,7 @@ contract LaunchpadBase is Test {
         userOps[0] = userOp;
         deal(address(userOp.sender), 1 ether);
 
+        userOp.simulateUserOp(address(entrypoint));
         entrypoint.handleOps(userOps, payable(address(0x69)));
 
         safe = Safe(payable(predict));
