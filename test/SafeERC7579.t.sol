@@ -5,10 +5,13 @@ pragma solidity ^0.8.23;
 // import "erc7579/lib/ExecutionLib.sol";
 import "./Launchpad.t.sol";
 import { ModeLib } from "erc7579/lib/ModeLib.sol";
+import { Simulator } from "@rhinestone/erc4337-validation/src/Simulator.sol";
 
 import "forge-std/console2.sol";
 
 contract Safe7579Test is LaunchpadBase {
+    using Simulator for PackedUserOperation; // or UserOperation
+
     function setUp() public override {
         super.setUp();
         target = new MockTarget();
@@ -70,6 +73,7 @@ contract Safe7579Test is LaunchpadBase {
         PackedUserOperation[] memory userOps = new PackedUserOperation[](1);
         userOps[0] = userOp;
 
+        Simulator.simulateUserOp(userOps[0], address(entrypoint));
         // Send the userOp to the entrypoint
         entrypoint.handleOps(userOps, payable(address(0x69)));
 
