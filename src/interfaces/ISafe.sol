@@ -2,6 +2,11 @@
 pragma solidity ^0.8.0;
 
 interface ISafe {
+    enum Operation {
+        Call,
+        DelegateCall
+    }
+
     function setup(
         address[] calldata _owners,
         uint256 _threshold,
@@ -25,7 +30,7 @@ interface ISafe {
         address to,
         uint256 value,
         bytes memory data,
-        uint8 operation
+        Operation operation
     )
         external
         returns (bool success);
@@ -44,7 +49,7 @@ interface ISafe {
         address to,
         uint256 value,
         bytes memory data,
-        uint8 operation
+        Operation operation
     )
         external
         returns (bool success, bytes memory returnData);

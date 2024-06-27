@@ -6,6 +6,8 @@ import { IERC7484 } from "src/interfaces/IERC7484.sol";
 contract MockRegistry is IERC7484 {
     event Log(address sender);
 
+    event NewTrustedAttesters();
+
     function check(address module) external view { }
 
     function checkForAccount(address smartAccount, address module) external view { }
