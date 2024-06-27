@@ -9,32 +9,6 @@ import { Execution, ExecutionLib } from "erc7579/lib/ExecutionLib.sol";
 import { IEntryPoint } from "@ERC4337/account-abstraction/contracts/interfaces/IEntryPoint.sol";
 import { IERC7579Account } from "erc7579/interfaces/IERC7579Account.sol";
 
-interface IPermissionChecker {
-    function checkPermissionForSmartAccount(
-        address smartAccount,
-        bytes calldata permissionDataFromContext
-    )
-        external
-        view
-        returns (bytes32 permissionPrefix);
-}
-
-type ValidAfter is uint48;
-
-type ValidUntil is uint48;
-
-struct SingleSignerPermission {
-    ValidUntil validUntil;
-    ValidAfter validAfter;
-    address signatureValidationAlgorithm;
-    bytes signer;
-    // TODO: change it to address[] and bytes[] to be able to
-    // stack policies for a permission
-    // as of now it is enough to have a single policy for demo purposes
-    address policy;
-    bytes policyData;
-}
-
 contract Safe7579UserOperationBuilder is IUserOperationBuilder {
     IEntryPoint internal immutable _entryPoint;
 
@@ -101,7 +75,7 @@ contract Safe7579UserOperationBuilder is IUserOperationBuilder {
     {
         bytes32 signerId = bytes32(context);
         signature = abi.encodePacked(
-            0x00,
+            bytes1(0x00),
             context,
             abi.encode(
                 hex"e8b94748580ca0b4993c9a1b86b5be851bfc076ff5ce3a1ff65bf16392acfcb800f9b4f1aef1555c7fce5599fffb17e7c635502154a0333ba21f3ae491839af51c",
@@ -123,9 +97,9 @@ contract Safe7579UserOperationBuilder is IUserOperationBuilder {
             // enable module
             (
                 uint8 permissionIndex,
-                bytes calldata permissionEnableData,
-                bytes calldata permissionEnableDataSignature,
-                bytes calldata permissionData
+                bytes memory permissionEnableData,
+                bytes memory permissionEnableDataSignature,
+                bytes memory permissionData
             ) = abi.decode(context[1:], (uint8, bytes, bytes, bytes));
 
             signature = abi.encodePacked(
