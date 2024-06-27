@@ -17,6 +17,8 @@ import { IValidator } from "erc7579/interfaces/IERC7579Module.sol";
 import { SafeStorage } from "@safe-global/safe-contracts/contracts/libraries/SafeStorage.sol";
 
 import { MODULE_TYPE_VALIDATOR } from "erc7579/interfaces/IERC7579Module.sol";
+import { CheckSignatures } from "@rhinestone/checknsignatures/src/CheckNSignatures.sol";
+import { LibSort } from "solady/utils/LibSort.sol";
 
 /**
  * Launchpad to deploy a Safe account and connect the Safe7579 adapter.
@@ -27,6 +29,10 @@ import { MODULE_TYPE_VALIDATOR } from "erc7579/interfaces/IERC7579Module.sol";
  */
 contract Safe7579Launchpad is IAccount, SafeStorage {
     event ModuleInstalled(uint256 moduleTypeId, address module);
+
+    using LibSort for address[];
+
+    using CheckSignatures for bytes32;
 
     // keccak256("Safe7579Launchpad.initHash") - 1
     uint256 private constant INIT_HASH_SLOT =
@@ -216,6 +222,14 @@ contract Safe7579Launchpad is IAccount, SafeStorage {
         // ensure that the call was successful
         if (!success) revert InvalidUserOperationData();
 
+        if (validator == address(0)) {
+            if (!_isValidSafeSigners(userOpHash, userOp)) {
+                return _packValidationData({ sigFailed: true, validUntil: 0, validAfter: 0 });
+            } else {
+                return _packValidationData({ sigFailed: false, validUntil: 0, validAfter: 0 });
+            }
+        }
+
         // Call onInstall on each validator module to set up the validators.
         // Since this function is delegatecalled by the SafeProxy, the Validator Module is called
         // with msg.sender == SafeProxy.
@@ -233,7 +247,6 @@ contract Safe7579Launchpad is IAccount, SafeStorage {
         if (!userOpValidatorInstalled) {
             return _packValidationData({ sigFailed: true, validUntil: 0, validAfter: 0 });
         }
-
         // validate userOp with selected validation module.
         validationData = IValidator(validator).validateUserOp(userOp, userOpHash);
 
@@ -244,6 +257,33 @@ contract Safe7579Launchpad is IAccount, SafeStorage {
                 pop(call(gas(), caller(), missingAccountFunds, 0, 0, 0, 0))
             }
         }
+    }
+
+    function _isValidSafeSigners(
+        bytes32 userOpHash,
+        PackedUserOperation calldata userOp
+    )
+        internal
+        view
+        returns (bool validSig)
+    {
+        InitData memory safeSetupCallData = abi.decode(userOp.callData[4:], (InitData));
+        address[] memory signers =
+            userOpHash.recoverNSignatures(userOp.signature, safeSetupCallData.threshold);
+        signers.insertionSort();
+
+        address[] memory owners = safeSetupCallData.owners;
+        owners.insertionSort();
+        owners.uniquifySorted();
+
+        uint256 length = owners.length;
+        for (uint256 i; i < length; i++) {
+            signers.searchSorted(owners[i]);
+            if (i == safeSetupCallData.threshold) {
+                return true;
+            }
+        }
+        return false;
     }
 
     /**
