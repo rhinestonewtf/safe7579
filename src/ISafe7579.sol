@@ -201,7 +201,7 @@ interface ISafe7579 is IERC7579Account {
      * @dev Note: this function DOES NOT call onInstall() on the validator modules or emit
      * ModuleInstalled events. this has to be done by the launchpad
      */
-    function launchpadValidators(ModuleInit[] memory validators) external payable;
+    function initializeAccount(ModuleInit[] memory validators) external payable;
 
     /**
      * Configure the Safe7579 with a IERC7484 registry

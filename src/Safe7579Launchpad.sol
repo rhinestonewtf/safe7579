@@ -182,7 +182,7 @@ contract Safe7579Launchpad is IAccount, SafeStorage {
         }
 
         // initialize validator on behalf of the safe account
-        ISafe7579(initData.safe7579).launchpadValidators(initData.validators);
+        ISafe7579(initData.safe7579).initializeAccount(initData.validators);
 
         // Call onInstall on each validator module to set up the validators.
         // Since this function is delegatecalled by the SafeProxy, the Validator Module is called

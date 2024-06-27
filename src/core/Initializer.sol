@@ -23,7 +23,7 @@ abstract contract Initializer is ISafe7579, ModuleManager {
     /**
      * @inheritdoc ISafe7579
      */
-    function launchpadValidators(ModuleInit[] calldata validators) external payable override {
+    function initializeAccount(ModuleInit[] calldata validators) external payable override {
         // this will revert if already initialized
         $validators.init({ account: msg.sender });
         uint256 length = validators.length;
