@@ -33,7 +33,7 @@ abstract contract Initializer is ISafe7579, ModuleManager {
     /**
      * @inheritdoc ISafe7579
      */
-    function launchpadValidators(ModuleInit[] calldata validators)
+    function initializeAccountWithValidators(ModuleInit[] calldata validators)
         external
         override
         onlyEntryPointOrSelf

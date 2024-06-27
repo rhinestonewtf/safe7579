@@ -186,12 +186,12 @@ contract Safe7579Launchpad is IAccount, SafeStorage {
 
         // initialize validator on behalf of the safe account
         // the call below is equivalent to:
-        // ISafe7579(initData.safe7579).launchpadValidators(initData.validators);
+        // ISafe7579(initData.safe7579).initializeAccountWithValidators(initData.validators);
         // but we need to append msg.sender (entrypoint) to ERC2771 style access control, to protect
         // the launchpadValidator function
         (bool success,) = address(initData.safe7579).call(
             abi.encodePacked(
-                abi.encodeCall(ISafe7579.launchpadValidators, (initData.validators)), // ISafe7579.launchpadValidators
+                abi.encodeCall(ISafe7579.initializeAccountWithValidators, (initData.validators)), // ISafe7579.launchpadValidators
                 msg.sender // ERC2771 access control
             )
         );
