@@ -2,6 +2,7 @@
 pragma solidity ^0.8.20;
 
 import { _packValidationData } from "@ERC4337/account-abstraction/contracts/core/Helpers.sol";
+import "./interfaces/ISafeOp.sol";
 
 import {
     IAccount,
@@ -11,6 +12,8 @@ import { ISafe } from "./interfaces/ISafe.sol";
 import { ISafe7579 } from "./ISafe7579.sol";
 import { IERC7484 } from "./interfaces/IERC7484.sol";
 import "./DataTypes.sol";
+
+import { UserOperationLib } from "@ERC4337/account-abstraction/contracts/core/UserOperationLib.sol";
 
 import { IValidator } from "erc7579/interfaces/IERC7579Module.sol";
 
@@ -28,12 +31,12 @@ import "forge-std/console2.sol";
  * technique](https://github.com/safe-global/safe-modules/pull/184)
  * @author rhinestone | zeroknots.eth
  */
-contract Safe7579Launchpad is IAccount, SafeStorage {
-    event ModuleInstalled(uint256 moduleTypeId, address module);
-
+contract Safe7579Launchpad is IAccount, SafeStorage, ISafeOp {
+    using UserOperationLib for PackedUserOperation;
     using LibSort for address[];
-
     using CheckSignatures for bytes32;
+
+    event ModuleInstalled(uint256 moduleTypeId, address module);
 
     // keccak256("Safe7579Launchpad.initHash") - 1
     uint256 private constant INIT_HASH_SLOT =
@@ -226,11 +229,20 @@ contract Safe7579Launchpad is IAccount, SafeStorage {
         // to support validation with the safe native signers, we allow to set the validator module
         // to address(0)
         if (validator == address(0)) {
-            if (!_isValidSafeSigners(userOpHash, userOp)) {
-                return _packValidationData({ sigFailed: true, validUntil: 0, validAfter: 0 });
+            (bool validSig, uint48 validAfter, uint48 validUntil) =
+                _isValidSafeSigners(userOpHash, userOp);
+            if (!validSig) {
+                return _packValidationData({
+                    sigFailed: !validSig,
+                    validUntil: validUntil,
+                    validAfter: validAfter
+                });
             } else {
-                validationData =
-                    _packValidationData({ sigFailed: false, validUntil: 0, validAfter: 0 });
+                validationData = _packValidationData({
+                    sigFailed: false,
+                    validUntil: validUntil,
+                    validAfter: validAfter
+                });
             }
         }
         // if the validator module is non address(0), we validate the userOp with the validator
@@ -273,11 +285,18 @@ contract Safe7579Launchpad is IAccount, SafeStorage {
     )
         internal
         view
-        returns (bool validSig)
+        returns (bool validSig, uint48 validAfter, uint48 validUntil)
     {
+        bytes memory operationData;
+        bytes calldata signatures;
+
+        (operationData, validAfter, validUntil, signatures) = _getSafeOp(userOp);
+
+        bytes32 _hash = keccak256(operationData);
+
         InitData memory safeSetupCallData = abi.decode(userOp.callData[4:], (InitData));
         address[] memory signers =
-            userOpHash.recoverNSignatures(userOp.signature, safeSetupCallData.threshold);
+            _hash.recoverNSignatures(userOp.signature, safeSetupCallData.threshold);
         signers.insertionSort();
 
         address[] memory owners = safeSetupCallData.owners;
@@ -293,12 +312,12 @@ contract Safe7579Launchpad is IAccount, SafeStorage {
             if (found) {
                 uint256 _validSigs = validSigs + 1;
                 if (_validSigs >= safeSetupCallData.threshold) {
-                    return true;
+                    return (true, validAfter, validUntil);
                 }
                 validSigs = _validSigs;
             }
         }
-        return false;
+        return (false, validAfter, validUntil);
     }
 
     /**
@@ -419,5 +438,98 @@ contract Safe7579Launchpad is IAccount, SafeStorage {
                 data.validators
             )
         );
+    }
+
+    /**
+     * @dev Decodes an ERC-4337 user operation into a Safe operation.
+     * @param userOp The ERC-4337 user operation.
+     * @return operationData Encoded EIP-712 Safe operation data bytes used for signature
+     * verification.
+     * @return validAfter The timestamp the user operation is valid from.
+     * @return validUntil The timestamp the user operation is valid until.
+     * @return signatures The Safe owner signatures extracted from the user operation.
+     */
+    function _getSafeOp(PackedUserOperation calldata userOp)
+        internal
+        view
+        returns (
+            bytes memory operationData,
+            uint48 validAfter,
+            uint48 validUntil,
+            bytes calldata signatures
+        )
+    {
+        // Extract additional Safe operation fields from the user operation signature which is
+        // encoded as:
+        // `abi.encodePacked(validAfter, validUntil, signatures)`
+        {
+            bytes calldata sig = userOp.signature;
+            validAfter = uint48(bytes6(sig[0:6]));
+            validUntil = uint48(bytes6(sig[6:12]));
+            signatures = sig[12:];
+        }
+
+        // It is important that **all** user operation fields are represented in the `SafeOp` data
+        // somehow, to prevent
+        // user operations from being submitted that do not fully respect the user preferences. The
+        // only exception is
+        // the `signature` bytes. Note that even `initCode` needs to be represented in the operation
+        // data, otherwise
+        // it can be replaced with a more expensive initialization that would charge the user
+        // additional fees.
+        {
+            // In order to work around Solidity "stack too deep" errors related to too many stack
+            // variables, manually
+            // encode the `SafeOp` fields into a memory `struct` for computing the EIP-712
+            // struct-hash. This works
+            // because the `EncodedSafeOpStruct` struct has no "dynamic" fields so its memory layout
+            // is identical to the
+            // result of `abi.encode`-ing the individual fields.
+            EncodedSafeOpStruct memory encodedSafeOp = EncodedSafeOpStruct({
+                typeHash: SAFE_OP_TYPEHASH,
+                safe: msg.sender,
+                nonce: userOp.nonce,
+                initCodeHash: keccak256(userOp.initCode),
+                callDataHash: keccak256(userOp.callData),
+                callGasLimit: userOp.unpackCallGasLimit(),
+                verificationGasLimit: userOp.unpackVerificationGasLimit(),
+                preVerificationGas: userOp.preVerificationGas,
+                maxFeePerGas: userOp.unpackMaxFeePerGas(),
+                maxPriorityFeePerGas: userOp.unpackMaxPriorityFeePerGas(),
+                paymasterAndDataHash: keccak256(userOp.paymasterAndData),
+                validAfter: validAfter,
+                validUntil: validUntil,
+                entryPoint: SUPPORTED_ENTRYPOINT
+            });
+
+            bytes32 safeOpStructHash;
+            // solhint-disable-next-line no-inline-assembly
+            assembly ("memory-safe") {
+                // Since the `encodedSafeOp` value's memory layout is identical to the result of
+                // `abi.encode`-ing the
+                // individual `SafeOp` fields, we can pass it directly to `keccak256`. Additionally,
+                // there are 14
+                // 32-byte fields to hash, for a length of `14 * 32 = 448` bytes.
+                safeOpStructHash := keccak256(encodedSafeOp, 448)
+            }
+
+            operationData =
+                abi.encodePacked(bytes1(0x19), bytes1(0x01), domainSeparator(), safeOpStructHash);
+        }
+    }
+
+    function domainSeparator() public view returns (bytes32) {
+        bytes32 DOMAIN_SEPARATOR_TYPEHASH =
+            0x47e79534a245952e8b16893a336b85a3d9ea9fa8c573f3d803afb92a79469218;
+        return keccak256(abi.encode(DOMAIN_SEPARATOR_TYPEHASH, getChainId(), this));
+    }
+
+    function getChainId() public view returns (uint256) {
+        uint256 id;
+        // solhint-disable-next-line no-inline-assembly
+        assembly {
+            id := chainid()
+        }
+        return id;
     }
 }
