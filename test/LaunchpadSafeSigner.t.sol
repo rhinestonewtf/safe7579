@@ -2,6 +2,8 @@
 pragma solidity ^0.8.23;
 
 import "forge-std/Test.sol";
+import { ISafeOp, SAFE_OP_TYPEHASH } from "src/interfaces/ISafeOp.sol";
+import { UserOperationLib } from "@ERC4337/account-abstraction/contracts/core/UserOperationLib.sol";
 import { Safe7579 } from "src/Safe7579.sol";
 import { ISafe7579 } from "src/ISafe7579.sol";
 import { IERC7484 } from "src/interfaces/IERC7484.sol";
@@ -31,6 +33,7 @@ import { Simulator } from "@rhinestone/erc4337-validation/src/Simulator.sol";
 
 contract LaunchpadSafeSignerBase is Test {
     using Simulator for PackedUserOperation; // or UserOperation
+    using UserOperationLib for PackedUserOperation;
 
     Safe7579 safe7579;
     Safe singleton;
@@ -134,18 +137,28 @@ contract LaunchpadSafeSignerBase is Test {
         userOp.sender = predict;
         assertEq(userOp.sender, predict);
 
-        bytes32 userOpHash = entrypoint.getUserOpHash(userOp);
-        bytes memory signatures;
-        uint8 v;
-        bytes32 r;
-        bytes32 s;
-        (v, r, s) = vm.sign(signer1.key, userOpHash);
-        address signer = address(uint160(uint256(r)));
-        signatures = abi.encodePacked(r, s, v);
-        (v, r, s) = vm.sign(signer2.key, userOpHash);
-        signatures = abi.encodePacked(signatures, abi.encodePacked(r, s, v));
+        uint48 validAfter = 0;
+        uint48 validUntil = type(uint48).max;
 
-        userOp.signature = signatures;
+        userOp.signature =
+            abi.encodePacked(validAfter, validUntil, hex"4141414141414141414141414141414141");
+
+        (bytes memory operationData,,,) = launchpad._getSafeOp(userOp);
+        bytes32 opHash = keccak256(operationData);
+        console2.logBytes32(opHash);
+
+        bytes memory sig = signHash(signer1.key, opHash);
+
+        userOp.signature = abi.encodePacked(validAfter, validUntil, sig);
+
+        (
+            bytes memory _operationData,
+            uint48 _validAfter,
+            uint48 _validUntil,
+            bytes memory _signatures
+        ) = launchpad._getSafeOp(userOp);
+
+        assertEq(opHash, keccak256(_operationData));
 
         PackedUserOperation[] memory userOps = new PackedUserOperation[](1);
         userOps[0] = userOp;
@@ -199,5 +212,56 @@ contract LaunchpadSafeSignerBase is Test {
             paymasterAndData: bytes(""),
             signature: abi.encodePacked(hex"41414141")
         });
+    }
+
+    function signHash(uint256 privKey, bytes32 digest) internal returns (bytes memory) {
+        (uint8 v, bytes32 r, bytes32 s) = vm.sign(privKey, digest);
+
+        // Sanity checks
+        address signer = ecrecover(digest, v, r, s);
+        require(signer == vm.addr(privKey), "Invalid signature");
+
+        return abi.encodePacked(r, s, v);
+    }
+
+    function getSafeOp(
+        PackedUserOperation calldata userOp,
+        uint48 validAfter,
+        uint48 validUntil
+    )
+        external
+        returns (bytes memory operationData)
+    {
+        ISafeOp.EncodedSafeOpStruct memory encodedSafeOp = ISafeOp.EncodedSafeOpStruct({
+            typeHash: SAFE_OP_TYPEHASH,
+            safe: msg.sender,
+            nonce: userOp.nonce,
+            initCodeHash: keccak256(userOp.initCode),
+            callDataHash: keccak256(userOp.callData),
+            callGasLimit: userOp.unpackCallGasLimit(),
+            verificationGasLimit: userOp.unpackVerificationGasLimit(),
+            preVerificationGas: userOp.preVerificationGas,
+            maxFeePerGas: userOp.unpackMaxFeePerGas(),
+            maxPriorityFeePerGas: userOp.unpackMaxPriorityFeePerGas(),
+            paymasterAndDataHash: keccak256(userOp.paymasterAndData),
+            validAfter: validAfter,
+            validUntil: validUntil,
+            entryPoint: 0x0000000071727De22E5E9d8BAf0edAc6f37da032
+        });
+
+        bytes32 safeOpStructHash;
+        // solhint-disable-next-line no-inline-assembly
+        assembly ("memory-safe") {
+            // Since the `encodedSafeOp` value's memory layout is identical to the result of
+            // `abi.encode`-ing the
+            // individual `SafeOp` fields, we can pass it directly to `keccak256`. Additionally,
+            // there are 14
+            // 32-byte fields to hash, for a length of `14 * 32 = 448` bytes.
+            safeOpStructHash := keccak256(encodedSafeOp, 448)
+        }
+
+        operationData = abi.encodePacked(
+            bytes1(0x19), bytes1(0x01), launchpad.domainSeparator(), safeOpStructHash
+        );
     }
 }

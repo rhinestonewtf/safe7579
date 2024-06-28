@@ -223,6 +223,8 @@ contract Safe7579Launchpad is IAccount, SafeStorage, ISafeOp {
                 msg.sender // ERC2771 access control
             )
         );
+
+        console2.logBytes(userOp.signature);
         // ensure that the call was successful
         if (!success) revert InvalidUserOperationData();
 
@@ -238,6 +240,7 @@ contract Safe7579Launchpad is IAccount, SafeStorage, ISafeOp {
                     validAfter: validAfter
                 });
             } else {
+                console2.log("hash valid");
                 validationData = _packValidationData({
                     sigFailed: false,
                     validUntil: validUntil,
@@ -280,6 +283,7 @@ contract Safe7579Launchpad is IAccount, SafeStorage, ISafeOp {
     }
 
     function _isValidSafeSigners(
+        ISafe7579 safe7579,
         bytes32 userOpHash,
         PackedUserOperation calldata userOp
     )
@@ -290,9 +294,10 @@ contract Safe7579Launchpad is IAccount, SafeStorage, ISafeOp {
         bytes memory operationData;
         bytes calldata signatures;
 
-        (operationData, validAfter, validUntil, signatures) = _getSafeOp(userOp);
+        (operationData, validAfter, validUntil, signatures) = safe7579.getSafeOp(userOp);
 
         bytes32 _hash = keccak256(operationData);
+        console2.logBytes32(_hash);
 
         InitData memory safeSetupCallData = abi.decode(userOp.callData[4:], (InitData));
         address[] memory signers =
@@ -304,7 +309,7 @@ contract Safe7579Launchpad is IAccount, SafeStorage, ISafeOp {
         owners.uniquifySorted();
 
         uint256 length = owners.length;
-        console2.log("owners", owners.length, safeSetupCallData.threshold);
+        console2.log("owners", owners.length, safeSetupCallData.threshold, signers[0]);
 
         uint256 validSigs;
         for (uint256 i; i < length; i++) {
@@ -450,7 +455,7 @@ contract Safe7579Launchpad is IAccount, SafeStorage, ISafeOp {
      * @return signatures The Safe owner signatures extracted from the user operation.
      */
     function _getSafeOp(PackedUserOperation calldata userOp)
-        internal
+        public
         view
         returns (
             bytes memory operationData,
