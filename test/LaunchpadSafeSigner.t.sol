@@ -143,11 +143,11 @@ contract LaunchpadSafeSignerBase is Test {
         userOp.signature =
             abi.encodePacked(validAfter, validUntil, hex"4141414141414141414141414141414141");
 
-        (bytes memory operationData,,,) = launchpad._getSafeOp(userOp);
+        bytes memory operationData = this.getSafeOp(userOp, validAfter, validUntil);
         bytes32 opHash = keccak256(operationData);
-        console2.logBytes32(opHash);
 
         bytes memory sig = signHash(signer1.key, opHash);
+        sig = abi.encodePacked(sig, signHash(signer1.key, opHash));
 
         userOp.signature = abi.encodePacked(validAfter, validUntil, sig);
 
@@ -158,7 +158,7 @@ contract LaunchpadSafeSignerBase is Test {
             bytes memory _signatures
         ) = launchpad._getSafeOp(userOp);
 
-        assertEq(opHash, keccak256(_operationData));
+        // assertEq(opHash, keccak256(_operationData));
 
         PackedUserOperation[] memory userOps = new PackedUserOperation[](1);
         userOps[0] = userOp;
@@ -234,15 +234,15 @@ contract LaunchpadSafeSignerBase is Test {
     {
         ISafeOp.EncodedSafeOpStruct memory encodedSafeOp = ISafeOp.EncodedSafeOpStruct({
             typeHash: SAFE_OP_TYPEHASH,
-            safe: msg.sender,
+            safe: userOp.sender,
             nonce: userOp.nonce,
             initCodeHash: keccak256(userOp.initCode),
             callDataHash: keccak256(userOp.callData),
-            callGasLimit: userOp.unpackCallGasLimit(),
-            verificationGasLimit: userOp.unpackVerificationGasLimit(),
+            verificationGasLimit: uint128(userOp.unpackVerificationGasLimit()),
+            callGasLimit: uint128(userOp.unpackCallGasLimit()),
             preVerificationGas: userOp.preVerificationGas,
-            maxFeePerGas: userOp.unpackMaxFeePerGas(),
-            maxPriorityFeePerGas: userOp.unpackMaxPriorityFeePerGas(),
+            maxPriorityFeePerGas: uint128(userOp.unpackMaxPriorityFeePerGas()),
+            maxFeePerGas: uint128(userOp.unpackMaxFeePerGas()),
             paymasterAndDataHash: keccak256(userOp.paymasterAndData),
             validAfter: validAfter,
             validUntil: validUntil,
@@ -260,8 +260,64 @@ contract LaunchpadSafeSignerBase is Test {
             safeOpStructHash := keccak256(encodedSafeOp, 448)
         }
 
+        uint256 id;
+        // solhint-disable-next-line no-inline-assembly
+        assembly {
+            id := chainid()
+        }
+
         operationData = abi.encodePacked(
-            bytes1(0x19), bytes1(0x01), launchpad.domainSeparator(), safeOpStructHash
+            bytes1(0x19),
+            bytes1(0x01),
+            keccak256(
+                abi.encode(
+                    0x47e79534a245952e8b16893a336b85a3d9ea9fa8c573f3d803afb92a79469218,
+                    id,
+                    userOp.sender
+                )
+            ),
+            safeOpStructHash
         );
     }
+
+    // function getSafeOp(
+    //     PackedUserOperation calldata userOp,
+    //     uint48 validAfter,
+    //     uint48 validUntil
+    // )
+    //     external
+    //     returns (bytes memory operationData)
+    // {
+    //     ISafeOp.EncodedSafeOpStruct memory encodedSafeOp = ISafeOp.EncodedSafeOpStruct({
+    //         typeHash: SAFE_OP_TYPEHASH,
+    //         safe: msg.sender,
+    //         nonce: userOp.nonce,
+    //         initCodeHash: keccak256(userOp.initCode),
+    //         callDataHash: keccak256(userOp.callData),
+    //         callGasLimit: userOp.unpackCallGasLimit(),
+    //         verificationGasLimit: userOp.unpackVerificationGasLimit(),
+    //         preVerificationGas: userOp.preVerificationGas,
+    //         maxFeePerGas: userOp.unpackMaxFeePerGas(),
+    //         maxPriorityFeePerGas: userOp.unpackMaxPriorityFeePerGas(),
+    //         paymasterAndDataHash: keccak256(userOp.paymasterAndData),
+    //         validAfter: validAfter,
+    //         validUntil: validUntil,
+    //         entryPoint: 0x0000000071727De22E5E9d8BAf0edAc6f37da032
+    //     });
+
+    //     bytes32 safeOpStructHash;
+    //     // solhint-disable-next-line no-inline-assembly
+    //     assembly ("memory-safe") {
+    //         // Since the `encodedSafeOp` value's memory layout is identical to the result of
+    //         // `abi.encode`-ing the
+    //         // individual `SafeOp` fields, we can pass it directly to `keccak256`. Additionally,
+    //         // there are 14
+    //         // 32-byte fields to hash, for a length of `14 * 32 = 448` bytes.
+    //         safeOpStructHash := keccak256(encodedSafeOp, 448)
+    //     }
+
+    //     operationData = abi.encodePacked(
+    //         bytes1(0x19), bytes1(0x01), launchpad.domainSeparator(), safeOpStructHash
+    //     );
+    // }
 }

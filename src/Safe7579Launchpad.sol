@@ -224,7 +224,6 @@ contract Safe7579Launchpad is IAccount, SafeStorage, ISafeOp {
             )
         );
 
-        console2.logBytes(userOp.signature);
         // ensure that the call was successful
         if (!success) revert InvalidUserOperationData();
 
@@ -232,21 +231,19 @@ contract Safe7579Launchpad is IAccount, SafeStorage, ISafeOp {
         // to address(0)
         if (validator == address(0)) {
             (bool validSig, uint48 validAfter, uint48 validUntil) =
-                _isValidSafeSigners(userOpHash, userOp);
-            if (!validSig) {
-                return _packValidationData({
-                    sigFailed: !validSig,
-                    validUntil: validUntil,
-                    validAfter: validAfter
-                });
-            } else {
-                console2.log("hash valid");
-                validationData = _packValidationData({
-                    sigFailed: false,
-                    validUntil: validUntil,
-                    validAfter: validAfter
-                });
+                _isValidSafeSigners(initData.safe7579, userOpHash, userOp);
+
+            if (missingAccountFunds > 0) {
+                // solhint-disable-next-line no-inline-assembly
+                assembly ("memory-safe") {
+                    pop(call(gas(), caller(), missingAccountFunds, 0, 0, 0, 0))
+                }
             }
+            return _packValidationData({
+                sigFailed: !validSig,
+                validUntil: validUntil,
+                validAfter: validAfter
+            });
         }
         // if the validator module is non address(0), we validate the userOp with the validator
         // module
@@ -294,14 +291,12 @@ contract Safe7579Launchpad is IAccount, SafeStorage, ISafeOp {
         bytes memory operationData;
         bytes calldata signatures;
 
-        (operationData, validAfter, validUntil, signatures) = safe7579.getSafeOp(userOp);
+        (operationData, validAfter, validUntil, signatures) = _getSafeOp(userOp);
 
         bytes32 _hash = keccak256(operationData);
-        console2.logBytes32(_hash);
 
         InitData memory safeSetupCallData = abi.decode(userOp.callData[4:], (InitData));
-        address[] memory signers =
-            _hash.recoverNSignatures(userOp.signature, safeSetupCallData.threshold);
+        address[] memory signers = _hash.recoverNSignatures(signatures, safeSetupCallData.threshold);
         signers.insertionSort();
 
         address[] memory owners = safeSetupCallData.owners;
@@ -309,7 +304,6 @@ contract Safe7579Launchpad is IAccount, SafeStorage, ISafeOp {
         owners.uniquifySorted();
 
         uint256 length = owners.length;
-        console2.log("owners", owners.length, safeSetupCallData.threshold, signers[0]);
 
         uint256 validSigs;
         for (uint256 i; i < length; i++) {
@@ -492,15 +486,15 @@ contract Safe7579Launchpad is IAccount, SafeStorage, ISafeOp {
             // result of `abi.encode`-ing the individual fields.
             EncodedSafeOpStruct memory encodedSafeOp = EncodedSafeOpStruct({
                 typeHash: SAFE_OP_TYPEHASH,
-                safe: msg.sender,
+                safe: userOp.sender,
                 nonce: userOp.nonce,
                 initCodeHash: keccak256(userOp.initCode),
                 callDataHash: keccak256(userOp.callData),
-                callGasLimit: userOp.unpackCallGasLimit(),
-                verificationGasLimit: userOp.unpackVerificationGasLimit(),
+                verificationGasLimit: uint128(userOp.unpackVerificationGasLimit()),
+                callGasLimit: uint128(userOp.unpackCallGasLimit()),
                 preVerificationGas: userOp.preVerificationGas,
-                maxFeePerGas: userOp.unpackMaxFeePerGas(),
-                maxPriorityFeePerGas: userOp.unpackMaxPriorityFeePerGas(),
+                maxPriorityFeePerGas: uint128(userOp.unpackMaxPriorityFeePerGas()),
+                maxFeePerGas: uint128(userOp.unpackMaxFeePerGas()),
                 paymasterAndDataHash: keccak256(userOp.paymasterAndData),
                 validAfter: validAfter,
                 validUntil: validUntil,
