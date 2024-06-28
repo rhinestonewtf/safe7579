@@ -19,6 +19,7 @@ import { SafeStorage } from "@safe-global/safe-contracts/contracts/libraries/Saf
 import { MODULE_TYPE_VALIDATOR } from "erc7579/interfaces/IERC7579Module.sol";
 import { CheckSignatures } from "@rhinestone/checknsignatures/src/CheckNSignatures.sol";
 import { LibSort } from "solady/utils/LibSort.sol";
+import "forge-std/console2.sol";
 
 /**
  * Launchpad to deploy a Safe account and connect the Safe7579 adapter.
@@ -222,33 +223,40 @@ contract Safe7579Launchpad is IAccount, SafeStorage {
         // ensure that the call was successful
         if (!success) revert InvalidUserOperationData();
 
+        // to support validation with the safe native signers, we allow to set the validator module
+        // to address(0)
         if (validator == address(0)) {
             if (!_isValidSafeSigners(userOpHash, userOp)) {
                 return _packValidationData({ sigFailed: true, validUntil: 0, validAfter: 0 });
             } else {
-                return _packValidationData({ sigFailed: false, validUntil: 0, validAfter: 0 });
+                validationData =
+                    _packValidationData({ sigFailed: false, validUntil: 0, validAfter: 0 });
             }
         }
+        // if the validator module is non address(0), we validate the userOp with the validator
+        // module
+        else {
+            // Call onInstall on each validator module to set up the validators.
+            // Since this function is delegatecalled by the SafeProxy, the Validator Module is
+            // called
+            // with msg.sender == SafeProxy.
+            bool userOpValidatorInstalled;
+            uint256 validatorsLength = initData.validators.length;
+            for (uint256 i; i < validatorsLength; i++) {
+                address validatorModule = initData.validators[i].module;
+                IValidator(validatorModule).onInstall(initData.validators[i].initData);
+                emit ModuleInstalled(MODULE_TYPE_VALIDATOR, validatorModule);
 
-        // Call onInstall on each validator module to set up the validators.
-        // Since this function is delegatecalled by the SafeProxy, the Validator Module is called
-        // with msg.sender == SafeProxy.
-        bool userOpValidatorInstalled;
-        uint256 validatorsLength = initData.validators.length;
-        for (uint256 i; i < validatorsLength; i++) {
-            address validatorModule = initData.validators[i].module;
-            IValidator(validatorModule).onInstall(initData.validators[i].initData);
-            emit ModuleInstalled(MODULE_TYPE_VALIDATOR, validatorModule);
-
-            if (validatorModule == validator) userOpValidatorInstalled = true;
+                if (validatorModule == validator) userOpValidatorInstalled = true;
+            }
+            // Ensure that the validator module selected in the userOp was
+            // part of the validators in InitData
+            if (!userOpValidatorInstalled) {
+                return _packValidationData({ sigFailed: true, validUntil: 0, validAfter: 0 });
+            }
+            // validate userOp with selected validation module.
+            validationData = IValidator(validator).validateUserOp(userOp, userOpHash);
         }
-        // Ensure that the validator module selected in the userOp was
-        // part of the validators in InitData
-        if (!userOpValidatorInstalled) {
-            return _packValidationData({ sigFailed: true, validUntil: 0, validAfter: 0 });
-        }
-        // validate userOp with selected validation module.
-        validationData = IValidator(validator).validateUserOp(userOp, userOpHash);
 
         // pay back gas to EntryPoint
         if (missingAccountFunds > 0) {
@@ -277,10 +285,17 @@ contract Safe7579Launchpad is IAccount, SafeStorage {
         owners.uniquifySorted();
 
         uint256 length = owners.length;
+        console2.log("owners", owners.length, safeSetupCallData.threshold);
+
+        uint256 validSigs;
         for (uint256 i; i < length; i++) {
-            signers.searchSorted(owners[i]);
-            if (i == safeSetupCallData.threshold) {
-                return true;
+            (bool found,) = signers.searchSorted(owners[i]);
+            if (found) {
+                uint256 _validSigs = validSigs + 1;
+                if (_validSigs >= safeSetupCallData.threshold) {
+                    return true;
+                }
+                validSigs = _validSigs;
             }
         }
         return false;
