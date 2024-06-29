@@ -22,6 +22,7 @@ import { SafeStorage } from "@safe-global/safe-contracts/contracts/libraries/Saf
 import { MODULE_TYPE_VALIDATOR } from "erc7579/interfaces/IERC7579Module.sol";
 import { CheckSignatures } from "@rhinestone/checknsignatures/src/CheckNSignatures.sol";
 import { LibSort } from "solady/utils/LibSort.sol";
+import { SupportViewer } from "./core/SupportViewer.sol";
 
 /**
  * Launchpad to deploy a Safe account and connect the Safe7579 adapter.
@@ -30,7 +31,7 @@ import { LibSort } from "solady/utils/LibSort.sol";
  * technique](https://github.com/safe-global/safe-modules/pull/184)
  * @author rhinestone | zeroknots.eth
  */
-contract Safe7579Launchpad is IAccount, SafeStorage, SafeOp {
+contract Safe7579Launchpad is IAccount, SafeStorage, SafeOp, SupportViewer {
     using UserOperationLib for PackedUserOperation;
     using LibSort for address[];
     using CheckSignatures for bytes32;

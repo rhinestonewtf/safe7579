@@ -34,6 +34,7 @@ import {
 import { _packValidationData } from "@ERC4337/account-abstraction/contracts/core/Helpers.sol";
 import { IEntryPoint } from "@ERC4337/account-abstraction/contracts/interfaces/IEntryPoint.sol";
 import { IERC1271 } from "./interfaces/IERC1271.sol";
+import { SupportViewer } from "./core/SupportViewer.sol";
 
 uint256 constant MULTITYPE_MODULE = 0;
 
@@ -50,7 +51,7 @@ uint256 constant MULTITYPE_MODULE = 0;
  * event emissions to be done via the SafeProxy as msg.sender using Safe's
  * "executeTransactionFromModule" features.
  */
-contract Safe7579 is ISafe7579, SafeOp, AccessControl, Initializer {
+contract Safe7579 is ISafe7579, SafeOp, SupportViewer, AccessControl, Initializer {
     using UserOperationLib for PackedUserOperation;
     using ExecutionLib for bytes;
 
@@ -463,43 +464,6 @@ contract Safe7579 is ISafe7579, SafeOp, AccessControl, Initializer {
     /**
      * @inheritdoc ISafe7579
      */
-    function supportsExecutionMode(ModeCode encodedMode)
-        external
-        pure
-        override
-        returns (bool supported)
-    {
-        CallType callType;
-        ExecType execType;
-        // solhint-disable-next-line no-inline-assembly
-        assembly {
-            callType := encodedMode
-            execType := shl(8, encodedMode)
-        }
-        if (callType == CALLTYPE_BATCH) supported = true;
-        else if (callType == CALLTYPE_SINGLE) supported = true;
-        else if (callType == CALLTYPE_DELEGATECALL) supported = true;
-        else return false;
-
-        if (supported && execType == EXECTYPE_DEFAULT) return supported;
-        else if (supported && execType == EXECTYPE_TRY) return supported;
-        else return false;
-    }
-
-    /**
-     * @inheritdoc ISafe7579
-     */
-    function supportsModule(uint256 moduleTypeId) external pure override returns (bool) {
-        if (moduleTypeId == MODULE_TYPE_VALIDATOR) return true;
-        else if (moduleTypeId == MODULE_TYPE_EXECUTOR) return true;
-        else if (moduleTypeId == MODULE_TYPE_FALLBACK) return true;
-        else if (moduleTypeId == MODULE_TYPE_HOOK) return true;
-        else return false;
-    }
-
-    /**
-     * @inheritdoc ISafe7579
-     */
     function isModuleInstalled(
         uint256 moduleType,
         address module,
@@ -520,14 +484,6 @@ contract Safe7579 is ISafe7579, SafeOp, AccessControl, Initializer {
         } else {
             return false;
         }
-    }
-
-    /**
-     * @inheritdoc ISafe7579
-     */
-    function accountId() external view returns (string memory accountImplementationId) {
-        string memory safeVersion = ISafe(msg.sender).VERSION();
-        return string(abi.encodePacked("safe-", safeVersion, ".erc7579.v0.0.1"));
     }
 
     /**
