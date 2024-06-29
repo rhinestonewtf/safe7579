@@ -131,7 +131,6 @@ contract LaunchpadBase is Test {
             salt: salt,
             factoryInitializer: factoryInitializer
         });
-        console2.log("Predicted address: ", predict);
         userOp.sender = predict;
         assertEq(userOp.sender, predict);
         userOp.signature = abi.encodePacked(

@@ -240,7 +240,9 @@ interface ISafe7579 is IERC7579Account {
     /**
      * Domain Separator for EIP-712.
      */
-    function domainSeparator() external view returns (bytes32);
+    // TODO: is this required?
+    // function domainSeparator() external view returns (bytes32);
+
     /**
      * Safe7579 is using validator selection encoding in the userop nonce.
      * to make it easier for SDKs / devs to integrate, this function can be
