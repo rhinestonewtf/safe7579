@@ -11,7 +11,6 @@ import {
     CALLTYPE_BATCH,
     CALLTYPE_DELEGATECALL
 } from "../lib/ModeLib.sol";
-import { ISafe7579 } from "../ISafe7579.sol";
 import { ISafe } from "../interfaces/ISafe.sol";
 import {
     MODULE_TYPE_VALIDATOR,
@@ -22,8 +21,7 @@ import {
 
 contract SupportViewer {
     function accountId() external view returns (string memory accountImplementationId) {
-        string memory safeVersion = ISafe(msg.sender).VERSION();
-        return string(abi.encodePacked("safe-", safeVersion, ".erc7579.v1.0.0"));
+        return "safe7579.v1.0.0";
     }
 
     function supportsExecutionMode(ModeCode encodedMode) external pure returns (bool supported) {

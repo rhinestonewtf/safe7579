@@ -20,7 +20,7 @@ contract DeployScript is Script {
         bytes32 salt = bytes32(uint256(0));
 
         address entryPoint = address(0x0000000071727De22E5E9d8BAf0edAc6f37da032);
-        // IERC7484 registry = IERC7484(0xc449A54310506688E1239D1aB2A5E5644679a1D6);
+        IERC7484 registry = IERC7484(0x25A4b2F363678E13A0A5DB79b712dE00347a593E);
 
         vm.startBroadcast(vm.envUint("PK"));
 
@@ -31,7 +31,7 @@ contract DeployScript is Script {
 
         // IERC7484 registry = new MockRegistry{ salt: salt }();
         new Safe7579{ salt: salt }();
-        // new Safe7579Launchpad{ salt: salt }(entryPoint, registry);
+        new Safe7579Launchpad{ salt: salt }(entryPoint, registry);
 
         vm.stopBroadcast();
     }
