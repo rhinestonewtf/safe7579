@@ -8,7 +8,6 @@ import { ModuleInstallUtil } from "../utils/DCUtil.sol";
 import { ModuleManager } from "./ModuleManager.sol";
 
 import {
-    IValidator,
     MODULE_TYPE_VALIDATOR,
     MODULE_TYPE_HOOK,
     MODULE_TYPE_EXECUTOR,
@@ -33,7 +32,7 @@ abstract contract Initializer is ISafe7579, ModuleManager {
     /**
      * @inheritdoc ISafe7579
      */
-    function launchpadValidators(ModuleInit[] calldata validators)
+    function initializeAccountWithValidators(ModuleInit[] calldata validators)
         external
         override
         onlyEntryPointOrSelf
@@ -106,9 +105,8 @@ abstract contract Initializer is ISafe7579, ModuleManager {
             revert InvalidInitData(msg.sender);
         }
 
-        SentinelListLib.SentinelList storage $executors = $executorStorage[msg.sender];
         // this will revert if already initialized.
-        $executors.init();
+        $executors.init({ account: msg.sender });
 
         length = executors.length;
         for (uint256 i; i < length; i++) {

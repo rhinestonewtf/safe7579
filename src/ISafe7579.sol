@@ -2,18 +2,18 @@
 pragma solidity ^0.8.20;
 
 import "./DataTypes.sol";
-import { IERC7579Account } from "./interfaces//IERC7579Account.sol";
-
+import { IERC7579Account } from "./interfaces/IERC7579Account.sol";
 import { ModeCode } from "./lib/ModeLib.sol";
 import { PackedUserOperation } from
     "@ERC4337/account-abstraction/contracts/core/UserOperationLib.sol";
+import { ISafeOp } from "./interfaces/ISafeOp.sol";
 
 /**
  * @title ERC7579 Adapter for Safe accounts.
  * creates full ERC7579 compliance to Safe accounts
  * @author rhinestone | zeroknots.eth, Konrad Kopp (@kopy-kat)
  */
-interface ISafe7579 is IERC7579Account {
+interface ISafe7579 is IERC7579Account, ISafeOp {
     /*´:°•.°+.*•´.*:˚.°*.˚•´.°:°•.°•.*•´.*:˚.°*.˚•´.°:°•.°+.*•´.*:*/
     /*                         Validation                         */
     /*.•°:°.´+˚.*°.˚:*.´•*.+°.•°:´*.´•*.•°.•°:°.´:•˚°.*°.˚:*.´+°.•*/
@@ -191,7 +191,7 @@ interface ISafe7579 is IERC7579Account {
      * @dev Note: this function DOES NOT call onInstall() on the validator modules or emit
      * ModuleInstalled events. this has to be done by the launchpad
      */
-    function launchpadValidators(ModuleInit[] memory validators) external;
+    function initializeAccountWithValidators(ModuleInit[] memory validators) external;
 
     /**
      * Configure the Safe7579 with a IERC7484 registry
@@ -233,14 +233,7 @@ interface ISafe7579 is IERC7579Account {
     /*´:°•.°+.*•´.*:˚.°*.˚•´.°:°•.°•.*•´.*:˚.°*.˚•´.°:°•.°+.*•´.*:*/
     /*                        Query Misc                          */
     /*.•°:°.´+˚.*°.˚:*.´•*.+°.•°:´*.´•*.•°.•°:°.´:•˚°.*°.˚:*.´+°.•*/
-    function supportsExecutionMode(ModeCode encodedMode) external pure returns (bool supported);
-    function supportsModule(uint256 moduleTypeId) external pure returns (bool);
-    function accountId() external view returns (string memory accountImplementationId);
 
-    /**
-     * Domain Separator for EIP-712.
-     */
-    function domainSeparator() external view returns (bytes32);
     /**
      * Safe7579 is using validator selection encoding in the userop nonce.
      * to make it easier for SDKs / devs to integrate, this function can be

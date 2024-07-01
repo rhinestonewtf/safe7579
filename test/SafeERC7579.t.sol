@@ -9,7 +9,7 @@ import { ModeLib } from "erc7579/lib/ModeLib.sol";
 import "forge-std/console2.sol";
 
 contract Safe7579Test is LaunchpadBase {
-    function setUp() public override {
+    function setUp() public virtual override {
         super.setUp();
         target = new MockTarget();
     }
@@ -77,7 +77,7 @@ contract Safe7579Test is LaunchpadBase {
         assertTrue(target.value() == 1337);
     }
 
-    function test_execViaExecutor() public {
+    function test_execViaExecutor() public virtual {
         defaultExecutor.executeViaAccount(
             IERC7579Account(address(safe)),
             address(target),
@@ -86,7 +86,7 @@ contract Safe7579Test is LaunchpadBase {
         );
     }
 
-    function test_execBatchFromExecutor() public {
+    function test_execBatchFromExecutor() public virtual {
         bytes memory setValueOnTarget = abi.encodeCall(MockTarget.set, 1338);
         Execution[] memory executions = new Execution[](2);
         executions[0] = Execution({ target: address(target), value: 0, callData: setValueOnTarget });

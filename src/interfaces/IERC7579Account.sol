@@ -14,7 +14,29 @@ interface IERC7579AccountEvents {
     event ModuleUninstalled(uint256 moduleTypeId, address module);
 }
 
-interface IERC7579Account is IERC7579AccountEvents {
+interface IERC7579AccountView {
+    /**
+     * @dev Returns the account id of the smart account
+     * @return accountImplementationId the account id of the smart account
+     * the accountId should be structured like so:
+     *        "vendorname.accountname.semver"
+     */
+    function accountId() external view returns (string memory accountImplementationId);
+
+    /**
+     * Function to check if the account supports a certain CallType or ExecType (see ModeLib.sol)
+     * @param encodedMode the encoded mode
+     */
+    function supportsExecutionMode(ModeCode encodedMode) external view returns (bool);
+
+    /**
+     * Function to check if the account supports installation of a certain module type Id
+     * @param moduleTypeId the module type ID according the ERC-7579 spec
+     */
+    function supportsModule(uint256 moduleTypeId) external view returns (bool);
+}
+
+interface IERC7579Account is IERC7579AccountEvents, IERC7579AccountView {
     // Error thrown when an unsupported ModuleType is requested
     error UnsupportedModuleType(uint256 moduleTypeId);
     // Error thrown when an execution with an unsupported CallType was made
@@ -92,18 +114,6 @@ interface IERC7579Account is IERC7579AccountEvents {
         external;
 
     /**
-     * Function to check if the account supports a certain CallType or ExecType (see ModeLib.sol)
-     * @param encodedMode the encoded mode
-     */
-    function supportsExecutionMode(ModeCode encodedMode) external view returns (bool);
-
-    /**
-     * Function to check if the account supports installation of a certain module type Id
-     * @param moduleTypeId the module type ID according the ERC-7579 spec
-     */
-    function supportsModule(uint256 moduleTypeId) external view returns (bool);
-
-    /**
      * Function to check if the account has a certain module installed
      * @param moduleTypeId the module type ID according the ERC-7579 spec
      *      Note: keep in mind that some contracts can be multiple module types at the same time. It
@@ -122,12 +132,4 @@ interface IERC7579Account is IERC7579AccountEvents {
         external
         view
         returns (bool);
-
-    /**
-     * @dev Returns the account id of the smart account
-     * @return accountImplementationId the account id of the smart account
-     * the accountId should be structured like so:
-     *        "vendorname.accountname.semver"
-     */
-    function accountId() external view returns (string memory accountImplementationId);
 }
