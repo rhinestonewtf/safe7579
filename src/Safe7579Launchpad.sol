@@ -227,7 +227,7 @@ contract Safe7579Launchpad is
         // the launchpadValidator function
         (bool success,) = address(initData.safe7579).call(
             abi.encodePacked(
-                abi.encodeCall(ISafe7579.initializeAccountWithValidators, (initData.validators)), // ISafe7579.launchpadValidators
+                abi.encodeCall(ISafe7579.initializeAccountWithValidators, (initData.validators)), // validators
                 msg.sender // ERC2771 access control
             )
         );
