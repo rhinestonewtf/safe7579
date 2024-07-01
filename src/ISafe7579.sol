@@ -233,14 +233,18 @@ interface ISafe7579 is IERC7579Account {
     /*´:°•.°+.*•´.*:˚.°*.˚•´.°:°•.°•.*•´.*:˚.°*.˚•´.°:°•.°+.*•´.*:*/
     /*                        Query Misc                          */
     /*.•°:°.´+˚.*°.˚:*.´•*.+°.•°:´*.´•*.•°.•°:°.´:•˚°.*°.˚:*.´+°.•*/
-    function supportsExecutionMode(ModeCode encodedMode) external pure returns (bool supported);
-    function supportsModule(uint256 moduleTypeId) external pure returns (bool);
-    function accountId() external view returns (string memory accountImplementationId);
+
+    // todo: add back in
+    // function supportsExecutionMode(ModeCode encodedMode) external pure returns (bool supported);
+    // function supportsModule(uint256 moduleTypeId) external pure returns (bool);
+    // function accountId() external view returns (string memory accountImplementationId);
 
     /**
      * Domain Separator for EIP-712.
      */
-    function domainSeparator() external view returns (bytes32);
+    // TODO: is this required?
+    // function domainSeparator() external view returns (bytes32);
+
     /**
      * Safe7579 is using validator selection encoding in the userop nonce.
      * to make it easier for SDKs / devs to integrate, this function can be
