@@ -8,7 +8,6 @@ import { ModuleInstallUtil } from "../utils/DCUtil.sol";
 import { ModuleManager } from "./ModuleManager.sol";
 
 import {
-    IValidator,
     MODULE_TYPE_VALIDATOR,
     MODULE_TYPE_HOOK,
     MODULE_TYPE_EXECUTOR,

@@ -6,7 +6,6 @@ import {
     CallType,
     ExecType,
     ModeCode,
-    ModeLib,
     EXECTYPE_DEFAULT,
     EXECTYPE_TRY,
     CALLTYPE_SINGLE,
@@ -302,12 +301,8 @@ contract Safe7579 is ISafe7579, SafeOp, SupportViewer, AccessControl, Initialize
         view
         returns (uint256 validationData)
     {
-        (
-            bytes memory operationData,
-            uint48 validAfter,
-            uint48 validUntil,
-            bytes calldata signatures
-        ) = _getSafeOp(userOp, entryPoint());
+        (bytes memory operationData, uint48 validAfter, uint48 validUntil, bytes memory signatures)
+        = getSafeOp(userOp, entryPoint());
         try ISafe((msg.sender)).checkSignatures(keccak256(operationData), operationData, signatures)
         {
             // The timestamps are validated by the entry point,

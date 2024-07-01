@@ -22,17 +22,17 @@ abstract contract SafeOp is ISafeOp {
      * @return validUntil The timestamp the user operation is valid until.
      * @return signatures The Safe owner signatures extracted from the user operation.
      */
-    function _getSafeOp(
+    function getSafeOp(
         PackedUserOperation calldata userOp,
         address entryPoint
     )
-        internal
+        public
         view
         returns (
             bytes memory operationData,
             uint48 validAfter,
             uint48 validUntil,
-            bytes calldata signatures
+            bytes memory signatures
         )
     {
         // Extract additional Safe operation fields from the user operation signature which is

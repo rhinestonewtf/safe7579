@@ -9,6 +9,7 @@ import {
     PackedUserOperation
 } from "@ERC4337/account-abstraction/contracts/interfaces/IAccount.sol";
 import { ISafe } from "./interfaces/ISafe.sol";
+import { ISafeOp } from "./interfaces/ISafeOp.sol";
 import { ISafe7579 } from "./ISafe7579.sol";
 import { IERC7484 } from "./interfaces/IERC7484.sol";
 import "./DataTypes.sol";
@@ -125,6 +126,9 @@ contract Safe7579Launchpad is
         });
     }
 
+    /**
+     * This function allows existing safe accounts to add the Safe7579 adapter to their account
+     */
     function addSafe7579(
         address safe7579,
         ModuleInit[] calldata validators,
@@ -256,8 +260,8 @@ contract Safe7579Launchpad is
             validationData = IValidator(validator).validateUserOp(userOp, userOpHash);
         } else {
             // otherwise we fall back to safe-style validation, like in the safe7579
-            (bool validSig, uint48 validAfter, uint48 validUntil) =
-                _isValidSafeSigners(initData.safe7579, userOpHash, userOp);
+            (bool validSig, uint48 validUntil, uint48 validAfter) =
+                _isValidSafeSigners(initData, userOp);
 
             validationData = _packValidationData({
                 sigFailed: !validSig,
@@ -276,27 +280,26 @@ contract Safe7579Launchpad is
     }
 
     function _isValidSafeSigners(
-        ISafe7579 safe7579,
-        bytes32 userOpHash,
+        InitData memory safeSetupCallData,
         PackedUserOperation calldata userOp
     )
         internal
         view
-        returns (bool, uint48, uint48)
+        returns (bool validSig, uint48 validUntil, uint48 validAfter)
     {
-        (
-            bytes memory operationData,
-            uint48 validAfter,
-            uint48 validUntil,
-            bytes calldata signatures
-        ) = _getSafeOp(userOp, SUPPORTED_ENTRYPOINT);
+        bytes memory operationData;
+        bytes memory signatures;
+        // decode ERC4337 userOp into Safe operation.
+        (operationData, validAfter, validUntil, signatures) =
+            ISafeOp(safeSetupCallData.safe7579).getSafeOp(userOp, SUPPORTED_ENTRYPOINT);
         bytes32 _hash = keccak256(operationData);
 
-        InitData memory safeSetupCallData = abi.decode(userOp.callData[4:], (InitData));
         address[] memory signers = _hash.recoverNSignatures(signatures, safeSetupCallData.threshold);
         signers.insertionSort();
 
         address[] memory owners = safeSetupCallData.owners;
+
+        // sorting owners here instead of requiring sorted list for improved UX
         owners.insertionSort();
         owners.uniquifySorted();
 
@@ -308,11 +311,11 @@ contract Safe7579Launchpad is
             if (found) {
                 validSigs++;
                 if (validSigs >= safeSetupCallData.threshold) {
-                    return (true, validAfter, validUntil);
+                    return (true, validUntil, validAfter);
                 }
             }
         }
-        return (false, validAfter, validUntil);
+        return (false, validUntil, validAfter);
     }
 
     /**

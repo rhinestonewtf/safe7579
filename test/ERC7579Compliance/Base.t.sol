@@ -117,7 +117,7 @@ contract BaseTest is LaunchpadBase, MockModule {
     function test_checkVersion() public {
         string memory version = account.accountId();
 
-        string memory versionExpected = "safe7579.v1.0.0";
+        string memory versionExpected = "rhinestone.safe7579.v1.0.0";
         assertEq(version, versionExpected);
     }
 }

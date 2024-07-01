@@ -1,6 +1,8 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.23;
 
+import { PackedUserOperation } from "account-abstraction/interfaces/PackedUserOperation.sol";
+
 bytes32 constant SAFE_OP_TYPEHASH =
     0xc03dfc11d8b10bf9cf703d558958c8c42777f785d998c62060d85a4f0ef6ea7f;
 
@@ -63,4 +65,17 @@ interface ISafeOp {
     }
 
     function domainSeparator() external view returns (bytes32);
+
+    function getSafeOp(
+        PackedUserOperation calldata userOp,
+        address entryPoint
+    )
+        external
+        view
+        returns (
+            bytes memory operationData,
+            uint48 validAfter,
+            uint48 validUntil,
+            bytes calldata signatures
+        );
 }

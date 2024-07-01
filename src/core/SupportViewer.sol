@@ -20,8 +20,8 @@ import {
 import { IERC7579AccountView } from "src/interfaces/IERC7579Account.sol";
 
 abstract contract SupportViewer is IERC7579AccountView {
-    function accountId() external view returns (string memory accountImplementationId) {
-        return "safe7579.v1.0.0";
+    function accountId() external pure returns (string memory accountImplementationId) {
+        return "rhinestone.safe7579.v1.0.0";
     }
 
     function supportsExecutionMode(ModeCode encodedMode) external pure returns (bool supported) {
