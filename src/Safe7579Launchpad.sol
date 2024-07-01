@@ -24,7 +24,7 @@ import { MODULE_TYPE_VALIDATOR } from "erc7579/interfaces/IERC7579Module.sol";
 import { CheckSignatures } from "@rhinestone/checknsignatures/src/CheckNSignatures.sol";
 import { LibSort } from "solady/utils/LibSort.sol";
 import { SupportViewer } from "./core/SupportViewer.sol";
-import { IERC7579AccountEvents } from "src/interfaces/IERC7579Account.sol";
+import { IERC7579AccountEvents } from "./interfaces/IERC7579Account.sol";
 
 /**
  * Launchpad to deploy a Safe account and connect the Safe7579 adapter.

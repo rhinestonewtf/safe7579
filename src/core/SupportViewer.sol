@@ -17,7 +17,7 @@ import {
     MODULE_TYPE_EXECUTOR,
     MODULE_TYPE_FALLBACK
 } from "erc7579/interfaces/IERC7579Module.sol";
-import { IERC7579AccountView } from "src/interfaces/IERC7579Account.sol";
+import { IERC7579AccountView } from "../interfaces/IERC7579Account.sol";
 
 abstract contract SupportViewer is IERC7579AccountView {
     function accountId() external pure returns (string memory accountImplementationId) {
