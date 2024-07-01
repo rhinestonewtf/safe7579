@@ -95,13 +95,13 @@ interface IERC7579Account is IERC7579AccountEvents {
      * Function to check if the account supports a certain CallType or ExecType (see ModeLib.sol)
      * @param encodedMode the encoded mode
      */
-    function supportsExecutionMode(ModeCode encodedMode) external view returns (bool);
+    // function supportsExecutionMode(ModeCode encodedMode) external view returns (bool);
 
     /**
      * Function to check if the account supports installation of a certain module type Id
      * @param moduleTypeId the module type ID according the ERC-7579 spec
      */
-    function supportsModule(uint256 moduleTypeId) external view returns (bool);
+    // function supportsModule(uint256 moduleTypeId) external view returns (bool);
 
     /**
      * Function to check if the account has a certain module installed
@@ -129,5 +129,5 @@ interface IERC7579Account is IERC7579AccountEvents {
      * the accountId should be structured like so:
      *        "vendorname.accountname.semver"
      */
-    function accountId() external view returns (string memory accountImplementationId);
+    // function accountId() external view returns (string memory accountImplementationId);
 }

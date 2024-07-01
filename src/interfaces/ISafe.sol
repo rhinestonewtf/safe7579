@@ -104,5 +104,7 @@ interface ISafe {
      */
     function enableModule(address module) external;
 
+    function setFallbackHandler(address handler) external;
+
     function simulateAndRevert(address targetContract, bytes memory calldataPayload) external;
 }

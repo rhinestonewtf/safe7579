@@ -117,7 +117,7 @@ contract BaseTest is LaunchpadBase, MockModule {
     function test_checkVersion() public {
         string memory version = account.accountId();
 
-        string memory versionExpected = "safe-1.4.1.erc7579.v0.0.1";
+        string memory versionExpected = "safe-1.4.1.erc7579.v1.0.0";
         assertEq(version, versionExpected);
     }
 }

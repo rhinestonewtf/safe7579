@@ -2,12 +2,12 @@
 pragma solidity ^0.8.23;
 
 import { MultiSend } from "@safe-global/safe-contracts/contracts/libraries/MultiSend.sol";
-import "./SafeERC7579.t.sol";
+import "../SafeERC7579.t.sol";
 import { ModeLib } from "erc7579/lib/ModeLib.sol";
 
 import "forge-std/console2.sol";
 
-contract ExistingSafe is Safe7579Test {
+contract NoLaunchpad is Safe7579Test {
     function setUp() public override {
         super.setUp();
         target = new MockTarget();
@@ -31,6 +31,9 @@ contract ExistingSafe is Safe7579Test {
                     (
                         address(safe7579),
                         validators,
+                        new ModuleInit[](0),
+                        new ModuleInit[](0),
+                        new ModuleInit[](0),
                         Solarray.addresses(makeAddr("attester1"), makeAddr("attester2")),
                         2
                     )
