@@ -11,15 +11,15 @@ import {
     CALLTYPE_BATCH,
     CALLTYPE_DELEGATECALL
 } from "../lib/ModeLib.sol";
-import { ISafe } from "../interfaces/ISafe.sol";
 import {
     MODULE_TYPE_VALIDATOR,
     MODULE_TYPE_HOOK,
     MODULE_TYPE_EXECUTOR,
     MODULE_TYPE_FALLBACK
 } from "erc7579/interfaces/IERC7579Module.sol";
+import { IERC7579AccountView } from "src/interfaces/IERC7579Account.sol";
 
-contract SupportViewer {
+abstract contract SupportViewer is IERC7579AccountView {
     function accountId() external view returns (string memory accountImplementationId) {
         return "safe7579.v1.0.0";
     }

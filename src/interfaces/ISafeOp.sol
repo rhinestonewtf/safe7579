@@ -61,4 +61,6 @@ interface ISafeOp {
         uint48 validUntil;
         address entryPoint;
     }
+
+    function domainSeparator() external view returns (bytes32);
 }

@@ -23,6 +23,7 @@ import { MODULE_TYPE_VALIDATOR } from "erc7579/interfaces/IERC7579Module.sol";
 import { CheckSignatures } from "@rhinestone/checknsignatures/src/CheckNSignatures.sol";
 import { LibSort } from "solady/utils/LibSort.sol";
 import { SupportViewer } from "./core/SupportViewer.sol";
+import { IERC7579AccountEvents } from "src/interfaces/IERC7579Account.sol";
 
 /**
  * Launchpad to deploy a Safe account and connect the Safe7579 adapter.
@@ -31,12 +32,16 @@ import { SupportViewer } from "./core/SupportViewer.sol";
  * technique](https://github.com/safe-global/safe-modules/pull/184)
  * @author rhinestone | zeroknots.eth
  */
-contract Safe7579Launchpad is IAccount, SafeStorage, SafeOp, SupportViewer {
+contract Safe7579Launchpad is
+    IAccount,
+    SafeStorage,
+    SafeOp,
+    SupportViewer,
+    IERC7579AccountEvents
+{
     using UserOperationLib for PackedUserOperation;
     using LibSort for address[];
     using CheckSignatures for bytes32;
-
-    event ModuleInstalled(uint256 moduleTypeId, address module);
 
     // keccak256("Safe7579Launchpad.initHash") - 1
     uint256 private constant INIT_HASH_SLOT =
@@ -77,7 +82,7 @@ contract Safe7579Launchpad is IAccount, SafeStorage, SafeOp, SupportViewer {
         REGISTRY = registry;
     }
 
-    modifier onlyDelegatecall() {
+    modifier onlySelfDelegatecall() {
         if (msg.sender != address(this)) revert OnlyDelegatecall();
         _;
     }
@@ -108,7 +113,7 @@ contract Safe7579Launchpad is IAccount, SafeStorage, SafeOp, SupportViewer {
         uint8 threshold
     )
         public
-        onlyDelegatecall
+        onlySelfDelegatecall
     {
         ISafe(address(this)).enableModule(safe7579);
         ISafe7579(payable(this)).initializeAccount({
@@ -195,7 +200,6 @@ contract Safe7579Launchpad is IAccount, SafeStorage, SafeOp, SupportViewer {
         uint256 missingAccountFunds
     )
         external
-        override
         onlyProxy // ensure SafeProxy called this
         onlySupportedEntryPoint
         returns (uint256 validationData)

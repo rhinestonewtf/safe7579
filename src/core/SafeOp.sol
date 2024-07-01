@@ -7,7 +7,7 @@ import {
 } from "@ERC4337/account-abstraction/contracts/core/UserOperationLib.sol";
 import { SAFE_OP_TYPEHASH, ISafeOp } from "../interfaces/ISafeOp.sol";
 
-contract SafeOp is ISafeOp {
+abstract contract SafeOp is ISafeOp {
     using UserOperationLib for PackedUserOperation;
 
     bytes32 private constant DOMAIN_SEPARATOR_TYPEHASH =
