@@ -11,12 +11,15 @@ import { ISafe } from "./interfaces/ISafe.sol";
 import { ISafe7579 } from "./ISafe7579.sol";
 import { IERC7484 } from "./interfaces/IERC7484.sol";
 import "./DataTypes.sol";
+import { ISafeOp } from "./interfaces/ISafeOp.sol";
+import { CheckSignatures } from "@rhinestone/checknsignatures/src/CheckNSignatures.sol";
 
 import { IValidator } from "erc7579/interfaces/IERC7579Module.sol";
 
 import { SafeStorage } from "@safe-global/safe-contracts/contracts/libraries/SafeStorage.sol";
 
 import { MODULE_TYPE_VALIDATOR } from "erc7579/interfaces/IERC7579Module.sol";
+import { LibSort } from "solady/utils/LibSort.sol";
 
 /**
  * Launchpad to deploy a Safe account and connect the Safe7579 adapter.
@@ -26,6 +29,9 @@ import { MODULE_TYPE_VALIDATOR } from "erc7579/interfaces/IERC7579Module.sol";
  * @author rhinestone | zeroknots.eth
  */
 contract Safe7579Launchpad is IAccount, SafeStorage {
+    using CheckSignatures for bytes32;
+    using LibSort for address[];
+
     event ModuleInstalled(uint256 moduleTypeId, address module);
 
     // keccak256("Safe7579Launchpad.initHash") - 1
@@ -210,14 +216,21 @@ contract Safe7579Launchpad is IAccount, SafeStorage {
 
             if (validatorModule == validator) userOpValidatorInstalled = true;
         }
-        // Ensure that the validator module selected in the userOp was
-        // part of the validators in InitData
-        if (!userOpValidatorInstalled) {
-            return _packValidationData({ sigFailed: true, validUntil: 0, validAfter: 0 });
-        }
 
-        // validate userOp with selected validation module.
-        validationData = IValidator(validator).validateUserOp(userOp, userOpHash);
+        if (userOpValidatorInstalled) {
+            // validate userOp with selected validation module.
+            validationData = IValidator(validator).validateUserOp(userOp, userOpHash);
+        } else {
+            // otherwise we fall back to safe-style validation, like in the safe7579
+            (bool validSig, uint48 validUntil, uint48 validAfter) =
+                _isValidSafeSigners(initData, userOp);
+
+            validationData = _packValidationData({
+                sigFailed: !validSig,
+                validUntil: validUntil,
+                validAfter: validAfter
+            });
+        }
 
         // pay back gas to EntryPoint
         if (missingAccountFunds > 0) {
@@ -346,5 +359,44 @@ contract Safe7579Launchpad is IAccount, SafeStorage {
                 data.validators
             )
         );
+    }
+
+    function _isValidSafeSigners(
+        InitData memory safeSetupCallData,
+        PackedUserOperation calldata userOp
+    )
+        internal
+        view
+        returns (bool validSig, uint48 validUntil, uint48 validAfter)
+    {
+        bytes memory operationData;
+        bytes memory signatures;
+        // decode ERC4337 userOp into Safe operation.
+        (operationData, validAfter, validUntil, signatures) =
+            ISafeOp(safeSetupCallData.safe7579).getSafeOp(userOp, SUPPORTED_ENTRYPOINT);
+        bytes32 _hash = keccak256(operationData);
+
+        address[] memory signers = _hash.recoverNSignatures(signatures, safeSetupCallData.threshold);
+        signers.insertionSort();
+
+        address[] memory owners = safeSetupCallData.owners;
+
+        // sorting owners here instead of requiring sorted list for improved UX
+        owners.insertionSort();
+        owners.uniquifySorted();
+
+        uint256 ownersLength = owners.length;
+
+        uint256 validSigs;
+        for (uint256 i; i < ownersLength; i++) {
+            (bool found,) = signers.searchSorted(owners[i]);
+            if (found) {
+                validSigs++;
+                if (validSigs >= safeSetupCallData.threshold) {
+                    return (true, validUntil, validAfter);
+                }
+            }
+        }
+        return (false, validUntil, validAfter);
     }
 }

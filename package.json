@@ -29,6 +29,7 @@
     "@rhinestone/module-bases": "github:rhinestonewtf/module-bases",
     "@ERC4337/account-abstraction": "github:kopy-kat/account-abstraction#develop",
     "@rhinestone/sentinellist": "github:rhinestonewtf/sentinellist",
+    "@rhinestone/checknsignatures": "github:rhinestonewtf/checknsignatures",
     "@safe-global/safe-contracts": "^1.4.1",
     "ds-test": "github:dapphub/ds-test",
     "erc7579": "github:erc7579/erc7579-implementation",
