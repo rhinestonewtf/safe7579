@@ -23,7 +23,6 @@ import { SentinelListLib } from "sentinellist/SentinelList.sol";
  */
 abstract contract Initializer is ISafe7579, ModuleManager {
     using SentinelList4337Lib for SentinelList4337Lib.SentinelList;
-    using SentinelListLib for SentinelListLib.SentinelList;
 
     event Safe7579Initialized(address indexed safe);
 

@@ -51,7 +51,6 @@ uint256 constant MULTITYPE_MODULE = 0;
  * "executeTransactionFromModule" features.
  */
 contract Safe7579 is ISafe7579, SafeOp, SupportViewer, AccessControl, Initializer {
-    using UserOperationLib for PackedUserOperation;
     using ExecutionLib for bytes;
 
     bytes32 private constant DOMAIN_SEPARATOR_TYPEHASH =
