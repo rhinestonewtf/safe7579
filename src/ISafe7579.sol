@@ -2,18 +2,18 @@
 pragma solidity ^0.8.20;
 
 import "./DataTypes.sol";
-import { IERC7579Account } from "./interfaces//IERC7579Account.sol";
-
+import { IERC7579Account } from "./interfaces/IERC7579Account.sol";
 import { ModeCode } from "./lib/ModeLib.sol";
 import { PackedUserOperation } from
     "@ERC4337/account-abstraction/contracts/core/UserOperationLib.sol";
+import { ISafeOp } from "./interfaces/ISafeOp.sol";
 
 /**
  * @title ERC7579 Adapter for Safe accounts.
  * creates full ERC7579 compliance to Safe accounts
  * @author rhinestone | zeroknots.eth, Konrad Kopp (@kopy-kat)
  */
-interface ISafe7579 is IERC7579Account {
+interface ISafe7579 is IERC7579Account, ISafeOp {
     /*´:°•.°+.*•´.*:˚.°*.˚•´.°:°•.°•.*•´.*:˚.°*.˚•´.°:°•.°+.*•´.*:*/
     /*                         Validation                         */
     /*.•°:°.´+˚.*°.˚:*.´•*.+°.•°:´*.´•*.•°.•°:°.´:•˚°.*°.˚:*.´+°.•*/
@@ -30,7 +30,6 @@ interface ISafe7579 is IERC7579Account {
         uint256 missingAccountFunds
     )
         external
-        payable
         returns (uint256 packedValidSig);
 
     /**
@@ -71,7 +70,7 @@ interface ISafe7579 is IERC7579Account {
      * @param mode The encoded execution mode of the transaction. See ModeLib.sol for details
      * @param executionCalldata The encoded execution call data
      */
-    function execute(ModeCode mode, bytes memory executionCalldata) external payable;
+    function execute(ModeCode mode, bytes memory executionCalldata) external;
 
     /**
      * @dev Executes a transaction on behalf of the Safe account.
@@ -95,7 +94,6 @@ interface ISafe7579 is IERC7579Account {
         bytes memory executionCalldata
     )
         external
-        payable
         returns (bytes[] memory returnDatas);
 
     /*´:°•.°+.*•´.*:˚.°*.˚•´.°:°•.°•.*•´.*:˚.°*.˚•´.°:°•.°+.*•´.*:*/
@@ -117,13 +115,7 @@ interface ISafe7579 is IERC7579Account {
      * @param initData arbitrary data that may be required on the module during `onInstall`
      * initialization.
      */
-    function installModule(
-        uint256 moduleType,
-        address module,
-        bytes memory initData
-    )
-        external
-        payable;
+    function installModule(uint256 moduleType, address module, bytes memory initData) external;
 
     /**
      * Uninstalls a Module of a certain type on the smart account.
@@ -142,8 +134,7 @@ interface ISafe7579 is IERC7579Account {
         address module,
         bytes memory deInitData
     )
-        external
-        payable;
+        external;
 
     /**
      * Function to check if the account has a certain module installed
@@ -190,8 +181,7 @@ interface ISafe7579 is IERC7579Account {
         ModuleInit[] memory hooks,
         RegistryInit memory registryInit
     )
-        external
-        payable;
+        external;
 
     /**
      * This function is intended to be called by Launchpad.validateUserOp()
@@ -201,7 +191,7 @@ interface ISafe7579 is IERC7579Account {
      * @dev Note: this function DOES NOT call onInstall() on the validator modules or emit
      * ModuleInstalled events. this has to be done by the launchpad
      */
-    function launchpadValidators(ModuleInit[] memory validators) external payable;
+    function initializeAccountWithValidators(ModuleInit[] memory validators) external;
 
     /**
      * Configure the Safe7579 with a IERC7484 registry
@@ -214,8 +204,8 @@ interface ISafe7579 is IERC7579Account {
     /*´:°•.°+.*•´.*:˚.°*.˚•´.°:°•.°•.*•´.*:˚.°*.˚•´.°:°•.°+.*•´.*:*/
     /*                   Query Account Details                    */
     /*.•°:°.´+˚.*°.˚:*.´•*.+°.•°:´*.´•*.•°.•°:°.´:•˚°.*°.˚:*.´+°.•*/
-    function getValidatorPaginated(
-        address start,
+    function getValidatorsPaginated(
+        address cursor,
         uint256 pageSize
     )
         external
@@ -243,14 +233,7 @@ interface ISafe7579 is IERC7579Account {
     /*´:°•.°+.*•´.*:˚.°*.˚•´.°:°•.°•.*•´.*:˚.°*.˚•´.°:°•.°+.*•´.*:*/
     /*                        Query Misc                          */
     /*.•°:°.´+˚.*°.˚:*.´•*.+°.•°:´*.´•*.•°.•°:°.´:•˚°.*°.˚:*.´+°.•*/
-    function supportsExecutionMode(ModeCode encodedMode) external pure returns (bool supported);
-    function supportsModule(uint256 moduleTypeId) external pure returns (bool);
-    function accountId() external view returns (string memory accountImplementationId);
 
-    /**
-     * Domain Separator for EIP-712.
-     */
-    function domainSeparator() external view returns (bytes32);
     /**
      * Safe7579 is using validator selection encoding in the userop nonce.
      * to make it easier for SDKs / devs to integrate, this function can be
@@ -264,18 +247,16 @@ interface ISafe7579 is IERC7579Account {
     /*                       Custom Errors                        */
     /*.•°:°.´+˚.*°.˚:*.´•*.+°.•°:´*.´•*.•°.•°:°.´:•˚°.*°.˚:*.´+°.•*/
     error InvalidModule(address module);
-    error LinkedListError();
-    error InitializerError();
-    error ValidatorStorageHelperError();
+    error InvalidModuleType(address module, uint256 moduleType);
 
     // fallback handlers
     error InvalidInput();
+    error InvalidCallType(CallType callType);
     error NoFallbackHandler(bytes4 msgSig);
     error InvalidFallbackHandler(bytes4 msgSig);
     error FallbackInstalled(bytes4 msgSig);
 
     // Hooks
-    error HookPostCheckFailed();
     error HookAlreadyInstalled(address currentHook);
     error InvalidHookType();
 

@@ -14,15 +14,35 @@ interface IERC7579AccountEvents {
     event ModuleUninstalled(uint256 moduleTypeId, address module);
 }
 
-interface IERC7579Account is IERC7579AccountEvents {
+interface IERC7579AccountView {
+    /**
+     * @dev Returns the account id of the smart account
+     * @return accountImplementationId the account id of the smart account
+     * the accountId should be structured like so:
+     *        "vendorname.accountname.semver"
+     */
+    function accountId() external view returns (string memory accountImplementationId);
+
+    /**
+     * Function to check if the account supports a certain CallType or ExecType (see ModeLib.sol)
+     * @param encodedMode the encoded mode
+     */
+    function supportsExecutionMode(ModeCode encodedMode) external view returns (bool);
+
+    /**
+     * Function to check if the account supports installation of a certain module type Id
+     * @param moduleTypeId the module type ID according the ERC-7579 spec
+     */
+    function supportsModule(uint256 moduleTypeId) external view returns (bool);
+}
+
+interface IERC7579Account is IERC7579AccountEvents, IERC7579AccountView {
     // Error thrown when an unsupported ModuleType is requested
     error UnsupportedModuleType(uint256 moduleTypeId);
     // Error thrown when an execution with an unsupported CallType was made
     error UnsupportedCallType(CallType callType);
     // Error thrown when an execution with an unsupported ExecType was made
     error UnsupportedExecType(ExecType execType);
-    // Error thrown when account initialization fails
-    error AccountInitializationFailed();
     /**
      * @dev Executes a transaction on behalf of the account.
      *         This function is intended to be called by ERC-4337 EntryPoint.sol
@@ -34,7 +54,7 @@ interface IERC7579Account is IERC7579AccountEvents {
      * @param executionCalldata The encoded execution call data
      */
 
-    function execute(ModeCode mode, bytes calldata executionCalldata) external payable;
+    function execute(ModeCode mode, bytes calldata executionCalldata) external;
 
     /**
      * @dev Executes a transaction on behalf of the account.
@@ -51,7 +71,6 @@ interface IERC7579Account is IERC7579AccountEvents {
         bytes calldata executionCalldata
     )
         external
-        payable
         returns (bytes[] memory returnData);
 
     /**
@@ -77,8 +96,7 @@ interface IERC7579Account is IERC7579AccountEvents {
         address module,
         bytes calldata initData
     )
-        external
-        payable;
+        external;
 
     /**
      * @dev uninstalls a Module of a certain type on the smart account
@@ -93,20 +111,7 @@ interface IERC7579Account is IERC7579AccountEvents {
         address module,
         bytes calldata deInitData
     )
-        external
-        payable;
-
-    /**
-     * Function to check if the account supports a certain CallType or ExecType (see ModeLib.sol)
-     * @param encodedMode the encoded mode
-     */
-    function supportsExecutionMode(ModeCode encodedMode) external view returns (bool);
-
-    /**
-     * Function to check if the account supports installation of a certain module type Id
-     * @param moduleTypeId the module type ID according the ERC-7579 spec
-     */
-    function supportsModule(uint256 moduleTypeId) external view returns (bool);
+        external;
 
     /**
      * Function to check if the account has a certain module installed
@@ -127,12 +132,4 @@ interface IERC7579Account is IERC7579AccountEvents {
         external
         view
         returns (bool);
-
-    /**
-     * @dev Returns the account id of the smart account
-     * @return accountImplementationId the account id of the smart account
-     * the accountId should be structured like so:
-     *        "vendorname.accountname.semver"
-     */
-    function accountId() external view returns (string memory accountImplementationId);
 }

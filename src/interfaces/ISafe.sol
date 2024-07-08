@@ -2,6 +2,11 @@
 pragma solidity ^0.8.0;
 
 interface ISafe {
+    enum Operation {
+        Call,
+        DelegateCall
+    }
+
     function setup(
         address[] calldata _owners,
         uint256 _threshold,
@@ -25,7 +30,7 @@ interface ISafe {
         address to,
         uint256 value,
         bytes memory data,
-        uint8 operation
+        Operation operation
     )
         external
         returns (bool success);
@@ -44,7 +49,7 @@ interface ISafe {
         address to,
         uint256 value,
         bytes memory data,
-        uint8 operation
+        Operation operation
     )
         external
         returns (bool success, bytes memory returnData);
@@ -98,6 +103,8 @@ interface ISafe {
      * @param module Module to be enabled.
      */
     function enableModule(address module) external;
+
+    function setFallbackHandler(address handler) external;
 
     function simulateAndRevert(address targetContract, bytes memory calldataPayload) external;
 }

@@ -6,7 +6,6 @@ import {
     CallType,
     ExecType,
     ModeCode,
-    ModeLib,
     EXECTYPE_DEFAULT,
     EXECTYPE_TRY,
     CALLTYPE_SINGLE,
@@ -24,7 +23,7 @@ import {
 import { ModuleInstallUtil } from "./utils/DCUtil.sol";
 import { AccessControl } from "./core/AccessControl.sol";
 import { Initializer } from "./core/Initializer.sol";
-import { ISafeOp, SAFE_OP_TYPEHASH } from "./interfaces/ISafeOp.sol";
+import { SafeOp } from "./core/SafeOp.sol";
 import { ISafe } from "./interfaces/ISafe.sol";
 import { ISafe7579 } from "./ISafe7579.sol";
 import {
@@ -34,6 +33,7 @@ import {
 import { _packValidationData } from "@ERC4337/account-abstraction/contracts/core/Helpers.sol";
 import { IEntryPoint } from "@ERC4337/account-abstraction/contracts/interfaces/IEntryPoint.sol";
 import { IERC1271 } from "./interfaces/IERC1271.sol";
+import { SupportViewer } from "./core/SupportViewer.sol";
 
 uint256 constant MULTITYPE_MODULE = 0;
 
@@ -50,9 +50,7 @@ uint256 constant MULTITYPE_MODULE = 0;
  * event emissions to be done via the SafeProxy as msg.sender using Safe's
  * "executeTransactionFromModule" features.
  */
-contract Safe7579 is ISafe7579, ISafeOp, AccessControl, Initializer {
-    using UserOperationLib for PackedUserOperation;
-    using ModeLib for ModeCode;
+contract Safe7579 is ISafe7579, SafeOp, SupportViewer, AccessControl, Initializer {
     using ExecutionLib for bytes;
 
     bytes32 private constant DOMAIN_SEPARATOR_TYPEHASH =
@@ -72,7 +70,6 @@ contract Safe7579 is ISafe7579, ISafeOp, AccessControl, Initializer {
         bytes calldata executionCalldata
     )
         external
-        payable
         withHook(IERC7579Account.execute.selector)
         onlyEntryPointOrSelf
     {
@@ -89,12 +86,12 @@ contract Safe7579 is ISafe7579, ISafeOp, AccessControl, Initializer {
         /*.•°:°.´+˚.*°.˚:*.´•*.+°.•°:´*.´•*.•°.•°:°.´:•˚°.*°.˚:*.´+°.•*/
         ISafe safe = ISafe(msg.sender);
         if (execType == EXECTYPE_DEFAULT) {
-            // DEFAULT EXEC & SINGLE CALL
+            // DEFAULT EXEC & BATCH CALL
             if (callType == CALLTYPE_BATCH) {
                 Execution[] calldata executions = executionCalldata.decodeBatch();
                 _exec(safe, executions);
             }
-            // DEFAULT EXEC & BATCH CALL
+            // DEFAULT EXEC & SINGLE CALL
             else if (callType == CALLTYPE_SINGLE) {
                 (address target, uint256 value, bytes calldata callData) =
                     executionCalldata.decodeSingle();
@@ -153,11 +150,10 @@ contract Safe7579 is ISafe7579, ISafeOp, AccessControl, Initializer {
         bytes calldata executionCalldata
     )
         external
-        payable
         override
         onlyExecutorModule
         withHook(IERC7579Account.executeFromExecutor.selector)
-        withRegistry(msg.sender, MODULE_TYPE_EXECUTOR)
+        withRegistry(_msgSender(), MODULE_TYPE_EXECUTOR)
         returns (bytes[] memory returnDatas)
     {
         CallType callType;
@@ -174,7 +170,7 @@ contract Safe7579 is ISafe7579, ISafeOp, AccessControl, Initializer {
 
     /**
      * Internal function that will be solely called by executeFromExecutor. Not super uniform code,
-     * but we need need the JUMPI to avoid stack too deep, due to the modifiers in the
+     * but we need the JUMPI to avoid stack too deep, due to the modifiers in the
      * executeFromExecutor function
      */
     function _executeReturn(
@@ -190,12 +186,12 @@ contract Safe7579 is ISafe7579, ISafeOp, AccessControl, Initializer {
         /*.•°:°.´+˚.*°.˚:*.´•*.+°.•°:´*.´•*.•°.•°:°.´:•˚°.*°.˚:*.´+°.•*/
 
         if (execType == EXECTYPE_DEFAULT) {
-            // DEFAULT EXEC & SINGLE CALL
+            // DEFAULT EXEC & BATCH CALL
             if (callType == CALLTYPE_BATCH) {
                 Execution[] calldata executions = executionCalldata.decodeBatch();
                 returnDatas = _execReturn(ISafe(msg.sender), executions);
             }
-            // DEFAULT EXEC & BATCH CALL
+            // DEFAULT EXEC & SINGLE CALL
             else if (callType == CALLTYPE_SINGLE) {
                 (address target, uint256 value, bytes calldata callData) =
                     executionCalldata.decodeSingle();
@@ -218,12 +214,12 @@ contract Safe7579 is ISafe7579, ISafeOp, AccessControl, Initializer {
         /*                           TRY EXEC                         */
         /*.•°:°.´+˚.*°.˚:*.´•*.+°.•°:´*.´•*.•°.•°:°.´:•˚°.*°.˚:*.´+°.•*/
         else if (execType == EXECTYPE_TRY) {
-            // TRY EXEC & SINGLE CALL
+            // TRY EXEC & BATCH CALL
             if (callType == CALLTYPE_BATCH) {
                 Execution[] calldata executions = executionCalldata.decodeBatch();
                 (, returnDatas) = _tryExecReturn(ISafe(msg.sender), executions);
             }
-            // TRY EXEC & BATCH CALL
+            // TRY EXEC & SINGLE CALL
             else if (callType == CALLTYPE_SINGLE) {
                 (address target, uint256 value, bytes calldata callData) =
                     executionCalldata.decodeSingle();
@@ -259,7 +255,6 @@ contract Safe7579 is ISafe7579, ISafeOp, AccessControl, Initializer {
         uint256 missingAccountFunds
     )
         external
-        payable
         onlyEntryPoint
         returns (uint256 validSignature)
     {
@@ -305,20 +300,23 @@ contract Safe7579 is ISafe7579, ISafeOp, AccessControl, Initializer {
         view
         returns (uint256 validationData)
     {
-        (
-            bytes memory operationData,
-            uint48 validAfter,
-            uint48 validUntil,
-            bytes calldata signatures
-        ) = _getSafeOp(userOp);
-        try ISafe(payable(msg.sender)).checkSignatures(
-            keccak256(operationData), operationData, signatures
-        ) {
+        (bytes memory operationData, uint48 validAfter, uint48 validUntil, bytes memory signatures)
+        = getSafeOp(userOp, entryPoint());
+        try ISafe((msg.sender)).checkSignatures(keccak256(operationData), operationData, signatures)
+        {
             // The timestamps are validated by the entry point,
             // therefore we will not check them again
-            validationData = _packValidationData(false, validUntil, validAfter);
+            validationData = _packValidationData({
+                sigFailed: false,
+                validUntil: validUntil,
+                validAfter: validAfter
+            });
         } catch {
-            validationData = _packValidationData(true, validUntil, validAfter);
+            validationData = _packValidationData({
+                sigFailed: true,
+                validUntil: validUntil,
+                validAfter: validAfter
+            });
         }
     }
 
@@ -336,7 +334,16 @@ contract Safe7579 is ISafe7579, ISafeOp, AccessControl, Initializer {
         ISafe safe = ISafe(msg.sender);
 
         // check for safe's approved hashes
-        if (data.length == 0 && safe.signedMessages(hash) != 0) {
+        if (data.length == 0) {
+            bytes32 messageHash = keccak256(
+                EIP712.encodeMessageData(
+                    safe.domainSeparator(),
+                    SAFE_MSG_TYPEHASH,
+                    abi.encode(keccak256(abi.encode(hash)))
+                )
+            );
+
+            require(safe.signedMessages(messageHash) != 0, "Hash not approved");
             // return magic value
             return IERC1271.isValidSignature.selector;
         }
@@ -375,12 +382,11 @@ contract Safe7579 is ISafe7579, ISafeOp, AccessControl, Initializer {
         bytes calldata initData
     )
         external
-        payable
         override
         withHook(IERC7579Account.installModule.selector)
         onlyEntryPointOrSelf
     {
-        // internal install functions will decode the initData param, and return sanitzied
+        // internal install functions will decode the initData param, and return sanitized
         // moduleInitData. This is the initData that will be passed to Module.onInstall()
         bytes memory moduleInitData;
         if (moduleType == MODULE_TYPE_VALIDATOR) {
@@ -416,12 +422,11 @@ contract Safe7579 is ISafe7579, ISafeOp, AccessControl, Initializer {
         bytes calldata deInitData
     )
         external
-        payable
         override
-        withHook(IERC7579Account.uninstallModule.selector)
+        tryWithHook(module, IERC7579Account.uninstallModule.selector)
         onlyEntryPointOrSelf
     {
-        // internal uninstall functions will decode the deInitData param, and return sanitzied
+        // internal uninstall functions will decode the deInitData param, and return sanitized
         // moduleDeInitData. This is the initData that will be passed to Module.onUninstall()
         bytes memory moduleDeInitData;
         if (moduleType == MODULE_TYPE_VALIDATOR) {
@@ -432,6 +437,8 @@ contract Safe7579 is ISafe7579, ISafeOp, AccessControl, Initializer {
             moduleDeInitData = _uninstallFallbackHandler(module, deInitData);
         } else if (moduleType == MODULE_TYPE_HOOK) {
             moduleDeInitData = _uninstallHook(module, deInitData);
+        } else if (moduleType == MULTITYPE_MODULE) {
+            moduleDeInitData = _multiTypeUninstall(module, deInitData);
         } else {
             revert UnsupportedModuleType(moduleType);
         }
@@ -451,43 +458,6 @@ contract Safe7579 is ISafe7579, ISafeOp, AccessControl, Initializer {
     /**
      * @inheritdoc ISafe7579
      */
-    function supportsExecutionMode(ModeCode encodedMode)
-        external
-        pure
-        override
-        returns (bool supported)
-    {
-        CallType callType;
-        ExecType execType;
-        // solhint-disable-next-line no-inline-assembly
-        assembly {
-            callType := encodedMode
-            execType := shl(8, encodedMode)
-        }
-        if (callType == CALLTYPE_BATCH) supported = true;
-        else if (callType == CALLTYPE_SINGLE) supported = true;
-        else if (callType == CALLTYPE_DELEGATECALL) supported = true;
-        else return false;
-
-        if (supported && execType == EXECTYPE_DEFAULT) return supported;
-        else if (supported && execType == EXECTYPE_TRY) return supported;
-        else return false;
-    }
-
-    /**
-     * @inheritdoc ISafe7579
-     */
-    function supportsModule(uint256 moduleTypeId) external pure override returns (bool) {
-        if (moduleTypeId == MODULE_TYPE_VALIDATOR) return true;
-        else if (moduleTypeId == MODULE_TYPE_EXECUTOR) return true;
-        else if (moduleTypeId == MODULE_TYPE_FALLBACK) return true;
-        else if (moduleTypeId == MODULE_TYPE_HOOK) return true;
-        else return false;
-    }
-
-    /**
-     * @inheritdoc ISafe7579
-     */
     function isModuleInstalled(
         uint256 moduleType,
         address module,
@@ -498,6 +468,9 @@ contract Safe7579 is ISafe7579, ISafeOp, AccessControl, Initializer {
         returns (bool)
     {
         if (moduleType == MODULE_TYPE_VALIDATOR) {
+            // Safe7579 adapter allows for validator fallback to Safe's checkSignatures().
+            // It can thus be considered a valid validator module
+            if (module == msg.sender) return true;
             return _isValidatorInstalled(module);
         } else if (moduleType == MODULE_TYPE_EXECUTOR) {
             return _isExecutorInstalled(module);
@@ -508,99 +481,6 @@ contract Safe7579 is ISafe7579, ISafeOp, AccessControl, Initializer {
         } else {
             return false;
         }
-    }
-
-    /**
-     * @inheritdoc ISafe7579
-     */
-    function accountId() external view returns (string memory accountImplementationId) {
-        string memory safeVersion = ISafe(msg.sender).VERSION();
-        return string(abi.encodePacked("safe-", safeVersion, ".erc7579.v0.0.1"));
-    }
-
-    /**
-     * @dev Decodes an ERC-4337 user operation into a Safe operation.
-     * @param userOp The ERC-4337 user operation.
-     * @return operationData Encoded EIP-712 Safe operation data bytes used for signature
-     * verification.
-     * @return validAfter The timestamp the user operation is valid from.
-     * @return validUntil The timestamp the user operation is valid until.
-     * @return signatures The Safe owner signatures extracted from the user operation.
-     */
-    function _getSafeOp(PackedUserOperation calldata userOp)
-        internal
-        view
-        returns (
-            bytes memory operationData,
-            uint48 validAfter,
-            uint48 validUntil,
-            bytes calldata signatures
-        )
-    {
-        // Extract additional Safe operation fields from the user operation signature which is
-        // encoded as:
-        // `abi.encodePacked(validAfter, validUntil, signatures)`
-        {
-            bytes calldata sig = userOp.signature;
-            validAfter = uint48(bytes6(sig[0:6]));
-            validUntil = uint48(bytes6(sig[6:12]));
-            signatures = sig[12:];
-        }
-
-        // It is important that **all** user operation fields are represented in the `SafeOp` data
-        // somehow, to prevent
-        // user operations from being submitted that do not fully respect the user preferences. The
-        // only exception is
-        // the `signature` bytes. Note that even `initCode` needs to be represented in the operation
-        // data, otherwise
-        // it can be replaced with a more expensive initialization that would charge the user
-        // additional fees.
-        {
-            // In order to work around Solidity "stack too deep" errors related to too many stack
-            // variables, manually
-            // encode the `SafeOp` fields into a memory `struct` for computing the EIP-712
-            // struct-hash. This works
-            // because the `EncodedSafeOpStruct` struct has no "dynamic" fields so its memory layout
-            // is identical to the
-            // result of `abi.encode`-ing the individual fields.
-            EncodedSafeOpStruct memory encodedSafeOp = EncodedSafeOpStruct({
-                typeHash: SAFE_OP_TYPEHASH,
-                safe: msg.sender,
-                nonce: userOp.nonce,
-                initCodeHash: keccak256(userOp.initCode),
-                callDataHash: keccak256(userOp.callData),
-                callGasLimit: userOp.unpackCallGasLimit(),
-                verificationGasLimit: userOp.unpackVerificationGasLimit(),
-                preVerificationGas: userOp.preVerificationGas,
-                maxFeePerGas: userOp.unpackMaxFeePerGas(),
-                maxPriorityFeePerGas: userOp.unpackMaxPriorityFeePerGas(),
-                paymasterAndDataHash: keccak256(userOp.paymasterAndData),
-                validAfter: validAfter,
-                validUntil: validUntil,
-                entryPoint: entryPoint()
-            });
-
-            bytes32 safeOpStructHash;
-            // solhint-disable-next-line no-inline-assembly
-            assembly ("memory-safe") {
-                // Since the `encodedSafeOp` value's memory layout is identical to the result of
-                // `abi.encode`-ing the
-                // individual `SafeOp` fields, we can pass it directly to `keccak256`. Additionally,
-                // there are 14
-                // 32-byte fields to hash, for a length of `14 * 32 = 448` bytes.
-                safeOpStructHash := keccak256(encodedSafeOp, 448)
-            }
-
-            operationData =
-                abi.encodePacked(bytes1(0x19), bytes1(0x01), domainSeparator(), safeOpStructHash);
-        }
-    }
-
-    /**
-     * @inheritdoc ISafe7579
-     */
-    function domainSeparator() public view returns (bytes32) {
-        return keccak256(abi.encode(DOMAIN_SEPARATOR_TYPEHASH, block.chainid, this));
     }
 
     /**

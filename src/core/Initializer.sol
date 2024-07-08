@@ -2,8 +2,17 @@
 pragma solidity ^0.8.20;
 
 import { ISafe7579 } from "../ISafe7579.sol";
+import { ISafe } from "../interfaces/ISafe.sol";
 import "../DataTypes.sol";
+import { ModuleInstallUtil } from "../utils/DCUtil.sol";
 import { ModuleManager } from "./ModuleManager.sol";
+
+import {
+    MODULE_TYPE_VALIDATOR,
+    MODULE_TYPE_HOOK,
+    MODULE_TYPE_EXECUTOR,
+    MODULE_TYPE_FALLBACK
+} from "erc7579/interfaces/IERC7579Module.sol";
 import { IERC7484 } from "../interfaces/IERC7484.sol";
 import { SentinelList4337Lib } from "sentinellist/SentinelList4337.sol";
 import { SentinelListLib } from "sentinellist/SentinelList.sol";
@@ -14,7 +23,6 @@ import { SentinelListLib } from "sentinellist/SentinelList.sol";
  */
 abstract contract Initializer is ISafe7579, ModuleManager {
     using SentinelList4337Lib for SentinelList4337Lib.SentinelList;
-    using SentinelListLib for SentinelListLib.SentinelList;
 
     event Safe7579Initialized(address indexed safe);
 
@@ -23,7 +31,11 @@ abstract contract Initializer is ISafe7579, ModuleManager {
     /**
      * @inheritdoc ISafe7579
      */
-    function launchpadValidators(ModuleInit[] calldata validators) external payable override {
+    function initializeAccountWithValidators(ModuleInit[] calldata validators)
+        external
+        override
+        onlyEntryPointOrSelf
+    {
         // this will revert if already initialized
         $validators.init({ account: msg.sender });
         uint256 length = validators.length;
@@ -46,8 +58,8 @@ abstract contract Initializer is ISafe7579, ModuleManager {
         ModuleInit[] calldata hooks,
         RegistryInit calldata registryInit
     )
-        public
-        payable
+        external
+        onlyEntryPointOrSelf
     {
         _configureRegistry(registryInit.registry, registryInit.attesters, registryInit.threshold);
         // this will revert if already initialized
@@ -66,6 +78,7 @@ abstract contract Initializer is ISafe7579, ModuleManager {
     )
         internal
     {
+        bytes memory moduleInitData;
         uint256 length = validators.length;
         // if this function is called by the launchpad, validators will be initialized via
         // launchpadValidators()
@@ -75,35 +88,73 @@ abstract contract Initializer is ISafe7579, ModuleManager {
             for (uint256 i; i < length; i++) {
                 ModuleInit calldata validator = validators[i];
                 // enable module on Safe7579,  initialize module via Safe, emit events
-                _installValidator(validator.module, validator.initData);
+                moduleInitData = _installValidator(validator.module, validator.initData);
+
+                // Initialize Module via Safe
+                _delegatecall({
+                    safe: ISafe(msg.sender),
+                    target: UTIL,
+                    callData: abi.encodeCall(
+                        ModuleInstallUtil.installModule,
+                        (MODULE_TYPE_VALIDATOR, validator.module, moduleInitData)
+                    )
+                });
             }
         } else if (length != 0) {
             revert InvalidInitData(msg.sender);
         }
 
-        SentinelListLib.SentinelList storage $executors = $executorStorage[msg.sender];
         // this will revert if already initialized.
-        $executors.init();
+        $executors.init({ account: msg.sender });
 
         length = executors.length;
         for (uint256 i; i < length; i++) {
             ModuleInit calldata executor = executors[i];
             // enable module on Safe7579,  initialize module via Safe, emit events
-            _installExecutor(executor.module, executor.initData);
+            moduleInitData = _installExecutor(executor.module, executor.initData);
+
+            // Initialize Module via Safe
+            _delegatecall({
+                safe: ISafe(msg.sender),
+                target: UTIL,
+                callData: abi.encodeCall(
+                    ModuleInstallUtil.installModule,
+                    (MODULE_TYPE_EXECUTOR, executor.module, moduleInitData)
+                )
+            });
         }
 
         length = fallbacks.length;
         for (uint256 i; i < length; i++) {
             ModuleInit calldata _fallback = fallbacks[i];
             // enable module on Safe7579,  initialize module via Safe, emit events
-            _installFallbackHandler(_fallback.module, _fallback.initData);
+            moduleInitData = _installFallbackHandler(_fallback.module, _fallback.initData);
+
+            // Initialize Module via Safe
+            _delegatecall({
+                safe: ISafe(msg.sender),
+                target: UTIL,
+                callData: abi.encodeCall(
+                    ModuleInstallUtil.installModule,
+                    (MODULE_TYPE_FALLBACK, _fallback.module, moduleInitData)
+                )
+            });
         }
 
         length = hooks.length;
         for (uint256 i; i < length; i++) {
             ModuleInit calldata hook = hooks[i];
             // enable module on Safe7579,  initialize module via Safe, emit events
-            _installHook(hook.module, hook.initData);
+            moduleInitData = _installHook(hook.module, hook.initData);
+
+            // Initialize Module via Safe
+            _delegatecall({
+                safe: ISafe(msg.sender),
+                target: UTIL,
+                callData: abi.encodeCall(
+                    ModuleInstallUtil.installModule, (MODULE_TYPE_HOOK, hook.module, moduleInitData)
+                )
+            });
         }
 
         emit Safe7579Initialized(msg.sender);
