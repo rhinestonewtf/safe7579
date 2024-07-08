@@ -51,7 +51,6 @@ uint256 constant MULTITYPE_MODULE = 0;
  * "executeTransactionFromModule" features.
  */
 contract Safe7579 is ISafe7579, SafeOp, SupportViewer, AccessControl, Initializer {
-    using UserOperationLib for PackedUserOperation;
     using ExecutionLib for bytes;
 
     bytes32 private constant DOMAIN_SEPARATOR_TYPEHASH =
@@ -470,7 +469,7 @@ contract Safe7579 is ISafe7579, SafeOp, SupportViewer, AccessControl, Initialize
     {
         if (moduleType == MODULE_TYPE_VALIDATOR) {
             // Safe7579 adapter allows for validator fallback to Safe's checkSignatures().
-            // It can thus be considered a valid validtor module
+            // It can thus be considered a valid validator module
             if (module == msg.sender) return true;
             return _isValidatorInstalled(module);
         } else if (moduleType == MODULE_TYPE_EXECUTOR) {

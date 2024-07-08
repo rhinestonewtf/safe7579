@@ -40,7 +40,6 @@ contract Safe7579Launchpad is
     SupportViewer,
     IERC7579AccountEvents
 {
-    using UserOperationLib for PackedUserOperation;
     using LibSort for address[];
     using CheckSignatures for bytes32;
 

@@ -33,7 +33,6 @@ import {
  * respective section
  */
 abstract contract ModuleManager is ISafe7579, AccessControl, Receiver, RegistryAdapter {
-    using SentinelListLib for SentinelListLib.SentinelList;
     using SentinelList4337Lib for SentinelList4337Lib.SentinelList;
 
     /*´:°•.°+.*•´.*:˚.°*.˚•´.°:°•.°•.*•´.*:˚.°*.˚•´.°:°•.°+.*•´.*:*/
