@@ -6,7 +6,6 @@ import {
     CallType,
     ExecType,
     ModeCode,
-    ModeLib,
     EXECTYPE_DEFAULT,
     EXECTYPE_TRY,
     CALLTYPE_SINGLE,
@@ -24,7 +23,7 @@ import {
 import { ModuleInstallUtil } from "./utils/DCUtil.sol";
 import { AccessControl } from "./core/AccessControl.sol";
 import { Initializer } from "./core/Initializer.sol";
-import { ISafeOp, SAFE_OP_TYPEHASH } from "./interfaces/ISafeOp.sol";
+import { SafeOp } from "./core/SafeOp.sol";
 import { ISafe } from "./interfaces/ISafe.sol";
 import { ISafe7579 } from "./ISafe7579.sol";
 import {
@@ -34,6 +33,7 @@ import {
 import { _packValidationData } from "@ERC4337/account-abstraction/contracts/core/Helpers.sol";
 import { IEntryPoint } from "@ERC4337/account-abstraction/contracts/interfaces/IEntryPoint.sol";
 import { IERC1271 } from "./interfaces/IERC1271.sol";
+import { SupportViewer } from "./core/SupportViewer.sol";
 
 uint256 constant MULTITYPE_MODULE = 0;
 
@@ -50,8 +50,7 @@ uint256 constant MULTITYPE_MODULE = 0;
  * event emissions to be done via the SafeProxy as msg.sender using Safe's
  * "executeTransactionFromModule" features.
  */
-contract Safe7579 is ISafe7579, ISafeOp, AccessControl, Initializer {
-    using UserOperationLib for PackedUserOperation;
+contract Safe7579 is ISafe7579, SafeOp, SupportViewer, AccessControl, Initializer {
     using ExecutionLib for bytes;
 
     bytes32 private constant DOMAIN_SEPARATOR_TYPEHASH =
@@ -301,12 +300,8 @@ contract Safe7579 is ISafe7579, ISafeOp, AccessControl, Initializer {
         view
         returns (uint256 validationData)
     {
-        (
-            bytes memory operationData,
-            uint48 validAfter,
-            uint48 validUntil,
-            bytes calldata signatures
-        ) = _getSafeOp(userOp);
+        (bytes memory operationData, uint48 validAfter, uint48 validUntil, bytes memory signatures)
+        = getSafeOp(userOp, entryPoint());
         try ISafe((msg.sender)).checkSignatures(keccak256(operationData), operationData, signatures)
         {
             // The timestamps are validated by the entry point,
@@ -463,43 +458,6 @@ contract Safe7579 is ISafe7579, ISafeOp, AccessControl, Initializer {
     /**
      * @inheritdoc ISafe7579
      */
-    function supportsExecutionMode(ModeCode encodedMode)
-        external
-        pure
-        override
-        returns (bool supported)
-    {
-        CallType callType;
-        ExecType execType;
-        // solhint-disable-next-line no-inline-assembly
-        assembly {
-            callType := encodedMode
-            execType := shl(8, encodedMode)
-        }
-        if (callType == CALLTYPE_BATCH) supported = true;
-        else if (callType == CALLTYPE_SINGLE) supported = true;
-        else if (callType == CALLTYPE_DELEGATECALL) supported = true;
-        else return false;
-
-        if (supported && execType == EXECTYPE_DEFAULT) return supported;
-        else if (supported && execType == EXECTYPE_TRY) return supported;
-        else return false;
-    }
-
-    /**
-     * @inheritdoc ISafe7579
-     */
-    function supportsModule(uint256 moduleTypeId) external pure override returns (bool) {
-        if (moduleTypeId == MODULE_TYPE_VALIDATOR) return true;
-        else if (moduleTypeId == MODULE_TYPE_EXECUTOR) return true;
-        else if (moduleTypeId == MODULE_TYPE_FALLBACK) return true;
-        else if (moduleTypeId == MODULE_TYPE_HOOK) return true;
-        else return false;
-    }
-
-    /**
-     * @inheritdoc ISafe7579
-     */
     function isModuleInstalled(
         uint256 moduleType,
         address module,
@@ -510,6 +468,9 @@ contract Safe7579 is ISafe7579, ISafeOp, AccessControl, Initializer {
         returns (bool)
     {
         if (moduleType == MODULE_TYPE_VALIDATOR) {
+            // Safe7579 adapter allows for validator fallback to Safe's checkSignatures().
+            // It can thus be considered a valid validator module
+            if (module == msg.sender) return true;
             return _isValidatorInstalled(module);
         } else if (moduleType == MODULE_TYPE_EXECUTOR) {
             return _isExecutorInstalled(module);
@@ -520,99 +481,6 @@ contract Safe7579 is ISafe7579, ISafeOp, AccessControl, Initializer {
         } else {
             return false;
         }
-    }
-
-    /**
-     * @inheritdoc ISafe7579
-     */
-    function accountId() external view returns (string memory accountImplementationId) {
-        string memory safeVersion = ISafe(msg.sender).VERSION();
-        return string(abi.encodePacked("safe-", safeVersion, ".erc7579.v0.0.1"));
-    }
-
-    /**
-     * @dev Decodes an ERC-4337 user operation into a Safe operation.
-     * @param userOp The ERC-4337 user operation.
-     * @return operationData Encoded EIP-712 Safe operation data bytes used for signature
-     * verification.
-     * @return validAfter The timestamp the user operation is valid from.
-     * @return validUntil The timestamp the user operation is valid until.
-     * @return signatures The Safe owner signatures extracted from the user operation.
-     */
-    function _getSafeOp(PackedUserOperation calldata userOp)
-        internal
-        view
-        returns (
-            bytes memory operationData,
-            uint48 validAfter,
-            uint48 validUntil,
-            bytes calldata signatures
-        )
-    {
-        // Extract additional Safe operation fields from the user operation signature which is
-        // encoded as:
-        // `abi.encodePacked(validAfter, validUntil, signatures)`
-        {
-            bytes calldata sig = userOp.signature;
-            validAfter = uint48(bytes6(sig[0:6]));
-            validUntil = uint48(bytes6(sig[6:12]));
-            signatures = sig[12:];
-        }
-
-        // It is important that **all** user operation fields are represented in the `SafeOp` data
-        // somehow, to prevent
-        // user operations from being submitted that do not fully respect the user preferences. The
-        // only exception is
-        // the `signature` bytes. Note that even `initCode` needs to be represented in the operation
-        // data, otherwise
-        // it can be replaced with a more expensive initialization that would charge the user
-        // additional fees.
-        {
-            // In order to work around Solidity "stack too deep" errors related to too many stack
-            // variables, manually
-            // encode the `SafeOp` fields into a memory `struct` for computing the EIP-712
-            // struct-hash. This works
-            // because the `EncodedSafeOpStruct` struct has no "dynamic" fields so its memory layout
-            // is identical to the
-            // result of `abi.encode`-ing the individual fields.
-            EncodedSafeOpStruct memory encodedSafeOp = EncodedSafeOpStruct({
-                typeHash: SAFE_OP_TYPEHASH,
-                safe: msg.sender,
-                nonce: userOp.nonce,
-                initCodeHash: keccak256(userOp.initCode),
-                callDataHash: keccak256(userOp.callData),
-                callGasLimit: userOp.unpackCallGasLimit(),
-                verificationGasLimit: userOp.unpackVerificationGasLimit(),
-                preVerificationGas: userOp.preVerificationGas,
-                maxFeePerGas: userOp.unpackMaxFeePerGas(),
-                maxPriorityFeePerGas: userOp.unpackMaxPriorityFeePerGas(),
-                paymasterAndDataHash: keccak256(userOp.paymasterAndData),
-                validAfter: validAfter,
-                validUntil: validUntil,
-                entryPoint: entryPoint()
-            });
-
-            bytes32 safeOpStructHash;
-            // solhint-disable-next-line no-inline-assembly
-            assembly ("memory-safe") {
-                // Since the `encodedSafeOp` value's memory layout is identical to the result of
-                // `abi.encode`-ing the
-                // individual `SafeOp` fields, we can pass it directly to `keccak256`. Additionally,
-                // there are 14
-                // 32-byte fields to hash, for a length of `14 * 32 = 448` bytes.
-                safeOpStructHash := keccak256(encodedSafeOp, 448)
-            }
-
-            operationData =
-                abi.encodePacked(bytes1(0x19), bytes1(0x01), domainSeparator(), safeOpStructHash);
-        }
-    }
-
-    /**
-     * @inheritdoc ISafe7579
-     */
-    function domainSeparator() public view returns (bytes32) {
-        return keccak256(abi.encode(DOMAIN_SEPARATOR_TYPEHASH, block.chainid, this));
     }
 
     /**

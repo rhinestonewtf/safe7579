@@ -33,7 +33,6 @@ import {
  * respective section
  */
 abstract contract ModuleManager is ISafe7579, AccessControl, Receiver, RegistryAdapter {
-    using SentinelListLib for SentinelListLib.SentinelList;
     using SentinelList4337Lib for SentinelList4337Lib.SentinelList;
 
     /*´:°•.°+.*•´.*:˚.°*.˚•´.°:°•.°•.*•´.*:˚.°*.˚•´.°:°•.°+.*•´.*:*/
@@ -116,8 +115,8 @@ abstract contract ModuleManager is ISafe7579, AccessControl, Receiver, RegistryA
     /*´:°•.°+.*•´.*:˚.°*.˚•´.°:°•.°•.*•´.*:˚.°*.˚•´.°:°•.°+.*•´.*:*/
     /*                      EXECUTOR MODULES                      */
     /*.•°:°.´+˚.*°.˚:*.´•*.+°.•°:´*.´•*.•°.•°:°.´:•˚°.*°.˚:*.´+°.•*/
-    mapping(address smartAccount => SentinelListLib.SentinelList _executors) internal
-        $executorStorage;
+
+    SentinelList4337Lib.SentinelList internal $executors;
 
     modifier onlyExecutorModule() {
         if (!_isExecutorInstalled(_msgSender())) revert InvalidModule(_msgSender());
@@ -138,8 +137,7 @@ abstract contract ModuleManager is ISafe7579, AccessControl, Receiver, RegistryA
         withRegistry(executor, MODULE_TYPE_EXECUTOR)
         returns (bytes memory moduleInitData)
     {
-        SentinelListLib.SentinelList storage $executors = $executorStorage[msg.sender];
-        $executors.push(executor);
+        $executors.push({ account: msg.sender, newEntry: executor });
         return data;
     }
 
@@ -156,15 +154,18 @@ abstract contract ModuleManager is ISafe7579, AccessControl, Receiver, RegistryA
         internal
         returns (bytes memory moduleDeInitData)
     {
-        SentinelListLib.SentinelList storage $executors = $executorStorage[msg.sender];
         address prev;
         (prev, moduleDeInitData) = abi.decode(data, (address, bytes));
-        $executors.pop(prev, executor);
+        $executors.pop({ account: msg.sender, prevEntry: prev, popEntry: executor });
     }
 
-    function _isExecutorInstalled(address executor) internal view virtual returns (bool) {
-        SentinelListLib.SentinelList storage $executors = $executorStorage[msg.sender];
-        return $executors.contains(executor);
+    function _isExecutorInstalled(address executor)
+        internal
+        view
+        virtual
+        returns (bool isInstalled)
+    {
+        isInstalled = $executors.contains({ account: msg.sender, entry: executor });
     }
 
     /**
@@ -172,22 +173,25 @@ abstract contract ModuleManager is ISafe7579, AccessControl, Receiver, RegistryA
      */
     function getExecutorsPaginated(
         address cursor,
-        uint256 size
+        uint256 pageSize
     )
         external
         view
         virtual
         returns (address[] memory array, address next)
     {
-        SentinelListLib.SentinelList storage $executors = $executorStorage[msg.sender];
-        return $executors.getEntriesPaginated(cursor, size);
+        return $executors.getEntriesPaginated({
+            account: msg.sender,
+            start: cursor,
+            pageSize: pageSize
+        });
     }
 
     /*´:°•.°+.*•´.*:˚.°*.˚•´.°:°•.°•.*•´.*:˚.°*.˚•´.°:°•.°+.*•´.*:*/
     /*                      FALLBACK MODULES                      */
     /*.•°:°.´+˚.*°.˚:*.´•*.+°.•°:´*.´•*.•°.•°:°.´:•˚°.*°.˚:*.´+°.•*/
 
-    mapping(address smartAccount => mapping(bytes4 selector => FallbackHandler handlerConfig))
+    mapping(bytes4 selector => mapping(address smartAccount => FallbackHandler handlerConfig))
         internal $fallbackStorage;
 
     function _installFallbackHandler(
@@ -215,7 +219,7 @@ abstract contract ModuleManager is ISafe7579, AccessControl, Receiver, RegistryA
 
         if (_isFallbackHandlerInstalled(functionSig)) revert FallbackInstalled(functionSig);
 
-        FallbackHandler storage $fallbacks = $fallbackStorage[msg.sender][functionSig];
+        FallbackHandler storage $fallbacks = $fallbackStorage[functionSig][msg.sender];
         $fallbacks.calltype = calltype;
         $fallbacks.handler = handler;
 
@@ -223,7 +227,7 @@ abstract contract ModuleManager is ISafe7579, AccessControl, Receiver, RegistryA
     }
 
     function _isFallbackHandlerInstalled(bytes4 functionSig) internal view virtual returns (bool) {
-        FallbackHandler storage $fallbacks = $fallbackStorage[msg.sender][functionSig];
+        FallbackHandler storage $fallbacks = $fallbackStorage[functionSig][msg.sender];
         return $fallbacks.handler != address(0);
     }
 
@@ -238,7 +242,7 @@ abstract contract ModuleManager is ISafe7579, AccessControl, Receiver, RegistryA
         bytes4 functionSig;
         (functionSig, moduleDeInitData) = abi.decode(context, (bytes4, bytes));
 
-        FallbackHandler storage $fallbacks = $fallbackStorage[msg.sender][functionSig];
+        FallbackHandler storage $fallbacks = $fallbackStorage[functionSig][msg.sender];
         delete $fallbacks.handler;
     }
 
@@ -253,7 +257,7 @@ abstract contract ModuleManager is ISafe7579, AccessControl, Receiver, RegistryA
     {
         bytes4 functionSig = abi.decode(additionalContext, (bytes4));
 
-        FallbackHandler storage $fallbacks = $fallbackStorage[msg.sender][functionSig];
+        FallbackHandler storage $fallbacks = $fallbackStorage[functionSig][msg.sender];
         return $fallbacks.handler == _handler;
     }
 
@@ -284,7 +288,7 @@ abstract contract ModuleManager is ISafe7579, AccessControl, Receiver, RegistryA
         returns (bytes memory fallbackRet)
     {
         // get handler for specific function selector
-        FallbackHandler storage $fallbacks = $fallbackStorage[msg.sender][msg.sig];
+        FallbackHandler storage $fallbacks = $fallbackStorage[msg.sig][msg.sender];
         address handler = $fallbacks.handler;
         CallType calltype = $fallbacks.calltype;
         // if no handler is set for the msg.sig, revert
@@ -315,7 +319,7 @@ abstract contract ModuleManager is ISafe7579, AccessControl, Receiver, RegistryA
     /*.•°:°.´+˚.*°.˚:*.´•*.+°.•°:´*.´•*.•°.•°:°.´:•˚°.*°.˚:*.´+°.•*/
 
     mapping(address smartAccount => address globalHook) internal $globalHook;
-    mapping(address smartAccount => mapping(bytes4 => address hook)) internal $hookManager;
+    mapping(bytes4 selector => mapping(address smartAccount => address hook)) internal $hookManager;
 
     /**
      * Run precheck hook for global and function selector specific
@@ -381,7 +385,7 @@ abstract contract ModuleManager is ISafe7579, AccessControl, Receiver, RegistryA
      */
     modifier withHook(bytes4 selector) {
         address globalHook = $globalHook[msg.sender];
-        address sigHook = $hookManager[msg.sender][selector];
+        address sigHook = $hookManager[selector][msg.sender];
         (bytes memory global, bytes memory sig) = _preHooks(globalHook, sigHook);
         _;
         _postHooks(globalHook, sigHook, global, sig);
@@ -389,7 +393,7 @@ abstract contract ModuleManager is ISafe7579, AccessControl, Receiver, RegistryA
 
     modifier tryWithHook(address module, bytes4 selector) {
         address globalHook = $globalHook[msg.sender];
-        address sigHook = $hookManager[msg.sender][selector];
+        address sigHook = $hookManager[selector][msg.sender];
 
         if (module != globalHook && module != sigHook) {
             (bytes memory global, bytes memory sig) = _preHooks(globalHook, sigHook);
@@ -429,13 +433,13 @@ abstract contract ModuleManager is ISafe7579, AccessControl, Receiver, RegistryA
             }
             $globalHook[msg.sender] = hook;
         } else if (hookType == HookType.SIG) {
-            currentHook = $hookManager[msg.sender][selector];
+            currentHook = $hookManager[selector][msg.sender];
             // Dont allow hooks to be overwritten. If a hook is currently installed, it must be
             // uninstalled first
             if (currentHook != address(0)) {
                 revert HookAlreadyInstalled(currentHook);
             }
-            $hookManager[msg.sender][selector] = hook;
+            $hookManager[selector][msg.sender] = hook;
         } else {
             revert InvalidHookType();
         }
@@ -457,7 +461,7 @@ abstract contract ModuleManager is ISafe7579, AccessControl, Receiver, RegistryA
         if (hookType == HookType.GLOBAL && selector == 0x0) {
             delete $globalHook[msg.sender];
         } else if (hookType == HookType.SIG) {
-            delete $hookManager[msg.sender][selector];
+            delete $hookManager[selector][msg.sender];
         } else {
             revert InvalidHookType();
         }
@@ -476,7 +480,7 @@ abstract contract ModuleManager is ISafe7579, AccessControl, Receiver, RegistryA
             hook = $globalHook[msg.sender];
         }
         if (hookType == HookType.SIG) {
-            hook = $hookManager[msg.sender][selector];
+            hook = $hookManager[selector][msg.sender];
         }
     }
 
@@ -494,7 +498,7 @@ abstract contract ModuleManager is ISafe7579, AccessControl, Receiver, RegistryA
     }
 
     function getActiveHook(bytes4 selector) public view returns (address hook) {
-        return $hookManager[msg.sender][selector];
+        return $hookManager[selector][msg.sender];
     }
 
     function getActiveHook() public view returns (address hook) {
