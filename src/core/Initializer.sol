@@ -46,6 +46,7 @@ abstract contract Initializer is ISafe7579, ModuleManager {
             // at this point, the safeproxy singleton is not yet updated to the SafeSingleton
             // calling execTransactionFromModule is not available yet.
         }
+        emit Safe7579Initialized(msg.sender);
     }
 
     /**
