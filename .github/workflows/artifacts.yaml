@@ -1,0 +1,12 @@
+on:
+  workflow_dispatch:
+  push:
+    tags:
+      - "*"
+    branches:
+      - "main"
+  pull_request:
+
+jobs:
+  forge-artifacts:
+    uses: "rhinestonewtf/reusable-workflows/.github/workflows/forge-artifacts.yaml@main"
