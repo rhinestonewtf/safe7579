@@ -1,6 +1,6 @@
 {
   "name": "@rhinestone/safe7579",
-  "version": "1.0.0",
+  "version": "1.0.2",
   "description": "An ERC-7579 adapter for Safe Accounts",
   "license": "GPL-3.0",
   "author": {
@@ -44,6 +44,7 @@
     "solhint": "^5.0.1"
   },
   "files": [
+    "artifacts",
     "src",
     "foundry.toml"
   ],
