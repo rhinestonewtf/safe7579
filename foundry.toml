@@ -4,8 +4,8 @@ src = "src"
 out = "out"
 script = "script"
 libs = ["node_modules"]
-fs_permissions = [{ access = "read", path = "out-optimized" }]
-allow_paths = ["*", "/"]
+fs_permissions = [{ access = "read", path = "out" }, { access = "read-write", path = "deployments" }, { access = "read", path = "node_modules"}, {access="read", path = "artifacts"}]
+allow_paths = ["*", "/", "./node_modules/"]
 
 [rpc_endpoints]
 mainnet = "${MAINNET_RPC_URL}" 

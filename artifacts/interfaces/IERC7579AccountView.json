@@ -1,0 +1,172 @@
+{
+  "abi": [
+    {
+      "type": "function",
+      "name": "accountId",
+      "inputs": [],
+      "outputs": [
+        {
+          "name": "accountImplementationId",
+          "type": "string",
+          "internalType": "string"
+        }
+      ],
+      "stateMutability": "view"
+    },
+    {
+      "type": "function",
+      "name": "supportsExecutionMode",
+      "inputs": [
+        { "name": "encodedMode", "type": "bytes32", "internalType": "ModeCode" }
+      ],
+      "outputs": [{ "name": "", "type": "bool", "internalType": "bool" }],
+      "stateMutability": "view"
+    },
+    {
+      "type": "function",
+      "name": "supportsModule",
+      "inputs": [
+        { "name": "moduleTypeId", "type": "uint256", "internalType": "uint256" }
+      ],
+      "outputs": [{ "name": "", "type": "bool", "internalType": "bool" }],
+      "stateMutability": "view"
+    }
+  ],
+  "bytecode": { "object": "0x", "sourceMap": "", "linkReferences": {} },
+  "deployedBytecode": { "object": "0x", "sourceMap": "", "linkReferences": {} },
+  "methodIdentifiers": {
+    "accountId()": "9cfd7cff",
+    "supportsExecutionMode(bytes32)": "d03c7914",
+    "supportsModule(uint256)": "f2dc691d"
+  },
+  "rawMetadata": "{\"compiler\":{\"version\":\"0.8.25+commit.b61c2a91\"},\"language\":\"Solidity\",\"output\":{\"abi\":[{\"inputs\":[],\"name\":\"accountId\",\"outputs\":[{\"internalType\":\"string\",\"name\":\"accountImplementationId\",\"type\":\"string\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"ModeCode\",\"name\":\"encodedMode\",\"type\":\"bytes32\"}],\"name\":\"supportsExecutionMode\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"moduleTypeId\",\"type\":\"uint256\"}],\"name\":\"supportsModule\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"stateMutability\":\"view\",\"type\":\"function\"}],\"devdoc\":{\"kind\":\"dev\",\"methods\":{\"accountId()\":{\"details\":\"Returns the account id of the smart account\",\"returns\":{\"accountImplementationId\":\"the account id of the smart account the accountId should be structured like so:        \\\"vendorname.accountname.semver\\\"\"}},\"supportsExecutionMode(bytes32)\":{\"params\":{\"encodedMode\":\"the encoded mode\"}},\"supportsModule(uint256)\":{\"params\":{\"moduleTypeId\":\"the module type ID according the ERC-7579 spec\"}}},\"version\":1},\"userdoc\":{\"kind\":\"user\",\"methods\":{\"supportsExecutionMode(bytes32)\":{\"notice\":\"Function to check if the account supports a certain CallType or ExecType (see ModeLib.sol)\"},\"supportsModule(uint256)\":{\"notice\":\"Function to check if the account supports installation of a certain module type Id\"}},\"version\":1}},\"settings\":{\"compilationTarget\":{\"src/interfaces/IERC7579Account.sol\":\"IERC7579AccountView\"},\"evmVersion\":\"paris\",\"libraries\":{},\"metadata\":{\"bytecodeHash\":\"ipfs\"},\"optimizer\":{\"enabled\":true,\"runs\":200},\"remappings\":[\":@ERC4337/=node_modules/@ERC4337/\",\":@gnosis.pm/=node_modules/@gnosis.pm/\",\":@openzeppelin/=node_modules/@openzeppelin/\",\":@prb/math/=node_modules/@prb/math/src/\",\":@rhinestone/=node_modules/@rhinestone/\",\":@safe-global/=node_modules/@safe-global/\",\":account-abstraction-v0.6/=node_modules/@ERC4337/account-abstraction-v0.6/contracts/\",\":account-abstraction/=node_modules/@ERC4337/account-abstraction/contracts/\",\":ds-test/=node_modules/ds-test/src/\",\":erc4337-validation/=node_modules/@rhinestone/erc4337-validation/src/\",\":erc7579/=node_modules/erc7579/src/\",\":forge-std/=node_modules/forge-std/src/\",\":hardhat-deploy/=node_modules/hardhat-deploy/\",\":hardhat/=node_modules/hardhat/\",\":module-bases/=node_modules/@rhinestone/module-bases/src/\",\":modulekit/=node_modules/@rhinestone/modulekit/src/\",\":sentinellist/=node_modules/@rhinestone/sentinellist/src/\",\":solady/=node_modules/solady/src/\",\":solarray/=node_modules/solarray/src/\"]},\"sources\":{\"src/interfaces/IERC7579Account.sol\":{\"keccak256\":\"0xc388e47f74f872e342e72d8bd57b428c6910b9e38c50bd3512d9069291dd041d\",\"license\":\"MIT\",\"urls\":[\"bzz-raw://05971661f97add5befb5e89c693add53624bc63166255d1cda9ae4a1c423c47d\",\"dweb:/ipfs/QmVEuEvUadDkPDaGDrFDYh5D4pCvn7JyHhGJThB3UaGJxe\"]},\"src/lib/ModeLib.sol\":{\"keccak256\":\"0x110ff117c12644827ba62776ef47e3936ee6b233037710907c841c3c7c96b05c\",\"license\":\"MIT\",\"urls\":[\"bzz-raw://ed405d749d1bed879b6c02cc4a4dac096481ffa7348cf9cc91889ec5ee6b61f0\",\"dweb:/ipfs/QmNPySGT6ZLaZBJEnmCDUxEjiMpBx2hByhUW2dwtkr7Pwc\"]}},\"version\":1}",
+  "metadata": {
+    "compiler": { "version": "0.8.25+commit.b61c2a91" },
+    "language": "Solidity",
+    "output": {
+      "abi": [
+        {
+          "inputs": [],
+          "stateMutability": "view",
+          "type": "function",
+          "name": "accountId",
+          "outputs": [
+            {
+              "internalType": "string",
+              "name": "accountImplementationId",
+              "type": "string"
+            }
+          ]
+        },
+        {
+          "inputs": [
+            {
+              "internalType": "ModeCode",
+              "name": "encodedMode",
+              "type": "bytes32"
+            }
+          ],
+          "stateMutability": "view",
+          "type": "function",
+          "name": "supportsExecutionMode",
+          "outputs": [{ "internalType": "bool", "name": "", "type": "bool" }]
+        },
+        {
+          "inputs": [
+            {
+              "internalType": "uint256",
+              "name": "moduleTypeId",
+              "type": "uint256"
+            }
+          ],
+          "stateMutability": "view",
+          "type": "function",
+          "name": "supportsModule",
+          "outputs": [{ "internalType": "bool", "name": "", "type": "bool" }]
+        }
+      ],
+      "devdoc": {
+        "kind": "dev",
+        "methods": {
+          "accountId()": {
+            "details": "Returns the account id of the smart account",
+            "returns": {
+              "accountImplementationId": "the account id of the smart account the accountId should be structured like so:        \"vendorname.accountname.semver\""
+            }
+          },
+          "supportsExecutionMode(bytes32)": {
+            "params": { "encodedMode": "the encoded mode" }
+          },
+          "supportsModule(uint256)": {
+            "params": {
+              "moduleTypeId": "the module type ID according the ERC-7579 spec"
+            }
+          }
+        },
+        "version": 1
+      },
+      "userdoc": {
+        "kind": "user",
+        "methods": {
+          "supportsExecutionMode(bytes32)": {
+            "notice": "Function to check if the account supports a certain CallType or ExecType (see ModeLib.sol)"
+          },
+          "supportsModule(uint256)": {
+            "notice": "Function to check if the account supports installation of a certain module type Id"
+          }
+        },
+        "version": 1
+      }
+    },
+    "settings": {
+      "remappings": [
+        "@ERC4337/=node_modules/@ERC4337/",
+        "@gnosis.pm/=node_modules/@gnosis.pm/",
+        "@openzeppelin/=node_modules/@openzeppelin/",
+        "@prb/math/=node_modules/@prb/math/src/",
+        "@rhinestone/=node_modules/@rhinestone/",
+        "@safe-global/=node_modules/@safe-global/",
+        "account-abstraction-v0.6/=node_modules/@ERC4337/account-abstraction-v0.6/contracts/",
+        "account-abstraction/=node_modules/@ERC4337/account-abstraction/contracts/",
+        "ds-test/=node_modules/ds-test/src/",
+        "erc4337-validation/=node_modules/@rhinestone/erc4337-validation/src/",
+        "erc7579/=node_modules/erc7579/src/",
+        "forge-std/=node_modules/forge-std/src/",
+        "hardhat-deploy/=node_modules/hardhat-deploy/",
+        "hardhat/=node_modules/hardhat/",
+        "module-bases/=node_modules/@rhinestone/module-bases/src/",
+        "modulekit/=node_modules/@rhinestone/modulekit/src/",
+        "sentinellist/=node_modules/@rhinestone/sentinellist/src/",
+        "solady/=node_modules/solady/src/",
+        "solarray/=node_modules/solarray/src/"
+      ],
+      "optimizer": { "enabled": true, "runs": 200 },
+      "metadata": { "bytecodeHash": "ipfs" },
+      "compilationTarget": {
+        "src/interfaces/IERC7579Account.sol": "IERC7579AccountView"
+      },
+      "evmVersion": "paris",
+      "libraries": {}
+    },
+    "sources": {
+      "src/interfaces/IERC7579Account.sol": {
+        "keccak256": "0xc388e47f74f872e342e72d8bd57b428c6910b9e38c50bd3512d9069291dd041d",
+        "urls": [
+          "bzz-raw://05971661f97add5befb5e89c693add53624bc63166255d1cda9ae4a1c423c47d",
+          "dweb:/ipfs/QmVEuEvUadDkPDaGDrFDYh5D4pCvn7JyHhGJThB3UaGJxe"
+        ],
+        "license": "MIT"
+      },
+      "src/lib/ModeLib.sol": {
+        "keccak256": "0x110ff117c12644827ba62776ef47e3936ee6b233037710907c841c3c7c96b05c",
+        "urls": [
+          "bzz-raw://ed405d749d1bed879b6c02cc4a4dac096481ffa7348cf9cc91889ec5ee6b61f0",
+          "dweb:/ipfs/QmNPySGT6ZLaZBJEnmCDUxEjiMpBx2hByhUW2dwtkr7Pwc"
+        ],
+        "license": "MIT"
+      }
+    },
+    "version": 1
+  },
+  "id": 120
+}

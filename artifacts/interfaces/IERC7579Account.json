@@ -1,0 +1,528 @@
+{
+  "abi": [
+    {
+      "type": "function",
+      "name": "accountId",
+      "inputs": [],
+      "outputs": [
+        {
+          "name": "accountImplementationId",
+          "type": "string",
+          "internalType": "string"
+        }
+      ],
+      "stateMutability": "view"
+    },
+    {
+      "type": "function",
+      "name": "execute",
+      "inputs": [
+        { "name": "mode", "type": "bytes32", "internalType": "ModeCode" },
+        {
+          "name": "executionCalldata",
+          "type": "bytes",
+          "internalType": "bytes"
+        }
+      ],
+      "outputs": [],
+      "stateMutability": "nonpayable"
+    },
+    {
+      "type": "function",
+      "name": "executeFromExecutor",
+      "inputs": [
+        { "name": "mode", "type": "bytes32", "internalType": "ModeCode" },
+        {
+          "name": "executionCalldata",
+          "type": "bytes",
+          "internalType": "bytes"
+        }
+      ],
+      "outputs": [
+        { "name": "returnData", "type": "bytes[]", "internalType": "bytes[]" }
+      ],
+      "stateMutability": "nonpayable"
+    },
+    {
+      "type": "function",
+      "name": "installModule",
+      "inputs": [
+        {
+          "name": "moduleTypeId",
+          "type": "uint256",
+          "internalType": "uint256"
+        },
+        { "name": "module", "type": "address", "internalType": "address" },
+        { "name": "initData", "type": "bytes", "internalType": "bytes" }
+      ],
+      "outputs": [],
+      "stateMutability": "nonpayable"
+    },
+    {
+      "type": "function",
+      "name": "isModuleInstalled",
+      "inputs": [
+        {
+          "name": "moduleTypeId",
+          "type": "uint256",
+          "internalType": "uint256"
+        },
+        { "name": "module", "type": "address", "internalType": "address" },
+        {
+          "name": "additionalContext",
+          "type": "bytes",
+          "internalType": "bytes"
+        }
+      ],
+      "outputs": [{ "name": "", "type": "bool", "internalType": "bool" }],
+      "stateMutability": "view"
+    },
+    {
+      "type": "function",
+      "name": "isValidSignature",
+      "inputs": [
+        { "name": "hash", "type": "bytes32", "internalType": "bytes32" },
+        { "name": "data", "type": "bytes", "internalType": "bytes" }
+      ],
+      "outputs": [{ "name": "", "type": "bytes4", "internalType": "bytes4" }],
+      "stateMutability": "nonpayable"
+    },
+    {
+      "type": "function",
+      "name": "supportsExecutionMode",
+      "inputs": [
+        { "name": "encodedMode", "type": "bytes32", "internalType": "ModeCode" }
+      ],
+      "outputs": [{ "name": "", "type": "bool", "internalType": "bool" }],
+      "stateMutability": "view"
+    },
+    {
+      "type": "function",
+      "name": "supportsModule",
+      "inputs": [
+        { "name": "moduleTypeId", "type": "uint256", "internalType": "uint256" }
+      ],
+      "outputs": [{ "name": "", "type": "bool", "internalType": "bool" }],
+      "stateMutability": "view"
+    },
+    {
+      "type": "function",
+      "name": "uninstallModule",
+      "inputs": [
+        {
+          "name": "moduleTypeId",
+          "type": "uint256",
+          "internalType": "uint256"
+        },
+        { "name": "module", "type": "address", "internalType": "address" },
+        { "name": "deInitData", "type": "bytes", "internalType": "bytes" }
+      ],
+      "outputs": [],
+      "stateMutability": "nonpayable"
+    },
+    {
+      "type": "event",
+      "name": "ModuleInstalled",
+      "inputs": [
+        {
+          "name": "moduleTypeId",
+          "type": "uint256",
+          "indexed": false,
+          "internalType": "uint256"
+        },
+        {
+          "name": "module",
+          "type": "address",
+          "indexed": false,
+          "internalType": "address"
+        }
+      ],
+      "anonymous": false
+    },
+    {
+      "type": "event",
+      "name": "ModuleUninstalled",
+      "inputs": [
+        {
+          "name": "moduleTypeId",
+          "type": "uint256",
+          "indexed": false,
+          "internalType": "uint256"
+        },
+        {
+          "name": "module",
+          "type": "address",
+          "indexed": false,
+          "internalType": "address"
+        }
+      ],
+      "anonymous": false
+    },
+    {
+      "type": "error",
+      "name": "UnsupportedCallType",
+      "inputs": [
+        { "name": "callType", "type": "bytes1", "internalType": "CallType" }
+      ]
+    },
+    {
+      "type": "error",
+      "name": "UnsupportedExecType",
+      "inputs": [
+        { "name": "execType", "type": "bytes1", "internalType": "ExecType" }
+      ]
+    },
+    {
+      "type": "error",
+      "name": "UnsupportedModuleType",
+      "inputs": [
+        { "name": "moduleTypeId", "type": "uint256", "internalType": "uint256" }
+      ]
+    }
+  ],
+  "bytecode": { "object": "0x", "sourceMap": "", "linkReferences": {} },
+  "deployedBytecode": { "object": "0x", "sourceMap": "", "linkReferences": {} },
+  "methodIdentifiers": {
+    "accountId()": "9cfd7cff",
+    "execute(bytes32,bytes)": "e9ae5c53",
+    "executeFromExecutor(bytes32,bytes)": "d691c964",
+    "installModule(uint256,address,bytes)": "9517e29f",
+    "isModuleInstalled(uint256,address,bytes)": "112d3a7d",
+    "isValidSignature(bytes32,bytes)": "1626ba7e",
+    "supportsExecutionMode(bytes32)": "d03c7914",
+    "supportsModule(uint256)": "f2dc691d",
+    "uninstallModule(uint256,address,bytes)": "a71763a8"
+  },
+  "rawMetadata": "{\"compiler\":{\"version\":\"0.8.25+commit.b61c2a91\"},\"language\":\"Solidity\",\"output\":{\"abi\":[{\"inputs\":[{\"internalType\":\"CallType\",\"name\":\"callType\",\"type\":\"bytes1\"}],\"name\":\"UnsupportedCallType\",\"type\":\"error\"},{\"inputs\":[{\"internalType\":\"ExecType\",\"name\":\"execType\",\"type\":\"bytes1\"}],\"name\":\"UnsupportedExecType\",\"type\":\"error\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"moduleTypeId\",\"type\":\"uint256\"}],\"name\":\"UnsupportedModuleType\",\"type\":\"error\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"moduleTypeId\",\"type\":\"uint256\"},{\"indexed\":false,\"internalType\":\"address\",\"name\":\"module\",\"type\":\"address\"}],\"name\":\"ModuleInstalled\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"moduleTypeId\",\"type\":\"uint256\"},{\"indexed\":false,\"internalType\":\"address\",\"name\":\"module\",\"type\":\"address\"}],\"name\":\"ModuleUninstalled\",\"type\":\"event\"},{\"inputs\":[],\"name\":\"accountId\",\"outputs\":[{\"internalType\":\"string\",\"name\":\"accountImplementationId\",\"type\":\"string\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"ModeCode\",\"name\":\"mode\",\"type\":\"bytes32\"},{\"internalType\":\"bytes\",\"name\":\"executionCalldata\",\"type\":\"bytes\"}],\"name\":\"execute\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"ModeCode\",\"name\":\"mode\",\"type\":\"bytes32\"},{\"internalType\":\"bytes\",\"name\":\"executionCalldata\",\"type\":\"bytes\"}],\"name\":\"executeFromExecutor\",\"outputs\":[{\"internalType\":\"bytes[]\",\"name\":\"returnData\",\"type\":\"bytes[]\"}],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"moduleTypeId\",\"type\":\"uint256\"},{\"internalType\":\"address\",\"name\":\"module\",\"type\":\"address\"},{\"internalType\":\"bytes\",\"name\":\"initData\",\"type\":\"bytes\"}],\"name\":\"installModule\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"moduleTypeId\",\"type\":\"uint256\"},{\"internalType\":\"address\",\"name\":\"module\",\"type\":\"address\"},{\"internalType\":\"bytes\",\"name\":\"additionalContext\",\"type\":\"bytes\"}],\"name\":\"isModuleInstalled\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"hash\",\"type\":\"bytes32\"},{\"internalType\":\"bytes\",\"name\":\"data\",\"type\":\"bytes\"}],\"name\":\"isValidSignature\",\"outputs\":[{\"internalType\":\"bytes4\",\"name\":\"\",\"type\":\"bytes4\"}],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"ModeCode\",\"name\":\"encodedMode\",\"type\":\"bytes32\"}],\"name\":\"supportsExecutionMode\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"moduleTypeId\",\"type\":\"uint256\"}],\"name\":\"supportsModule\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"moduleTypeId\",\"type\":\"uint256\"},{\"internalType\":\"address\",\"name\":\"module\",\"type\":\"address\"},{\"internalType\":\"bytes\",\"name\":\"deInitData\",\"type\":\"bytes\"}],\"name\":\"uninstallModule\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"}],\"devdoc\":{\"kind\":\"dev\",\"methods\":{\"accountId()\":{\"details\":\"Returns the account id of the smart account\",\"returns\":{\"accountImplementationId\":\"the account id of the smart account the accountId should be structured like so:        \\\"vendorname.accountname.semver\\\"\"}},\"execute(bytes32,bytes)\":{\"details\":\"Executes a transaction on behalf of the account.         This function is intended to be called by ERC-4337 EntryPoint.solEnsure adequate authorization control: i.e. onlyEntryPointOrSelfMSA MUST implement this function signature. If a mode is requested that is not supported by the Account, it MUST revert\",\"params\":{\"executionCalldata\":\"The encoded execution call data\",\"mode\":\"The encoded execution mode of the transaction. See ModeLib.sol for details\"}},\"executeFromExecutor(bytes32,bytes)\":{\"details\":\"Executes a transaction on behalf of the account.         This function is intended to be called by Executor ModulesEnsure adequate authorization control: i.e. onlyExecutorModuleMSA MUST implement this function signature. If a mode is requested that is not supported by the Account, it MUST revert\",\"params\":{\"executionCalldata\":\"The encoded execution call data\",\"mode\":\"The encoded execution mode of the transaction. See ModeLib.sol for details\"}},\"installModule(uint256,address,bytes)\":{\"details\":\"installs a Module of a certain type on the smart accountImplement Authorization control of your chosing\",\"params\":{\"initData\":\"arbitrary data that may be required on the module during `onInstall` initialization.\",\"module\":\"the module address\",\"moduleTypeId\":\"the module type ID according the ERC-7579 spec\"}},\"isModuleInstalled(uint256,address,bytes)\":{\"params\":{\"additionalContext\":\"additional context data that the smart account may interpret to                          identifiy conditions under which the module is installed.                          usually this is not necessary, but for some special hooks that                          are stored in mappings, this param might be needed\",\"module\":\"the module address\",\"moduleTypeId\":\"the module type ID according the ERC-7579 spec      Note: keep in mind that some contracts can be multiple module types at the same time. It            thus may be necessary to query multiple module types\"}},\"isValidSignature(bytes32,bytes)\":{\"details\":\"ERC-1271 isValidSignature         This function is intended to be used to validate a smart account signature and may forward the call to a validator module\",\"params\":{\"data\":\"The data that is signed\",\"hash\":\"The hash of the data that is signed\"}},\"supportsExecutionMode(bytes32)\":{\"params\":{\"encodedMode\":\"the encoded mode\"}},\"supportsModule(uint256)\":{\"params\":{\"moduleTypeId\":\"the module type ID according the ERC-7579 spec\"}},\"uninstallModule(uint256,address,bytes)\":{\"details\":\"uninstalls a Module of a certain type on the smart accountImplement Authorization control of your chosing\",\"params\":{\"deInitData\":\"arbitrary data that may be required on the module during `onUninstall` de-initialization.\",\"module\":\"the module address\",\"moduleTypeId\":\"the module type ID according the ERC-7579 spec\"}}},\"version\":1},\"userdoc\":{\"kind\":\"user\",\"methods\":{\"isModuleInstalled(uint256,address,bytes)\":{\"notice\":\"Function to check if the account has a certain module installed\"},\"supportsExecutionMode(bytes32)\":{\"notice\":\"Function to check if the account supports a certain CallType or ExecType (see ModeLib.sol)\"},\"supportsModule(uint256)\":{\"notice\":\"Function to check if the account supports installation of a certain module type Id\"}},\"version\":1}},\"settings\":{\"compilationTarget\":{\"src/interfaces/IERC7579Account.sol\":\"IERC7579Account\"},\"evmVersion\":\"paris\",\"libraries\":{},\"metadata\":{\"bytecodeHash\":\"ipfs\"},\"optimizer\":{\"enabled\":true,\"runs\":200},\"remappings\":[\":@ERC4337/=node_modules/@ERC4337/\",\":@gnosis.pm/=node_modules/@gnosis.pm/\",\":@openzeppelin/=node_modules/@openzeppelin/\",\":@prb/math/=node_modules/@prb/math/src/\",\":@rhinestone/=node_modules/@rhinestone/\",\":@safe-global/=node_modules/@safe-global/\",\":account-abstraction-v0.6/=node_modules/@ERC4337/account-abstraction-v0.6/contracts/\",\":account-abstraction/=node_modules/@ERC4337/account-abstraction/contracts/\",\":ds-test/=node_modules/ds-test/src/\",\":erc4337-validation/=node_modules/@rhinestone/erc4337-validation/src/\",\":erc7579/=node_modules/erc7579/src/\",\":forge-std/=node_modules/forge-std/src/\",\":hardhat-deploy/=node_modules/hardhat-deploy/\",\":hardhat/=node_modules/hardhat/\",\":module-bases/=node_modules/@rhinestone/module-bases/src/\",\":modulekit/=node_modules/@rhinestone/modulekit/src/\",\":sentinellist/=node_modules/@rhinestone/sentinellist/src/\",\":solady/=node_modules/solady/src/\",\":solarray/=node_modules/solarray/src/\"]},\"sources\":{\"src/interfaces/IERC7579Account.sol\":{\"keccak256\":\"0xc388e47f74f872e342e72d8bd57b428c6910b9e38c50bd3512d9069291dd041d\",\"license\":\"MIT\",\"urls\":[\"bzz-raw://05971661f97add5befb5e89c693add53624bc63166255d1cda9ae4a1c423c47d\",\"dweb:/ipfs/QmVEuEvUadDkPDaGDrFDYh5D4pCvn7JyHhGJThB3UaGJxe\"]},\"src/lib/ModeLib.sol\":{\"keccak256\":\"0x110ff117c12644827ba62776ef47e3936ee6b233037710907c841c3c7c96b05c\",\"license\":\"MIT\",\"urls\":[\"bzz-raw://ed405d749d1bed879b6c02cc4a4dac096481ffa7348cf9cc91889ec5ee6b61f0\",\"dweb:/ipfs/QmNPySGT6ZLaZBJEnmCDUxEjiMpBx2hByhUW2dwtkr7Pwc\"]}},\"version\":1}",
+  "metadata": {
+    "compiler": { "version": "0.8.25+commit.b61c2a91" },
+    "language": "Solidity",
+    "output": {
+      "abi": [
+        {
+          "inputs": [
+            { "internalType": "CallType", "name": "callType", "type": "bytes1" }
+          ],
+          "type": "error",
+          "name": "UnsupportedCallType"
+        },
+        {
+          "inputs": [
+            { "internalType": "ExecType", "name": "execType", "type": "bytes1" }
+          ],
+          "type": "error",
+          "name": "UnsupportedExecType"
+        },
+        {
+          "inputs": [
+            {
+              "internalType": "uint256",
+              "name": "moduleTypeId",
+              "type": "uint256"
+            }
+          ],
+          "type": "error",
+          "name": "UnsupportedModuleType"
+        },
+        {
+          "inputs": [
+            {
+              "internalType": "uint256",
+              "name": "moduleTypeId",
+              "type": "uint256",
+              "indexed": false
+            },
+            {
+              "internalType": "address",
+              "name": "module",
+              "type": "address",
+              "indexed": false
+            }
+          ],
+          "type": "event",
+          "name": "ModuleInstalled",
+          "anonymous": false
+        },
+        {
+          "inputs": [
+            {
+              "internalType": "uint256",
+              "name": "moduleTypeId",
+              "type": "uint256",
+              "indexed": false
+            },
+            {
+              "internalType": "address",
+              "name": "module",
+              "type": "address",
+              "indexed": false
+            }
+          ],
+          "type": "event",
+          "name": "ModuleUninstalled",
+          "anonymous": false
+        },
+        {
+          "inputs": [],
+          "stateMutability": "view",
+          "type": "function",
+          "name": "accountId",
+          "outputs": [
+            {
+              "internalType": "string",
+              "name": "accountImplementationId",
+              "type": "string"
+            }
+          ]
+        },
+        {
+          "inputs": [
+            { "internalType": "ModeCode", "name": "mode", "type": "bytes32" },
+            {
+              "internalType": "bytes",
+              "name": "executionCalldata",
+              "type": "bytes"
+            }
+          ],
+          "stateMutability": "nonpayable",
+          "type": "function",
+          "name": "execute"
+        },
+        {
+          "inputs": [
+            { "internalType": "ModeCode", "name": "mode", "type": "bytes32" },
+            {
+              "internalType": "bytes",
+              "name": "executionCalldata",
+              "type": "bytes"
+            }
+          ],
+          "stateMutability": "nonpayable",
+          "type": "function",
+          "name": "executeFromExecutor",
+          "outputs": [
+            {
+              "internalType": "bytes[]",
+              "name": "returnData",
+              "type": "bytes[]"
+            }
+          ]
+        },
+        {
+          "inputs": [
+            {
+              "internalType": "uint256",
+              "name": "moduleTypeId",
+              "type": "uint256"
+            },
+            { "internalType": "address", "name": "module", "type": "address" },
+            { "internalType": "bytes", "name": "initData", "type": "bytes" }
+          ],
+          "stateMutability": "nonpayable",
+          "type": "function",
+          "name": "installModule"
+        },
+        {
+          "inputs": [
+            {
+              "internalType": "uint256",
+              "name": "moduleTypeId",
+              "type": "uint256"
+            },
+            { "internalType": "address", "name": "module", "type": "address" },
+            {
+              "internalType": "bytes",
+              "name": "additionalContext",
+              "type": "bytes"
+            }
+          ],
+          "stateMutability": "view",
+          "type": "function",
+          "name": "isModuleInstalled",
+          "outputs": [{ "internalType": "bool", "name": "", "type": "bool" }]
+        },
+        {
+          "inputs": [
+            { "internalType": "bytes32", "name": "hash", "type": "bytes32" },
+            { "internalType": "bytes", "name": "data", "type": "bytes" }
+          ],
+          "stateMutability": "nonpayable",
+          "type": "function",
+          "name": "isValidSignature",
+          "outputs": [
+            { "internalType": "bytes4", "name": "", "type": "bytes4" }
+          ]
+        },
+        {
+          "inputs": [
+            {
+              "internalType": "ModeCode",
+              "name": "encodedMode",
+              "type": "bytes32"
+            }
+          ],
+          "stateMutability": "view",
+          "type": "function",
+          "name": "supportsExecutionMode",
+          "outputs": [{ "internalType": "bool", "name": "", "type": "bool" }]
+        },
+        {
+          "inputs": [
+            {
+              "internalType": "uint256",
+              "name": "moduleTypeId",
+              "type": "uint256"
+            }
+          ],
+          "stateMutability": "view",
+          "type": "function",
+          "name": "supportsModule",
+          "outputs": [{ "internalType": "bool", "name": "", "type": "bool" }]
+        },
+        {
+          "inputs": [
+            {
+              "internalType": "uint256",
+              "name": "moduleTypeId",
+              "type": "uint256"
+            },
+            { "internalType": "address", "name": "module", "type": "address" },
+            { "internalType": "bytes", "name": "deInitData", "type": "bytes" }
+          ],
+          "stateMutability": "nonpayable",
+          "type": "function",
+          "name": "uninstallModule"
+        }
+      ],
+      "devdoc": {
+        "kind": "dev",
+        "methods": {
+          "accountId()": {
+            "details": "Returns the account id of the smart account",
+            "returns": {
+              "accountImplementationId": "the account id of the smart account the accountId should be structured like so:        \"vendorname.accountname.semver\""
+            }
+          },
+          "execute(bytes32,bytes)": {
+            "details": "Executes a transaction on behalf of the account.         This function is intended to be called by ERC-4337 EntryPoint.solEnsure adequate authorization control: i.e. onlyEntryPointOrSelfMSA MUST implement this function signature. If a mode is requested that is not supported by the Account, it MUST revert",
+            "params": {
+              "executionCalldata": "The encoded execution call data",
+              "mode": "The encoded execution mode of the transaction. See ModeLib.sol for details"
+            }
+          },
+          "executeFromExecutor(bytes32,bytes)": {
+            "details": "Executes a transaction on behalf of the account.         This function is intended to be called by Executor ModulesEnsure adequate authorization control: i.e. onlyExecutorModuleMSA MUST implement this function signature. If a mode is requested that is not supported by the Account, it MUST revert",
+            "params": {
+              "executionCalldata": "The encoded execution call data",
+              "mode": "The encoded execution mode of the transaction. See ModeLib.sol for details"
+            }
+          },
+          "installModule(uint256,address,bytes)": {
+            "details": "installs a Module of a certain type on the smart accountImplement Authorization control of your chosing",
+            "params": {
+              "initData": "arbitrary data that may be required on the module during `onInstall` initialization.",
+              "module": "the module address",
+              "moduleTypeId": "the module type ID according the ERC-7579 spec"
+            }
+          },
+          "isModuleInstalled(uint256,address,bytes)": {
+            "params": {
+              "additionalContext": "additional context data that the smart account may interpret to                          identifiy conditions under which the module is installed.                          usually this is not necessary, but for some special hooks that                          are stored in mappings, this param might be needed",
+              "module": "the module address",
+              "moduleTypeId": "the module type ID according the ERC-7579 spec      Note: keep in mind that some contracts can be multiple module types at the same time. It            thus may be necessary to query multiple module types"
+            }
+          },
+          "isValidSignature(bytes32,bytes)": {
+            "details": "ERC-1271 isValidSignature         This function is intended to be used to validate a smart account signature and may forward the call to a validator module",
+            "params": {
+              "data": "The data that is signed",
+              "hash": "The hash of the data that is signed"
+            }
+          },
+          "supportsExecutionMode(bytes32)": {
+            "params": { "encodedMode": "the encoded mode" }
+          },
+          "supportsModule(uint256)": {
+            "params": {
+              "moduleTypeId": "the module type ID according the ERC-7579 spec"
+            }
+          },
+          "uninstallModule(uint256,address,bytes)": {
+            "details": "uninstalls a Module of a certain type on the smart accountImplement Authorization control of your chosing",
+            "params": {
+              "deInitData": "arbitrary data that may be required on the module during `onUninstall` de-initialization.",
+              "module": "the module address",
+              "moduleTypeId": "the module type ID according the ERC-7579 spec"
+            }
+          }
+        },
+        "version": 1
+      },
+      "userdoc": {
+        "kind": "user",
+        "methods": {
+          "isModuleInstalled(uint256,address,bytes)": {
+            "notice": "Function to check if the account has a certain module installed"
+          },
+          "supportsExecutionMode(bytes32)": {
+            "notice": "Function to check if the account supports a certain CallType or ExecType (see ModeLib.sol)"
+          },
+          "supportsModule(uint256)": {
+            "notice": "Function to check if the account supports installation of a certain module type Id"
+          }
+        },
+        "version": 1
+      }
+    },
+    "settings": {
+      "remappings": [
+        "@ERC4337/=node_modules/@ERC4337/",
+        "@gnosis.pm/=node_modules/@gnosis.pm/",
+        "@openzeppelin/=node_modules/@openzeppelin/",
+        "@prb/math/=node_modules/@prb/math/src/",
+        "@rhinestone/=node_modules/@rhinestone/",
+        "@safe-global/=node_modules/@safe-global/",
+        "account-abstraction-v0.6/=node_modules/@ERC4337/account-abstraction-v0.6/contracts/",
+        "account-abstraction/=node_modules/@ERC4337/account-abstraction/contracts/",
+        "ds-test/=node_modules/ds-test/src/",
+        "erc4337-validation/=node_modules/@rhinestone/erc4337-validation/src/",
+        "erc7579/=node_modules/erc7579/src/",
+        "forge-std/=node_modules/forge-std/src/",
+        "hardhat-deploy/=node_modules/hardhat-deploy/",
+        "hardhat/=node_modules/hardhat/",
+        "module-bases/=node_modules/@rhinestone/module-bases/src/",
+        "modulekit/=node_modules/@rhinestone/modulekit/src/",
+        "sentinellist/=node_modules/@rhinestone/sentinellist/src/",
+        "solady/=node_modules/solady/src/",
+        "solarray/=node_modules/solarray/src/"
+      ],
+      "optimizer": { "enabled": true, "runs": 200 },
+      "metadata": { "bytecodeHash": "ipfs" },
+      "compilationTarget": {
+        "src/interfaces/IERC7579Account.sol": "IERC7579Account"
+      },
+      "evmVersion": "paris",
+      "libraries": {}
+    },
+    "sources": {
+      "src/interfaces/IERC7579Account.sol": {
+        "keccak256": "0xc388e47f74f872e342e72d8bd57b428c6910b9e38c50bd3512d9069291dd041d",
+        "urls": [
+          "bzz-raw://05971661f97add5befb5e89c693add53624bc63166255d1cda9ae4a1c423c47d",
+          "dweb:/ipfs/QmVEuEvUadDkPDaGDrFDYh5D4pCvn7JyHhGJThB3UaGJxe"
+        ],
+        "license": "MIT"
+      },
+      "src/lib/ModeLib.sol": {
+        "keccak256": "0x110ff117c12644827ba62776ef47e3936ee6b233037710907c841c3c7c96b05c",
+        "urls": [
+          "bzz-raw://ed405d749d1bed879b6c02cc4a4dac096481ffa7348cf9cc91889ec5ee6b61f0",
+          "dweb:/ipfs/QmNPySGT6ZLaZBJEnmCDUxEjiMpBx2hByhUW2dwtkr7Pwc"
+        ],
+        "license": "MIT"
+      }
+    },
+    "version": 1
+  },
+  "id": 120
+}

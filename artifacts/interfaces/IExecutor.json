@@ -1,0 +1,171 @@
+{
+  "abi": [
+    {
+      "type": "function",
+      "name": "isInitialized",
+      "inputs": [
+        { "name": "smartAccount", "type": "address", "internalType": "address" }
+      ],
+      "outputs": [{ "name": "", "type": "bool", "internalType": "bool" }],
+      "stateMutability": "view"
+    },
+    {
+      "type": "function",
+      "name": "isModuleType",
+      "inputs": [
+        { "name": "moduleTypeId", "type": "uint256", "internalType": "uint256" }
+      ],
+      "outputs": [{ "name": "", "type": "bool", "internalType": "bool" }],
+      "stateMutability": "view"
+    },
+    {
+      "type": "function",
+      "name": "onInstall",
+      "inputs": [{ "name": "data", "type": "bytes", "internalType": "bytes" }],
+      "outputs": [],
+      "stateMutability": "nonpayable"
+    },
+    {
+      "type": "function",
+      "name": "onUninstall",
+      "inputs": [{ "name": "data", "type": "bytes", "internalType": "bytes" }],
+      "outputs": [],
+      "stateMutability": "nonpayable"
+    }
+  ],
+  "bytecode": { "object": "0x", "sourceMap": "", "linkReferences": {} },
+  "deployedBytecode": { "object": "0x", "sourceMap": "", "linkReferences": {} },
+  "methodIdentifiers": {
+    "isInitialized(address)": "d60b347f",
+    "isModuleType(uint256)": "ecd05961",
+    "onInstall(bytes)": "6d61fe70",
+    "onUninstall(bytes)": "8a91b0e3"
+  },
+  "rawMetadata": "{\"compiler\":{\"version\":\"0.8.25+commit.b61c2a91\"},\"language\":\"Solidity\",\"output\":{\"abi\":[{\"inputs\":[{\"internalType\":\"address\",\"name\":\"smartAccount\",\"type\":\"address\"}],\"name\":\"isInitialized\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"moduleTypeId\",\"type\":\"uint256\"}],\"name\":\"isModuleType\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes\",\"name\":\"data\",\"type\":\"bytes\"}],\"name\":\"onInstall\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes\",\"name\":\"data\",\"type\":\"bytes\"}],\"name\":\"onUninstall\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"}],\"devdoc\":{\"kind\":\"dev\",\"methods\":{\"isInitialized(address)\":{\"details\":\"Returns if the module was already initialized for a provided smartaccount\"},\"isModuleType(uint256)\":{\"details\":\"Returns boolean value if module is a certain type\",\"params\":{\"moduleTypeId\":\"the module type ID according the ERC-7579 spec MUST return true if the module is of the given type and false otherwise\"}},\"onInstall(bytes)\":{\"details\":\"This function is called by the smart account during installation of the module\",\"params\":{\"data\":\"arbitrary data that may be required on the module during `onInstall` initialization MUST revert on error (i.e. if module is already enabled)\"}},\"onUninstall(bytes)\":{\"details\":\"This function is called by the smart account during uninstallation of the module\",\"params\":{\"data\":\"arbitrary data that may be required on the module during `onUninstall` de-initialization MUST revert on error\"}}},\"version\":1},\"userdoc\":{\"kind\":\"user\",\"methods\":{},\"version\":1}},\"settings\":{\"compilationTarget\":{\"src/interfaces/IERC7579Module.sol\":\"IExecutor\"},\"evmVersion\":\"paris\",\"libraries\":{},\"metadata\":{\"bytecodeHash\":\"ipfs\"},\"optimizer\":{\"enabled\":true,\"runs\":200},\"remappings\":[\":@ERC4337/=node_modules/@ERC4337/\",\":@gnosis.pm/=node_modules/@gnosis.pm/\",\":@openzeppelin/=node_modules/@openzeppelin/\",\":@prb/math/=node_modules/@prb/math/src/\",\":@rhinestone/=node_modules/@rhinestone/\",\":@safe-global/=node_modules/@safe-global/\",\":account-abstraction-v0.6/=node_modules/@ERC4337/account-abstraction-v0.6/contracts/\",\":account-abstraction/=node_modules/@ERC4337/account-abstraction/contracts/\",\":ds-test/=node_modules/ds-test/src/\",\":erc4337-validation/=node_modules/@rhinestone/erc4337-validation/src/\",\":erc7579/=node_modules/erc7579/src/\",\":forge-std/=node_modules/forge-std/src/\",\":hardhat-deploy/=node_modules/hardhat-deploy/\",\":hardhat/=node_modules/hardhat/\",\":module-bases/=node_modules/@rhinestone/module-bases/src/\",\":modulekit/=node_modules/@rhinestone/modulekit/src/\",\":sentinellist/=node_modules/@rhinestone/sentinellist/src/\",\":solady/=node_modules/solady/src/\",\":solarray/=node_modules/solarray/src/\"]},\"sources\":{\"node_modules/@ERC4337/account-abstraction/contracts/interfaces/PackedUserOperation.sol\":{\"keccak256\":\"0x1129b46381db68eddbc5cb49e50664667b66b03c480453858e7b25eabe444359\",\"license\":\"GPL-3.0\",\"urls\":[\"bzz-raw://499a948aba60480dba6e25c763b8d918f1c246eb7a3302e04f493e080f3295be\",\"dweb:/ipfs/QmeRhhswf4NACcBKam2PyjpTP2ddSm648kah5kkQJsvwz3\"]},\"src/interfaces/IERC7579Module.sol\":{\"keccak256\":\"0x1760c57d1a84f94d8891d1599f7c7a142d04d96e2ecc7946fe57d73c04f90230\",\"urls\":[\"bzz-raw://ea30d5f2642b113dc1f093217cbe3f14928c3896d823c12a4b91cd299f91276c\",\"dweb:/ipfs/QmbarceJ9XvHGw3cQWN4fBV1XCmiBvNJe8R4Q2DMujxGeQ\"]}},\"version\":1}",
+  "metadata": {
+    "compiler": { "version": "0.8.25+commit.b61c2a91" },
+    "language": "Solidity",
+    "output": {
+      "abi": [
+        {
+          "inputs": [
+            {
+              "internalType": "address",
+              "name": "smartAccount",
+              "type": "address"
+            }
+          ],
+          "stateMutability": "view",
+          "type": "function",
+          "name": "isInitialized",
+          "outputs": [{ "internalType": "bool", "name": "", "type": "bool" }]
+        },
+        {
+          "inputs": [
+            {
+              "internalType": "uint256",
+              "name": "moduleTypeId",
+              "type": "uint256"
+            }
+          ],
+          "stateMutability": "view",
+          "type": "function",
+          "name": "isModuleType",
+          "outputs": [{ "internalType": "bool", "name": "", "type": "bool" }]
+        },
+        {
+          "inputs": [
+            { "internalType": "bytes", "name": "data", "type": "bytes" }
+          ],
+          "stateMutability": "nonpayable",
+          "type": "function",
+          "name": "onInstall"
+        },
+        {
+          "inputs": [
+            { "internalType": "bytes", "name": "data", "type": "bytes" }
+          ],
+          "stateMutability": "nonpayable",
+          "type": "function",
+          "name": "onUninstall"
+        }
+      ],
+      "devdoc": {
+        "kind": "dev",
+        "methods": {
+          "isInitialized(address)": {
+            "details": "Returns if the module was already initialized for a provided smartaccount"
+          },
+          "isModuleType(uint256)": {
+            "details": "Returns boolean value if module is a certain type",
+            "params": {
+              "moduleTypeId": "the module type ID according the ERC-7579 spec MUST return true if the module is of the given type and false otherwise"
+            }
+          },
+          "onInstall(bytes)": {
+            "details": "This function is called by the smart account during installation of the module",
+            "params": {
+              "data": "arbitrary data that may be required on the module during `onInstall` initialization MUST revert on error (i.e. if module is already enabled)"
+            }
+          },
+          "onUninstall(bytes)": {
+            "details": "This function is called by the smart account during uninstallation of the module",
+            "params": {
+              "data": "arbitrary data that may be required on the module during `onUninstall` de-initialization MUST revert on error"
+            }
+          }
+        },
+        "version": 1
+      },
+      "userdoc": { "kind": "user", "methods": {}, "version": 1 }
+    },
+    "settings": {
+      "remappings": [
+        "@ERC4337/=node_modules/@ERC4337/",
+        "@gnosis.pm/=node_modules/@gnosis.pm/",
+        "@openzeppelin/=node_modules/@openzeppelin/",
+        "@prb/math/=node_modules/@prb/math/src/",
+        "@rhinestone/=node_modules/@rhinestone/",
+        "@safe-global/=node_modules/@safe-global/",
+        "account-abstraction-v0.6/=node_modules/@ERC4337/account-abstraction-v0.6/contracts/",
+        "account-abstraction/=node_modules/@ERC4337/account-abstraction/contracts/",
+        "ds-test/=node_modules/ds-test/src/",
+        "erc4337-validation/=node_modules/@rhinestone/erc4337-validation/src/",
+        "erc7579/=node_modules/erc7579/src/",
+        "forge-std/=node_modules/forge-std/src/",
+        "hardhat-deploy/=node_modules/hardhat-deploy/",
+        "hardhat/=node_modules/hardhat/",
+        "module-bases/=node_modules/@rhinestone/module-bases/src/",
+        "modulekit/=node_modules/@rhinestone/modulekit/src/",
+        "sentinellist/=node_modules/@rhinestone/sentinellist/src/",
+        "solady/=node_modules/solady/src/",
+        "solarray/=node_modules/solarray/src/"
+      ],
+      "optimizer": { "enabled": true, "runs": 200 },
+      "metadata": { "bytecodeHash": "ipfs" },
+      "compilationTarget": { "src/interfaces/IERC7579Module.sol": "IExecutor" },
+      "evmVersion": "paris",
+      "libraries": {}
+    },
+    "sources": {
+      "node_modules/@ERC4337/account-abstraction/contracts/interfaces/PackedUserOperation.sol": {
+        "keccak256": "0x1129b46381db68eddbc5cb49e50664667b66b03c480453858e7b25eabe444359",
+        "urls": [
+          "bzz-raw://499a948aba60480dba6e25c763b8d918f1c246eb7a3302e04f493e080f3295be",
+          "dweb:/ipfs/QmeRhhswf4NACcBKam2PyjpTP2ddSm648kah5kkQJsvwz3"
+        ],
+        "license": "GPL-3.0"
+      },
+      "src/interfaces/IERC7579Module.sol": {
+        "keccak256": "0x1760c57d1a84f94d8891d1599f7c7a142d04d96e2ecc7946fe57d73c04f90230",
+        "urls": [
+          "bzz-raw://ea30d5f2642b113dc1f093217cbe3f14928c3896d823c12a4b91cd299f91276c",
+          "dweb:/ipfs/QmbarceJ9XvHGw3cQWN4fBV1XCmiBvNJe8R4Q2DMujxGeQ"
+        ],
+        "license": null
+      }
+    },
+    "version": 1
+  },
+  "id": 105
+}

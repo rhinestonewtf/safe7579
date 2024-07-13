@@ -27,6 +27,7 @@
   },
   "dependencies": {
     "@ERC4337/account-abstraction": "github:kopy-kat/account-abstraction#develop",
+    "safe-singleton-deployer": "github:wilsoncusack/safe-singleton-deployer-sol",
     "@ERC4337/account-abstraction-v0.6": "github:eth-infinitism/account-abstraction#v0.6.0",
     "@rhinestone/erc4337-validation": "0.0.1-alpha.2",
     "@rhinestone/module-bases": "github:rhinestonewtf/module-bases",

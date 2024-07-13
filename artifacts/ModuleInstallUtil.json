@@ -1,0 +1,235 @@
+{
+  "abi": [
+    {
+      "type": "function",
+      "name": "installModule",
+      "inputs": [
+        {
+          "name": "moduleTypeId",
+          "type": "uint256",
+          "internalType": "uint256"
+        },
+        { "name": "module", "type": "address", "internalType": "address" },
+        { "name": "initData", "type": "bytes", "internalType": "bytes" }
+      ],
+      "outputs": [],
+      "stateMutability": "nonpayable"
+    },
+    {
+      "type": "function",
+      "name": "unInstallModule",
+      "inputs": [
+        {
+          "name": "moduleTypeId",
+          "type": "uint256",
+          "internalType": "uint256"
+        },
+        { "name": "module", "type": "address", "internalType": "address" },
+        { "name": "initData", "type": "bytes", "internalType": "bytes" }
+      ],
+      "outputs": [],
+      "stateMutability": "nonpayable"
+    },
+    {
+      "type": "event",
+      "name": "ModuleInstalled",
+      "inputs": [
+        {
+          "name": "moduleTypeId",
+          "type": "uint256",
+          "indexed": false,
+          "internalType": "uint256"
+        },
+        {
+          "name": "module",
+          "type": "address",
+          "indexed": false,
+          "internalType": "address"
+        }
+      ],
+      "anonymous": false
+    },
+    {
+      "type": "event",
+      "name": "ModuleUninstalled",
+      "inputs": [
+        {
+          "name": "moduleTypeId",
+          "type": "uint256",
+          "indexed": false,
+          "internalType": "uint256"
+        },
+        {
+          "name": "module",
+          "type": "address",
+          "indexed": false,
+          "internalType": "address"
+        }
+      ],
+      "anonymous": false
+    }
+  ],
+  "bytecode": {
+    "object": "0x6080604052348015600f57600080fd5b506102a58061001f6000396000f3fe608060405234801561001057600080fd5b50600436106100365760003560e01c8063782725251461003b5780639517e29f14610050575b600080fd5b61004e6100493660046101ab565b610063565b005b61004e61005e3660046101ab565b61010c565b604051638a91b0e360e01b81526001600160a01b03841690638a91b0e3906100919085908590600401610240565b600060405180830381600087803b1580156100ab57600080fd5b505af11580156100bf573d6000803e3d6000fd5b5050604080518781526001600160a01b03871660208201527f341347516a9de374859dfda710fa4828b2d48cb57d4fbe4c1149612b8e02276e93500190505b60405180910390a150505050565b6040516306d61fe760e41b81526001600160a01b03841690636d61fe709061013a9085908590600401610240565b600060405180830381600087803b15801561015457600080fd5b505af1158015610168573d6000803e3d6000fd5b5050604080518781526001600160a01b03871660208201527fd21d0b289f126c4b473ea641963e766833c2f13866e4ff480abd787c100ef12393500190506100fe565b600080600080606085870312156101c157600080fd5b8435935060208501356001600160a01b03811681146101df57600080fd5b9250604085013567ffffffffffffffff808211156101fc57600080fd5b818701915087601f83011261021057600080fd5b81358181111561021f57600080fd5b88602082850101111561023157600080fd5b95989497505060200194505050565b60208152816020820152818360408301376000818301604090810191909152601f909201601f1916010191905056fea2646970667358221220f8087878f31dfef77a4db53416196898bfa406c8e627ef944bfee9d0b363bdbe64736f6c63430008190033",
+    "sourceMap": "275:586:127:-:0;;;;;;;;;;;;;;;;;;;",
+    "linkReferences": {}
+  },
+  "deployedBytecode": {
+    "object": "0x608060405234801561001057600080fd5b50600436106100365760003560e01c8063782725251461003b5780639517e29f14610050575b600080fd5b61004e6100493660046101ab565b610063565b005b61004e61005e3660046101ab565b61010c565b604051638a91b0e360e01b81526001600160a01b03841690638a91b0e3906100919085908590600401610240565b600060405180830381600087803b1580156100ab57600080fd5b505af11580156100bf573d6000803e3d6000fd5b5050604080518781526001600160a01b03871660208201527f341347516a9de374859dfda710fa4828b2d48cb57d4fbe4c1149612b8e02276e93500190505b60405180910390a150505050565b6040516306d61fe760e41b81526001600160a01b03841690636d61fe709061013a9085908590600401610240565b600060405180830381600087803b15801561015457600080fd5b505af1158015610168573d6000803e3d6000fd5b5050604080518781526001600160a01b03871660208201527fd21d0b289f126c4b473ea641963e766833c2f13866e4ff480abd787c100ef12393500190506100fe565b600080600080606085870312156101c157600080fd5b8435935060208501356001600160a01b03811681146101df57600080fd5b9250604085013567ffffffffffffffff808211156101fc57600080fd5b818701915087601f83011261021057600080fd5b81358181111561021f57600080fd5b88602082850101111561023157600080fd5b95989497505060200194505050565b60208152816020820152818360408301376000818301604090810191909152601f909201601f1916010191905056fea2646970667358221220f8087878f31dfef77a4db53416196898bfa406c8e627ef944bfee9d0b363bdbe64736f6c63430008190033",
+    "sourceMap": "275:586:127:-:0;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;596:263;;;;;;:::i;:::-;;:::i;:::-;;333:257;;;;;;:::i;:::-;;:::i;596:263::-;745:44;;-1:-1:-1;;;745:44:127;;-1:-1:-1;;;;;745:34:127;;;;;:44;;780:8;;;;745:44;;;:::i;:::-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;-1:-1:-1;;804:48:127;;;1419:25:146;;;-1:-1:-1;;;;;1480:32:146;;1475:2;1460:18;;1453:60;804:48:127;;-1:-1:-1;1392:18:146;;-1:-1:-1;804:48:127;;;;;;;;596:263;;;;:::o;333:257::-;480:42;;-1:-1:-1;;;480:42:127;;-1:-1:-1;;;;;480:32:127;;;;;:42;;513:8;;;;480:42;;;:::i;:::-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;-1:-1:-1;;537:46:127;;;1419:25:146;;;-1:-1:-1;;;;;1480:32:146;;1475:2;1460:18;;1453:60;537:46:127;;-1:-1:-1;1392:18:146;;-1:-1:-1;537:46:127;1245:274:146;14:833;102:6;110;118;126;179:2;167:9;158:7;154:23;150:32;147:52;;;195:1;192;185:12;147:52;218:23;;;-1:-1:-1;291:2:146;276:18;;263:32;-1:-1:-1;;;;;324:31:146;;314:42;;304:70;;370:1;367;360:12;304:70;393:5;-1:-1:-1;449:2:146;434:18;;421:32;472:18;502:14;;;499:34;;;529:1;526;519:12;499:34;567:6;556:9;552:22;542:32;;612:7;605:4;601:2;597:13;593:27;583:55;;634:1;631;624:12;583:55;674:2;661:16;700:2;692:6;689:14;686:34;;;716:1;713;706:12;686:34;761:7;756:2;747:6;743:2;739:15;735:24;732:37;729:57;;;782:1;779;772:12;729:57;14:833;;;;-1:-1:-1;;813:2:146;805:11;;-1:-1:-1;;;14:833:146:o;852:388::-;1009:2;998:9;991:21;1048:6;1043:2;1032:9;1028:18;1021:34;1105:6;1097;1092:2;1081:9;1077:18;1064:48;1161:1;1132:22;;;1156:2;1128:31;;;1121:42;;;;1224:2;1203:15;;;-1:-1:-1;;1199:29:146;1184:45;1180:54;;852:388;-1:-1:-1;852:388:146:o",
+    "linkReferences": {}
+  },
+  "methodIdentifiers": {
+    "installModule(uint256,address,bytes)": "9517e29f",
+    "unInstallModule(uint256,address,bytes)": "78272525"
+  },
+  "rawMetadata": "{\"compiler\":{\"version\":\"0.8.25+commit.b61c2a91\"},\"language\":\"Solidity\",\"output\":{\"abi\":[{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"moduleTypeId\",\"type\":\"uint256\"},{\"indexed\":false,\"internalType\":\"address\",\"name\":\"module\",\"type\":\"address\"}],\"name\":\"ModuleInstalled\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"moduleTypeId\",\"type\":\"uint256\"},{\"indexed\":false,\"internalType\":\"address\",\"name\":\"module\",\"type\":\"address\"}],\"name\":\"ModuleUninstalled\",\"type\":\"event\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"moduleTypeId\",\"type\":\"uint256\"},{\"internalType\":\"address\",\"name\":\"module\",\"type\":\"address\"},{\"internalType\":\"bytes\",\"name\":\"initData\",\"type\":\"bytes\"}],\"name\":\"installModule\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"moduleTypeId\",\"type\":\"uint256\"},{\"internalType\":\"address\",\"name\":\"module\",\"type\":\"address\"},{\"internalType\":\"bytes\",\"name\":\"initData\",\"type\":\"bytes\"}],\"name\":\"unInstallModule\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"}],\"devdoc\":{\"kind\":\"dev\",\"methods\":{},\"version\":1},\"userdoc\":{\"kind\":\"user\",\"methods\":{},\"version\":1}},\"settings\":{\"compilationTarget\":{\"src/utils/DCUtil.sol\":\"ModuleInstallUtil\"},\"evmVersion\":\"paris\",\"libraries\":{},\"metadata\":{\"bytecodeHash\":\"ipfs\"},\"optimizer\":{\"enabled\":true,\"runs\":200},\"remappings\":[\":@ERC4337/=node_modules/@ERC4337/\",\":@gnosis.pm/=node_modules/@gnosis.pm/\",\":@openzeppelin/=node_modules/@openzeppelin/\",\":@prb/math/=node_modules/@prb/math/src/\",\":@rhinestone/=node_modules/@rhinestone/\",\":@safe-global/=node_modules/@safe-global/\",\":account-abstraction-v0.6/=node_modules/@ERC4337/account-abstraction-v0.6/contracts/\",\":account-abstraction/=node_modules/@ERC4337/account-abstraction/contracts/\",\":ds-test/=node_modules/ds-test/src/\",\":erc4337-validation/=node_modules/@rhinestone/erc4337-validation/src/\",\":erc7579/=node_modules/erc7579/src/\",\":forge-std/=node_modules/forge-std/src/\",\":hardhat-deploy/=node_modules/hardhat-deploy/\",\":hardhat/=node_modules/hardhat/\",\":module-bases/=node_modules/@rhinestone/module-bases/src/\",\":modulekit/=node_modules/@rhinestone/modulekit/src/\",\":sentinellist/=node_modules/@rhinestone/sentinellist/src/\",\":solady/=node_modules/solady/src/\",\":solarray/=node_modules/solarray/src/\"]},\"sources\":{\"node_modules/@ERC4337/account-abstraction/contracts/interfaces/PackedUserOperation.sol\":{\"keccak256\":\"0x1129b46381db68eddbc5cb49e50664667b66b03c480453858e7b25eabe444359\",\"license\":\"GPL-3.0\",\"urls\":[\"bzz-raw://499a948aba60480dba6e25c763b8d918f1c246eb7a3302e04f493e080f3295be\",\"dweb:/ipfs/QmeRhhswf4NACcBKam2PyjpTP2ddSm648kah5kkQJsvwz3\"]},\"src/interfaces/IERC7579Account.sol\":{\"keccak256\":\"0xc388e47f74f872e342e72d8bd57b428c6910b9e38c50bd3512d9069291dd041d\",\"license\":\"MIT\",\"urls\":[\"bzz-raw://05971661f97add5befb5e89c693add53624bc63166255d1cda9ae4a1c423c47d\",\"dweb:/ipfs/QmVEuEvUadDkPDaGDrFDYh5D4pCvn7JyHhGJThB3UaGJxe\"]},\"src/interfaces/IERC7579Module.sol\":{\"keccak256\":\"0x1760c57d1a84f94d8891d1599f7c7a142d04d96e2ecc7946fe57d73c04f90230\",\"urls\":[\"bzz-raw://ea30d5f2642b113dc1f093217cbe3f14928c3896d823c12a4b91cd299f91276c\",\"dweb:/ipfs/QmbarceJ9XvHGw3cQWN4fBV1XCmiBvNJe8R4Q2DMujxGeQ\"]},\"src/lib/ModeLib.sol\":{\"keccak256\":\"0x110ff117c12644827ba62776ef47e3936ee6b233037710907c841c3c7c96b05c\",\"license\":\"MIT\",\"urls\":[\"bzz-raw://ed405d749d1bed879b6c02cc4a4dac096481ffa7348cf9cc91889ec5ee6b61f0\",\"dweb:/ipfs/QmNPySGT6ZLaZBJEnmCDUxEjiMpBx2hByhUW2dwtkr7Pwc\"]},\"src/utils/DCUtil.sol\":{\"keccak256\":\"0x4c98a180da91c7849a81c8ec9a381de0fb1cf9de4c95a03ac9c4a6f206fa4784\",\"license\":\"MIT\",\"urls\":[\"bzz-raw://88f4c60b9aa9fab91ee7db557c54501b8323453c7880791694862695184e6ca5\",\"dweb:/ipfs/QmdgJ9tdpozq1kHpFhoy4Vzs4Z5QELdiqvPHfyGbikFVn5\"]}},\"version\":1}",
+  "metadata": {
+    "compiler": { "version": "0.8.25+commit.b61c2a91" },
+    "language": "Solidity",
+    "output": {
+      "abi": [
+        {
+          "inputs": [
+            {
+              "internalType": "uint256",
+              "name": "moduleTypeId",
+              "type": "uint256",
+              "indexed": false
+            },
+            {
+              "internalType": "address",
+              "name": "module",
+              "type": "address",
+              "indexed": false
+            }
+          ],
+          "type": "event",
+          "name": "ModuleInstalled",
+          "anonymous": false
+        },
+        {
+          "inputs": [
+            {
+              "internalType": "uint256",
+              "name": "moduleTypeId",
+              "type": "uint256",
+              "indexed": false
+            },
+            {
+              "internalType": "address",
+              "name": "module",
+              "type": "address",
+              "indexed": false
+            }
+          ],
+          "type": "event",
+          "name": "ModuleUninstalled",
+          "anonymous": false
+        },
+        {
+          "inputs": [
+            {
+              "internalType": "uint256",
+              "name": "moduleTypeId",
+              "type": "uint256"
+            },
+            { "internalType": "address", "name": "module", "type": "address" },
+            { "internalType": "bytes", "name": "initData", "type": "bytes" }
+          ],
+          "stateMutability": "nonpayable",
+          "type": "function",
+          "name": "installModule"
+        },
+        {
+          "inputs": [
+            {
+              "internalType": "uint256",
+              "name": "moduleTypeId",
+              "type": "uint256"
+            },
+            { "internalType": "address", "name": "module", "type": "address" },
+            { "internalType": "bytes", "name": "initData", "type": "bytes" }
+          ],
+          "stateMutability": "nonpayable",
+          "type": "function",
+          "name": "unInstallModule"
+        }
+      ],
+      "devdoc": { "kind": "dev", "methods": {}, "version": 1 },
+      "userdoc": { "kind": "user", "methods": {}, "version": 1 }
+    },
+    "settings": {
+      "remappings": [
+        "@ERC4337/=node_modules/@ERC4337/",
+        "@gnosis.pm/=node_modules/@gnosis.pm/",
+        "@openzeppelin/=node_modules/@openzeppelin/",
+        "@prb/math/=node_modules/@prb/math/src/",
+        "@rhinestone/=node_modules/@rhinestone/",
+        "@safe-global/=node_modules/@safe-global/",
+        "account-abstraction-v0.6/=node_modules/@ERC4337/account-abstraction-v0.6/contracts/",
+        "account-abstraction/=node_modules/@ERC4337/account-abstraction/contracts/",
+        "ds-test/=node_modules/ds-test/src/",
+        "erc4337-validation/=node_modules/@rhinestone/erc4337-validation/src/",
+        "erc7579/=node_modules/erc7579/src/",
+        "forge-std/=node_modules/forge-std/src/",
+        "hardhat-deploy/=node_modules/hardhat-deploy/",
+        "hardhat/=node_modules/hardhat/",
+        "module-bases/=node_modules/@rhinestone/module-bases/src/",
+        "modulekit/=node_modules/@rhinestone/modulekit/src/",
+        "sentinellist/=node_modules/@rhinestone/sentinellist/src/",
+        "solady/=node_modules/solady/src/",
+        "solarray/=node_modules/solarray/src/"
+      ],
+      "optimizer": { "enabled": true, "runs": 200 },
+      "metadata": { "bytecodeHash": "ipfs" },
+      "compilationTarget": { "src/utils/DCUtil.sol": "ModuleInstallUtil" },
+      "evmVersion": "paris",
+      "libraries": {}
+    },
+    "sources": {
+      "node_modules/@ERC4337/account-abstraction/contracts/interfaces/PackedUserOperation.sol": {
+        "keccak256": "0x1129b46381db68eddbc5cb49e50664667b66b03c480453858e7b25eabe444359",
+        "urls": [
+          "bzz-raw://499a948aba60480dba6e25c763b8d918f1c246eb7a3302e04f493e080f3295be",
+          "dweb:/ipfs/QmeRhhswf4NACcBKam2PyjpTP2ddSm648kah5kkQJsvwz3"
+        ],
+        "license": "GPL-3.0"
+      },
+      "src/interfaces/IERC7579Account.sol": {
+        "keccak256": "0xc388e47f74f872e342e72d8bd57b428c6910b9e38c50bd3512d9069291dd041d",
+        "urls": [
+          "bzz-raw://05971661f97add5befb5e89c693add53624bc63166255d1cda9ae4a1c423c47d",
+          "dweb:/ipfs/QmVEuEvUadDkPDaGDrFDYh5D4pCvn7JyHhGJThB3UaGJxe"
+        ],
+        "license": "MIT"
+      },
+      "src/interfaces/IERC7579Module.sol": {
+        "keccak256": "0x1760c57d1a84f94d8891d1599f7c7a142d04d96e2ecc7946fe57d73c04f90230",
+        "urls": [
+          "bzz-raw://ea30d5f2642b113dc1f093217cbe3f14928c3896d823c12a4b91cd299f91276c",
+          "dweb:/ipfs/QmbarceJ9XvHGw3cQWN4fBV1XCmiBvNJe8R4Q2DMujxGeQ"
+        ],
+        "license": null
+      },
+      "src/lib/ModeLib.sol": {
+        "keccak256": "0x110ff117c12644827ba62776ef47e3936ee6b233037710907c841c3c7c96b05c",
+        "urls": [
+          "bzz-raw://ed405d749d1bed879b6c02cc4a4dac096481ffa7348cf9cc91889ec5ee6b61f0",
+          "dweb:/ipfs/QmNPySGT6ZLaZBJEnmCDUxEjiMpBx2hByhUW2dwtkr7Pwc"
+        ],
+        "license": "MIT"
+      },
+      "src/utils/DCUtil.sol": {
+        "keccak256": "0x4c98a180da91c7849a81c8ec9a381de0fb1cf9de4c95a03ac9c4a6f206fa4784",
+        "urls": [
+          "bzz-raw://88f4c60b9aa9fab91ee7db557c54501b8323453c7880791694862695184e6ca5",
+          "dweb:/ipfs/QmdgJ9tdpozq1kHpFhoy4Vzs4Z5QELdiqvPHfyGbikFVn5"
+        ],
+        "license": "MIT"
+      }
+    },
+    "version": 1
+  },
+  "id": 127
+}

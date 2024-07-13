@@ -38,6 +38,9 @@ importers:
       forge-std:
         specifier: github:foundry-rs/forge-std
         version: https://codeload.github.com/foundry-rs/forge-std/tar.gz/8948d45d3d9022c508b83eb5d26fd3a7a93f2f32
+      safe-singleton-deployer:
+        specifier: github:wilsoncusack/safe-singleton-deployer-sol
+        version: safe-singleton-deployer-sol@https://codeload.github.com/wilsoncusack/safe-singleton-deployer-sol/tar.gz/cf2b89c33fed536c4dd6fef2fb84f39053068868
       solady:
         specifier: github:vectorized/solady
         version: https://codeload.github.com/vectorized/solady/tar.gz/7590df8e38c64970a26e6fb13aefc95bb52435db
@@ -1680,6 +1683,10 @@ packages:
 
   safe-buffer@5.2.1:
     resolution: {integrity: sha512-rp3So07KcdmmKbGvgaNxQSJr7bGVSVk5S9Eq1F+ppbRo70+YeaDxkw5Dd8NPN+GD6bjnYm2VuPuCXmpuYvmCXQ==}
+
+  safe-singleton-deployer-sol@https://codeload.github.com/wilsoncusack/safe-singleton-deployer-sol/tar.gz/cf2b89c33fed536c4dd6fef2fb84f39053068868:
+    resolution: {tarball: https://codeload.github.com/wilsoncusack/safe-singleton-deployer-sol/tar.gz/cf2b89c33fed536c4dd6fef2fb84f39053068868}
+    version: 0.0.0
 
   safer-buffer@2.1.2:
     resolution: {integrity: sha512-YZo3K82SD7Riyi0E1EQPojLz7kpepnSQI9IyPbHHg1XXXevb5dJI7tpyN2ADxGcQbHG7vcyRHk0cbwqcQriUtg==}
@@ -4117,7 +4124,7 @@ snapshots:
 
   rimraf@2.7.1:
     dependencies:
-      glob: 7.2.0
+      glob: 7.2.3
 
   ripemd160@2.0.2:
     dependencies:
@@ -4133,6 +4140,8 @@ snapshots:
       queue-microtask: 1.2.3
 
   safe-buffer@5.2.1: {}
+
+  safe-singleton-deployer-sol@https://codeload.github.com/wilsoncusack/safe-singleton-deployer-sol/tar.gz/cf2b89c33fed536c4dd6fef2fb84f39053068868: {}
 
   safer-buffer@2.1.2: {}
 

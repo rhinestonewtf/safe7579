@@ -1,0 +1,847 @@
+{
+  "abi": [
+    {
+      "type": "function",
+      "name": "accountId",
+      "inputs": [],
+      "outputs": [
+        {
+          "name": "accountImplementationId",
+          "type": "string",
+          "internalType": "string"
+        }
+      ],
+      "stateMutability": "view"
+    },
+    {
+      "type": "function",
+      "name": "execute",
+      "inputs": [
+        { "name": "mode", "type": "bytes32", "internalType": "ModeCode" },
+        {
+          "name": "executionCalldata",
+          "type": "bytes",
+          "internalType": "bytes"
+        }
+      ],
+      "outputs": [],
+      "stateMutability": "payable"
+    },
+    {
+      "type": "function",
+      "name": "executeFromExecutor",
+      "inputs": [
+        { "name": "mode", "type": "bytes32", "internalType": "ModeCode" },
+        {
+          "name": "executionCalldata",
+          "type": "bytes",
+          "internalType": "bytes"
+        }
+      ],
+      "outputs": [
+        { "name": "returnData", "type": "bytes[]", "internalType": "bytes[]" }
+      ],
+      "stateMutability": "payable"
+    },
+    {
+      "type": "function",
+      "name": "executeUserOp",
+      "inputs": [
+        {
+          "name": "userOp",
+          "type": "tuple",
+          "internalType": "struct PackedUserOperation",
+          "components": [
+            { "name": "sender", "type": "address", "internalType": "address" },
+            { "name": "nonce", "type": "uint256", "internalType": "uint256" },
+            { "name": "initCode", "type": "bytes", "internalType": "bytes" },
+            { "name": "callData", "type": "bytes", "internalType": "bytes" },
+            {
+              "name": "accountGasLimits",
+              "type": "bytes32",
+              "internalType": "bytes32"
+            },
+            {
+              "name": "preVerificationGas",
+              "type": "uint256",
+              "internalType": "uint256"
+            },
+            { "name": "gasFees", "type": "bytes32", "internalType": "bytes32" },
+            {
+              "name": "paymasterAndData",
+              "type": "bytes",
+              "internalType": "bytes"
+            },
+            { "name": "signature", "type": "bytes", "internalType": "bytes" }
+          ]
+        },
+        { "name": "userOpHash", "type": "bytes32", "internalType": "bytes32" }
+      ],
+      "outputs": [],
+      "stateMutability": "payable"
+    },
+    {
+      "type": "function",
+      "name": "initializeAccount",
+      "inputs": [{ "name": "data", "type": "bytes", "internalType": "bytes" }],
+      "outputs": [],
+      "stateMutability": "payable"
+    },
+    {
+      "type": "function",
+      "name": "installModule",
+      "inputs": [
+        {
+          "name": "moduleTypeId",
+          "type": "uint256",
+          "internalType": "uint256"
+        },
+        { "name": "module", "type": "address", "internalType": "address" },
+        { "name": "initData", "type": "bytes", "internalType": "bytes" }
+      ],
+      "outputs": [],
+      "stateMutability": "payable"
+    },
+    {
+      "type": "function",
+      "name": "isModuleInstalled",
+      "inputs": [
+        {
+          "name": "moduleTypeId",
+          "type": "uint256",
+          "internalType": "uint256"
+        },
+        { "name": "module", "type": "address", "internalType": "address" },
+        {
+          "name": "additionalContext",
+          "type": "bytes",
+          "internalType": "bytes"
+        }
+      ],
+      "outputs": [{ "name": "", "type": "bool", "internalType": "bool" }],
+      "stateMutability": "view"
+    },
+    {
+      "type": "function",
+      "name": "isValidSignature",
+      "inputs": [
+        { "name": "hash", "type": "bytes32", "internalType": "bytes32" },
+        { "name": "data", "type": "bytes", "internalType": "bytes" }
+      ],
+      "outputs": [{ "name": "", "type": "bytes4", "internalType": "bytes4" }],
+      "stateMutability": "view"
+    },
+    {
+      "type": "function",
+      "name": "supportsExecutionMode",
+      "inputs": [
+        { "name": "encodedMode", "type": "bytes32", "internalType": "ModeCode" }
+      ],
+      "outputs": [{ "name": "", "type": "bool", "internalType": "bool" }],
+      "stateMutability": "view"
+    },
+    {
+      "type": "function",
+      "name": "supportsModule",
+      "inputs": [
+        { "name": "moduleTypeId", "type": "uint256", "internalType": "uint256" }
+      ],
+      "outputs": [{ "name": "", "type": "bool", "internalType": "bool" }],
+      "stateMutability": "view"
+    },
+    {
+      "type": "function",
+      "name": "uninstallModule",
+      "inputs": [
+        {
+          "name": "moduleTypeId",
+          "type": "uint256",
+          "internalType": "uint256"
+        },
+        { "name": "module", "type": "address", "internalType": "address" },
+        { "name": "deInitData", "type": "bytes", "internalType": "bytes" }
+      ],
+      "outputs": [],
+      "stateMutability": "payable"
+    },
+    {
+      "type": "function",
+      "name": "validateUserOp",
+      "inputs": [
+        {
+          "name": "userOp",
+          "type": "tuple",
+          "internalType": "struct PackedUserOperation",
+          "components": [
+            { "name": "sender", "type": "address", "internalType": "address" },
+            { "name": "nonce", "type": "uint256", "internalType": "uint256" },
+            { "name": "initCode", "type": "bytes", "internalType": "bytes" },
+            { "name": "callData", "type": "bytes", "internalType": "bytes" },
+            {
+              "name": "accountGasLimits",
+              "type": "bytes32",
+              "internalType": "bytes32"
+            },
+            {
+              "name": "preVerificationGas",
+              "type": "uint256",
+              "internalType": "uint256"
+            },
+            { "name": "gasFees", "type": "bytes32", "internalType": "bytes32" },
+            {
+              "name": "paymasterAndData",
+              "type": "bytes",
+              "internalType": "bytes"
+            },
+            { "name": "signature", "type": "bytes", "internalType": "bytes" }
+          ]
+        },
+        { "name": "userOpHash", "type": "bytes32", "internalType": "bytes32" },
+        {
+          "name": "missingAccountFunds",
+          "type": "uint256",
+          "internalType": "uint256"
+        }
+      ],
+      "outputs": [
+        {
+          "name": "validationData",
+          "type": "uint256",
+          "internalType": "uint256"
+        }
+      ],
+      "stateMutability": "payable"
+    },
+    {
+      "type": "event",
+      "name": "ModuleInstalled",
+      "inputs": [
+        {
+          "name": "moduleTypeId",
+          "type": "uint256",
+          "indexed": false,
+          "internalType": "uint256"
+        },
+        {
+          "name": "module",
+          "type": "address",
+          "indexed": false,
+          "internalType": "address"
+        }
+      ],
+      "anonymous": false
+    },
+    {
+      "type": "event",
+      "name": "ModuleUninstalled",
+      "inputs": [
+        {
+          "name": "moduleTypeId",
+          "type": "uint256",
+          "indexed": false,
+          "internalType": "uint256"
+        },
+        {
+          "name": "module",
+          "type": "address",
+          "indexed": false,
+          "internalType": "address"
+        }
+      ],
+      "anonymous": false
+    },
+    { "type": "error", "name": "AccountInitializationFailed", "inputs": [] },
+    {
+      "type": "error",
+      "name": "MismatchModuleTypeId",
+      "inputs": [
+        { "name": "moduleTypeId", "type": "uint256", "internalType": "uint256" }
+      ]
+    },
+    {
+      "type": "error",
+      "name": "UnsupportedCallType",
+      "inputs": [
+        { "name": "callType", "type": "bytes1", "internalType": "CallType" }
+      ]
+    },
+    {
+      "type": "error",
+      "name": "UnsupportedExecType",
+      "inputs": [
+        { "name": "execType", "type": "bytes1", "internalType": "ExecType" }
+      ]
+    },
+    {
+      "type": "error",
+      "name": "UnsupportedModuleType",
+      "inputs": [
+        { "name": "moduleTypeId", "type": "uint256", "internalType": "uint256" }
+      ]
+    }
+  ],
+  "bytecode": { "object": "0x", "sourceMap": "", "linkReferences": {} },
+  "deployedBytecode": { "object": "0x", "sourceMap": "", "linkReferences": {} },
+  "methodIdentifiers": {
+    "accountId()": "9cfd7cff",
+    "execute(bytes32,bytes)": "e9ae5c53",
+    "executeFromExecutor(bytes32,bytes)": "d691c964",
+    "executeUserOp((address,uint256,bytes,bytes,bytes32,uint256,bytes32,bytes,bytes),bytes32)": "8dd7712f",
+    "initializeAccount(bytes)": "4b6a1419",
+    "installModule(uint256,address,bytes)": "9517e29f",
+    "isModuleInstalled(uint256,address,bytes)": "112d3a7d",
+    "isValidSignature(bytes32,bytes)": "1626ba7e",
+    "supportsExecutionMode(bytes32)": "d03c7914",
+    "supportsModule(uint256)": "f2dc691d",
+    "uninstallModule(uint256,address,bytes)": "a71763a8",
+    "validateUserOp((address,uint256,bytes,bytes,bytes32,uint256,bytes32,bytes,bytes),bytes32,uint256)": "19822f7c"
+  },
+  "rawMetadata": "{\"compiler\":{\"version\":\"0.8.25+commit.b61c2a91\"},\"language\":\"Solidity\",\"output\":{\"abi\":[{\"inputs\":[],\"name\":\"AccountInitializationFailed\",\"type\":\"error\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"moduleTypeId\",\"type\":\"uint256\"}],\"name\":\"MismatchModuleTypeId\",\"type\":\"error\"},{\"inputs\":[{\"internalType\":\"CallType\",\"name\":\"callType\",\"type\":\"bytes1\"}],\"name\":\"UnsupportedCallType\",\"type\":\"error\"},{\"inputs\":[{\"internalType\":\"ExecType\",\"name\":\"execType\",\"type\":\"bytes1\"}],\"name\":\"UnsupportedExecType\",\"type\":\"error\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"moduleTypeId\",\"type\":\"uint256\"}],\"name\":\"UnsupportedModuleType\",\"type\":\"error\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"moduleTypeId\",\"type\":\"uint256\"},{\"indexed\":false,\"internalType\":\"address\",\"name\":\"module\",\"type\":\"address\"}],\"name\":\"ModuleInstalled\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"moduleTypeId\",\"type\":\"uint256\"},{\"indexed\":false,\"internalType\":\"address\",\"name\":\"module\",\"type\":\"address\"}],\"name\":\"ModuleUninstalled\",\"type\":\"event\"},{\"inputs\":[],\"name\":\"accountId\",\"outputs\":[{\"internalType\":\"string\",\"name\":\"accountImplementationId\",\"type\":\"string\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"ModeCode\",\"name\":\"mode\",\"type\":\"bytes32\"},{\"internalType\":\"bytes\",\"name\":\"executionCalldata\",\"type\":\"bytes\"}],\"name\":\"execute\",\"outputs\":[],\"stateMutability\":\"payable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"ModeCode\",\"name\":\"mode\",\"type\":\"bytes32\"},{\"internalType\":\"bytes\",\"name\":\"executionCalldata\",\"type\":\"bytes\"}],\"name\":\"executeFromExecutor\",\"outputs\":[{\"internalType\":\"bytes[]\",\"name\":\"returnData\",\"type\":\"bytes[]\"}],\"stateMutability\":\"payable\",\"type\":\"function\"},{\"inputs\":[{\"components\":[{\"internalType\":\"address\",\"name\":\"sender\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"nonce\",\"type\":\"uint256\"},{\"internalType\":\"bytes\",\"name\":\"initCode\",\"type\":\"bytes\"},{\"internalType\":\"bytes\",\"name\":\"callData\",\"type\":\"bytes\"},{\"internalType\":\"bytes32\",\"name\":\"accountGasLimits\",\"type\":\"bytes32\"},{\"internalType\":\"uint256\",\"name\":\"preVerificationGas\",\"type\":\"uint256\"},{\"internalType\":\"bytes32\",\"name\":\"gasFees\",\"type\":\"bytes32\"},{\"internalType\":\"bytes\",\"name\":\"paymasterAndData\",\"type\":\"bytes\"},{\"internalType\":\"bytes\",\"name\":\"signature\",\"type\":\"bytes\"}],\"internalType\":\"struct PackedUserOperation\",\"name\":\"userOp\",\"type\":\"tuple\"},{\"internalType\":\"bytes32\",\"name\":\"userOpHash\",\"type\":\"bytes32\"}],\"name\":\"executeUserOp\",\"outputs\":[],\"stateMutability\":\"payable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes\",\"name\":\"data\",\"type\":\"bytes\"}],\"name\":\"initializeAccount\",\"outputs\":[],\"stateMutability\":\"payable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"moduleTypeId\",\"type\":\"uint256\"},{\"internalType\":\"address\",\"name\":\"module\",\"type\":\"address\"},{\"internalType\":\"bytes\",\"name\":\"initData\",\"type\":\"bytes\"}],\"name\":\"installModule\",\"outputs\":[],\"stateMutability\":\"payable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"moduleTypeId\",\"type\":\"uint256\"},{\"internalType\":\"address\",\"name\":\"module\",\"type\":\"address\"},{\"internalType\":\"bytes\",\"name\":\"additionalContext\",\"type\":\"bytes\"}],\"name\":\"isModuleInstalled\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"hash\",\"type\":\"bytes32\"},{\"internalType\":\"bytes\",\"name\":\"data\",\"type\":\"bytes\"}],\"name\":\"isValidSignature\",\"outputs\":[{\"internalType\":\"bytes4\",\"name\":\"\",\"type\":\"bytes4\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"ModeCode\",\"name\":\"encodedMode\",\"type\":\"bytes32\"}],\"name\":\"supportsExecutionMode\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"moduleTypeId\",\"type\":\"uint256\"}],\"name\":\"supportsModule\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"moduleTypeId\",\"type\":\"uint256\"},{\"internalType\":\"address\",\"name\":\"module\",\"type\":\"address\"},{\"internalType\":\"bytes\",\"name\":\"deInitData\",\"type\":\"bytes\"}],\"name\":\"uninstallModule\",\"outputs\":[],\"stateMutability\":\"payable\",\"type\":\"function\"},{\"inputs\":[{\"components\":[{\"internalType\":\"address\",\"name\":\"sender\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"nonce\",\"type\":\"uint256\"},{\"internalType\":\"bytes\",\"name\":\"initCode\",\"type\":\"bytes\"},{\"internalType\":\"bytes\",\"name\":\"callData\",\"type\":\"bytes\"},{\"internalType\":\"bytes32\",\"name\":\"accountGasLimits\",\"type\":\"bytes32\"},{\"internalType\":\"uint256\",\"name\":\"preVerificationGas\",\"type\":\"uint256\"},{\"internalType\":\"bytes32\",\"name\":\"gasFees\",\"type\":\"bytes32\"},{\"internalType\":\"bytes\",\"name\":\"paymasterAndData\",\"type\":\"bytes\"},{\"internalType\":\"bytes\",\"name\":\"signature\",\"type\":\"bytes\"}],\"internalType\":\"struct PackedUserOperation\",\"name\":\"userOp\",\"type\":\"tuple\"},{\"internalType\":\"bytes32\",\"name\":\"userOpHash\",\"type\":\"bytes32\"},{\"internalType\":\"uint256\",\"name\":\"missingAccountFunds\",\"type\":\"uint256\"}],\"name\":\"validateUserOp\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"validationData\",\"type\":\"uint256\"}],\"stateMutability\":\"payable\",\"type\":\"function\"}],\"devdoc\":{\"kind\":\"dev\",\"methods\":{\"accountId()\":{\"details\":\"Returns the account id of the smart account\",\"returns\":{\"accountImplementationId\":\"the account id of the smart account the accountId should be structured like so:        \\\"vendorname.accountname.semver\\\"\"}},\"execute(bytes32,bytes)\":{\"details\":\"Executes a transaction on behalf of the account.         This function is intended to be called by ERC-4337 EntryPoint.solEnsure adequate authorization control: i.e. onlyEntryPointOrSelfMSA MUST implement this function signature. If a mode is requested that is not supported by the Account, it MUST revert\",\"params\":{\"executionCalldata\":\"The encoded execution call data\",\"mode\":\"The encoded execution mode of the transaction. See ModeLib.sol for details\"}},\"executeFromExecutor(bytes32,bytes)\":{\"details\":\"Executes a transaction on behalf of the account.         This function is intended to be called by Executor ModulesEnsure adequate authorization control: i.e. onlyExecutorModuleMSA MUST implement this function signature. If a mode is requested that is not supported by the Account, it MUST revert\",\"params\":{\"executionCalldata\":\"The encoded execution call data\",\"mode\":\"The encoded execution mode of the transaction. See ModeLib.sol for details\"}},\"executeUserOp((address,uint256,bytes,bytes,bytes32,uint256,bytes32,bytes,bytes),bytes32)\":{\"params\":{\"userOp\":\"- The operation that was just validated.\",\"userOpHash\":\"- Hash of the user's request data.\"}},\"initializeAccount(bytes)\":{\"details\":\"Initializes the account. Function might be called directly, or by a Factory\",\"params\":{\"data\":\". encoded data that can be used during the initialization phase\"}},\"installModule(uint256,address,bytes)\":{\"details\":\"installs a Module of a certain type on the smart accountImplement Authorization control of your chosing\",\"params\":{\"initData\":\"arbitrary data that may be required on the module during `onInstall` initialization.\",\"module\":\"the module address\",\"moduleTypeId\":\"the module type ID according the ERC-7579 spec\"}},\"isModuleInstalled(uint256,address,bytes)\":{\"params\":{\"additionalContext\":\"additional context data that the smart account may interpret to                          identifiy conditions under which the module is installed.                          usually this is not necessary, but for some special hooks that                          are stored in mappings, this param might be needed\",\"module\":\"the module address\",\"moduleTypeId\":\"the module type ID according the ERC-7579 spec      Note: keep in mind that some contracts can be multiple module types at the same time. It            thus may be necessary to query multiple module types\"}},\"isValidSignature(bytes32,bytes)\":{\"details\":\"ERC-1271 isValidSignature         This function is intended to be used to validate a smart account signature and may forward the call to a validator module\",\"params\":{\"data\":\"The data that is signed\",\"hash\":\"The hash of the data that is signed\"}},\"supportsExecutionMode(bytes32)\":{\"params\":{\"encodedMode\":\"the encoded mode\"}},\"supportsModule(uint256)\":{\"params\":{\"moduleTypeId\":\"the module type ID according the ERC-7579 spec\"}},\"uninstallModule(uint256,address,bytes)\":{\"details\":\"uninstalls a Module of a certain type on the smart accountImplement Authorization control of your chosing\",\"params\":{\"deInitData\":\"arbitrary data that may be required on the module during `onUninstall` de-initialization.\",\"module\":\"the module address\",\"moduleTypeId\":\"the module type ID according the ERC-7579 spec\"}},\"validateUserOp((address,uint256,bytes,bytes,bytes32,uint256,bytes32,bytes,bytes),bytes32,uint256)\":{\"details\":\"Must validate caller is the entryPoint.      Must validate the signature and nonce\",\"params\":{\"missingAccountFunds\":\"- Missing funds on the account's deposit in the entrypoint.                              This is the minimum amount to transfer to the sender(entryPoint) to be                              able to make the call. The excess is left as a deposit in the entrypoint                              for future calls. Can be withdrawn anytime using \\\"entryPoint.withdrawTo()\\\".                              In case there is a paymaster in the request (or the current deposit is high                              enough), this value will be zero.\",\"userOp\":\"- The operation that is about to be executed.\",\"userOpHash\":\"- Hash of the user's request data. can be used as the basis for signature.\"},\"returns\":{\"validationData\":\"      - Packaged ValidationData structure. use `_packValidationData` and                              `_unpackValidationData` to encode and decode.                              <20-byte> sigAuthorizer - 0 for valid signature, 1 to mark signature failure,                                 otherwise, an address of an \\\"authorizer\\\" contract.                              <6-byte> validUntil - Last timestamp this operation is valid. 0 for \\\"indefinite\\\"                              <6-byte> validAfter - First timestamp this operation is valid                                                    If an account doesn't use time-range, it is enough to                                                    return SIG_VALIDATION_FAILED value (1) for signature failure.                              Note that the validation code cannot use block.timestamp (or block.number) directly.\"}}},\"version\":1},\"userdoc\":{\"kind\":\"user\",\"methods\":{\"executeUserOp((address,uint256,bytes,bytes,bytes32,uint256,bytes32,bytes,bytes),bytes32)\":{\"notice\":\"Account may implement this execute method. passing this methodSig at the beginning of callData will cause the entryPoint to pass the full UserOp (and hash) to the account. The account should skip the methodSig, and use the callData (and optionally, other UserOp fields)\"},\"isModuleInstalled(uint256,address,bytes)\":{\"notice\":\"Function to check if the account has a certain module installed\"},\"supportsExecutionMode(bytes32)\":{\"notice\":\"Function to check if the account supports a certain CallType or ExecType (see ModeLib.sol)\"},\"supportsModule(uint256)\":{\"notice\":\"Function to check if the account supports installation of a certain module type Id\"},\"validateUserOp((address,uint256,bytes,bytes,bytes32,uint256,bytes32,bytes,bytes),bytes32,uint256)\":{\"notice\":\"Validate user's signature and nonce the entryPoint will make the call to the recipient only if this validation call returns successfully. signature failure should be reported by returning SIG_VALIDATION_FAILED (1). This allows making a \\\"simulation call\\\" without a valid signature Other failures (e.g. nonce mismatch, or invalid signature format) should still revert to signal failure.\"}},\"version\":1}},\"settings\":{\"compilationTarget\":{\"node_modules/erc7579/src/interfaces/IMSA.sol\":\"IMSA\"},\"evmVersion\":\"paris\",\"libraries\":{},\"metadata\":{\"bytecodeHash\":\"ipfs\"},\"optimizer\":{\"enabled\":true,\"runs\":200},\"remappings\":[\":@ERC4337/=node_modules/@ERC4337/\",\":@openzeppelin/=node_modules/@openzeppelin/\",\":@prb/math/=node_modules/@prb/math/src/\",\":@rhinestone/=node_modules/@rhinestone/\",\":@safe-global/=node_modules/@safe-global/\",\":account-abstraction-v0.6/=node_modules/@ERC4337/account-abstraction-v0.6/contracts/\",\":account-abstraction/=node_modules/@ERC4337/account-abstraction/contracts/\",\":ds-test/=node_modules/ds-test/src/\",\":erc4337-validation/=node_modules/@rhinestone/erc4337-validation/src/\",\":erc7579/=node_modules/erc7579/src/\",\":forge-std/=node_modules/forge-std/src/\",\":hardhat-deploy/=node_modules/hardhat-deploy/\",\":hardhat/=node_modules/hardhat/\",\":module-bases/=node_modules/@rhinestone/module-bases/src/\",\":modulekit/=node_modules/@rhinestone/modulekit/src/\",\":sentinellist/=node_modules/@rhinestone/sentinellist/src/\",\":solady/=node_modules/solady/src/\",\":solarray/=node_modules/solarray/src/\"]},\"sources\":{\"node_modules/@ERC4337/account-abstraction/contracts/interfaces/PackedUserOperation.sol\":{\"keccak256\":\"0x1129b46381db68eddbc5cb49e50664667b66b03c480453858e7b25eabe444359\",\"license\":\"GPL-3.0\",\"urls\":[\"bzz-raw://499a948aba60480dba6e25c763b8d918f1c246eb7a3302e04f493e080f3295be\",\"dweb:/ipfs/QmeRhhswf4NACcBKam2PyjpTP2ddSm648kah5kkQJsvwz3\"]},\"node_modules/erc7579/src/interfaces/IERC4337Account.sol\":{\"keccak256\":\"0x55f4a9fe65535a8b3f6db727c764aad1eb237a22828f2565941d0c079e9b7e3e\",\"license\":\"MIT\",\"urls\":[\"bzz-raw://cc161771a4b8cf0a71da17b63f8bc41b325ce92a3b0185f42c7565512b21c614\",\"dweb:/ipfs/QmTLH2JGFoAGd1KpYMxyEXVCxtGqrumairejZfS9pc64TG\"]},\"node_modules/erc7579/src/interfaces/IERC7579Account.sol\":{\"keccak256\":\"0x08368aba5f1bb83eb57e9f8d31a04edee4be69159b4844a6443f65100917011c\",\"license\":\"MIT\",\"urls\":[\"bzz-raw://789244f53fb8b25f4bacb8ac0b9c2f5ea2067a9c5c7bd13fd00e10618e52e2ff\",\"dweb:/ipfs/QmVSbGSyDpfL6UfyvaMBQHmV9u52wway1h3caJnvXVgkvn\"]},\"node_modules/erc7579/src/interfaces/IMSA.sol\":{\"keccak256\":\"0x649ef44dfc5ba9b485b31cda765335e96f35aa6e595fd8d86c28a62aa8982cbe\",\"license\":\"MIT\",\"urls\":[\"bzz-raw://43dac226bde7880ef807331972ec074d1bd046ca0bd776c69fec026416469e05\",\"dweb:/ipfs/QmWjEtYgMggSGBiQp1JaowyVux27a2WCGVmku4hn1oLcVn\"]},\"node_modules/erc7579/src/lib/ModeLib.sol\":{\"keccak256\":\"0x02ce0fc8805d1427841f32e2335157e3fae18e99d5c49ba46d53e12fcd1a5185\",\"license\":\"MIT\",\"urls\":[\"bzz-raw://9900d0dfb593b136a058a16f1817f60d5096c3eca6adea662381e12c241b14b4\",\"dweb:/ipfs/QmdsfLLtfzY9oEpZxk1Ve1PLuPQdphZcNK92L6mHa8n1h7\"]}},\"version\":1}",
+  "metadata": {
+    "compiler": { "version": "0.8.25+commit.b61c2a91" },
+    "language": "Solidity",
+    "output": {
+      "abi": [
+        {
+          "inputs": [],
+          "type": "error",
+          "name": "AccountInitializationFailed"
+        },
+        {
+          "inputs": [
+            {
+              "internalType": "uint256",
+              "name": "moduleTypeId",
+              "type": "uint256"
+            }
+          ],
+          "type": "error",
+          "name": "MismatchModuleTypeId"
+        },
+        {
+          "inputs": [
+            { "internalType": "CallType", "name": "callType", "type": "bytes1" }
+          ],
+          "type": "error",
+          "name": "UnsupportedCallType"
+        },
+        {
+          "inputs": [
+            { "internalType": "ExecType", "name": "execType", "type": "bytes1" }
+          ],
+          "type": "error",
+          "name": "UnsupportedExecType"
+        },
+        {
+          "inputs": [
+            {
+              "internalType": "uint256",
+              "name": "moduleTypeId",
+              "type": "uint256"
+            }
+          ],
+          "type": "error",
+          "name": "UnsupportedModuleType"
+        },
+        {
+          "inputs": [
+            {
+              "internalType": "uint256",
+              "name": "moduleTypeId",
+              "type": "uint256",
+              "indexed": false
+            },
+            {
+              "internalType": "address",
+              "name": "module",
+              "type": "address",
+              "indexed": false
+            }
+          ],
+          "type": "event",
+          "name": "ModuleInstalled",
+          "anonymous": false
+        },
+        {
+          "inputs": [
+            {
+              "internalType": "uint256",
+              "name": "moduleTypeId",
+              "type": "uint256",
+              "indexed": false
+            },
+            {
+              "internalType": "address",
+              "name": "module",
+              "type": "address",
+              "indexed": false
+            }
+          ],
+          "type": "event",
+          "name": "ModuleUninstalled",
+          "anonymous": false
+        },
+        {
+          "inputs": [],
+          "stateMutability": "view",
+          "type": "function",
+          "name": "accountId",
+          "outputs": [
+            {
+              "internalType": "string",
+              "name": "accountImplementationId",
+              "type": "string"
+            }
+          ]
+        },
+        {
+          "inputs": [
+            { "internalType": "ModeCode", "name": "mode", "type": "bytes32" },
+            {
+              "internalType": "bytes",
+              "name": "executionCalldata",
+              "type": "bytes"
+            }
+          ],
+          "stateMutability": "payable",
+          "type": "function",
+          "name": "execute"
+        },
+        {
+          "inputs": [
+            { "internalType": "ModeCode", "name": "mode", "type": "bytes32" },
+            {
+              "internalType": "bytes",
+              "name": "executionCalldata",
+              "type": "bytes"
+            }
+          ],
+          "stateMutability": "payable",
+          "type": "function",
+          "name": "executeFromExecutor",
+          "outputs": [
+            {
+              "internalType": "bytes[]",
+              "name": "returnData",
+              "type": "bytes[]"
+            }
+          ]
+        },
+        {
+          "inputs": [
+            {
+              "internalType": "struct PackedUserOperation",
+              "name": "userOp",
+              "type": "tuple",
+              "components": [
+                {
+                  "internalType": "address",
+                  "name": "sender",
+                  "type": "address"
+                },
+                {
+                  "internalType": "uint256",
+                  "name": "nonce",
+                  "type": "uint256"
+                },
+                {
+                  "internalType": "bytes",
+                  "name": "initCode",
+                  "type": "bytes"
+                },
+                {
+                  "internalType": "bytes",
+                  "name": "callData",
+                  "type": "bytes"
+                },
+                {
+                  "internalType": "bytes32",
+                  "name": "accountGasLimits",
+                  "type": "bytes32"
+                },
+                {
+                  "internalType": "uint256",
+                  "name": "preVerificationGas",
+                  "type": "uint256"
+                },
+                {
+                  "internalType": "bytes32",
+                  "name": "gasFees",
+                  "type": "bytes32"
+                },
+                {
+                  "internalType": "bytes",
+                  "name": "paymasterAndData",
+                  "type": "bytes"
+                },
+                {
+                  "internalType": "bytes",
+                  "name": "signature",
+                  "type": "bytes"
+                }
+              ]
+            },
+            {
+              "internalType": "bytes32",
+              "name": "userOpHash",
+              "type": "bytes32"
+            }
+          ],
+          "stateMutability": "payable",
+          "type": "function",
+          "name": "executeUserOp"
+        },
+        {
+          "inputs": [
+            { "internalType": "bytes", "name": "data", "type": "bytes" }
+          ],
+          "stateMutability": "payable",
+          "type": "function",
+          "name": "initializeAccount"
+        },
+        {
+          "inputs": [
+            {
+              "internalType": "uint256",
+              "name": "moduleTypeId",
+              "type": "uint256"
+            },
+            { "internalType": "address", "name": "module", "type": "address" },
+            { "internalType": "bytes", "name": "initData", "type": "bytes" }
+          ],
+          "stateMutability": "payable",
+          "type": "function",
+          "name": "installModule"
+        },
+        {
+          "inputs": [
+            {
+              "internalType": "uint256",
+              "name": "moduleTypeId",
+              "type": "uint256"
+            },
+            { "internalType": "address", "name": "module", "type": "address" },
+            {
+              "internalType": "bytes",
+              "name": "additionalContext",
+              "type": "bytes"
+            }
+          ],
+          "stateMutability": "view",
+          "type": "function",
+          "name": "isModuleInstalled",
+          "outputs": [{ "internalType": "bool", "name": "", "type": "bool" }]
+        },
+        {
+          "inputs": [
+            { "internalType": "bytes32", "name": "hash", "type": "bytes32" },
+            { "internalType": "bytes", "name": "data", "type": "bytes" }
+          ],
+          "stateMutability": "view",
+          "type": "function",
+          "name": "isValidSignature",
+          "outputs": [
+            { "internalType": "bytes4", "name": "", "type": "bytes4" }
+          ]
+        },
+        {
+          "inputs": [
+            {
+              "internalType": "ModeCode",
+              "name": "encodedMode",
+              "type": "bytes32"
+            }
+          ],
+          "stateMutability": "view",
+          "type": "function",
+          "name": "supportsExecutionMode",
+          "outputs": [{ "internalType": "bool", "name": "", "type": "bool" }]
+        },
+        {
+          "inputs": [
+            {
+              "internalType": "uint256",
+              "name": "moduleTypeId",
+              "type": "uint256"
+            }
+          ],
+          "stateMutability": "view",
+          "type": "function",
+          "name": "supportsModule",
+          "outputs": [{ "internalType": "bool", "name": "", "type": "bool" }]
+        },
+        {
+          "inputs": [
+            {
+              "internalType": "uint256",
+              "name": "moduleTypeId",
+              "type": "uint256"
+            },
+            { "internalType": "address", "name": "module", "type": "address" },
+            { "internalType": "bytes", "name": "deInitData", "type": "bytes" }
+          ],
+          "stateMutability": "payable",
+          "type": "function",
+          "name": "uninstallModule"
+        },
+        {
+          "inputs": [
+            {
+              "internalType": "struct PackedUserOperation",
+              "name": "userOp",
+              "type": "tuple",
+              "components": [
+                {
+                  "internalType": "address",
+                  "name": "sender",
+                  "type": "address"
+                },
+                {
+                  "internalType": "uint256",
+                  "name": "nonce",
+                  "type": "uint256"
+                },
+                {
+                  "internalType": "bytes",
+                  "name": "initCode",
+                  "type": "bytes"
+                },
+                {
+                  "internalType": "bytes",
+                  "name": "callData",
+                  "type": "bytes"
+                },
+                {
+                  "internalType": "bytes32",
+                  "name": "accountGasLimits",
+                  "type": "bytes32"
+                },
+                {
+                  "internalType": "uint256",
+                  "name": "preVerificationGas",
+                  "type": "uint256"
+                },
+                {
+                  "internalType": "bytes32",
+                  "name": "gasFees",
+                  "type": "bytes32"
+                },
+                {
+                  "internalType": "bytes",
+                  "name": "paymasterAndData",
+                  "type": "bytes"
+                },
+                {
+                  "internalType": "bytes",
+                  "name": "signature",
+                  "type": "bytes"
+                }
+              ]
+            },
+            {
+              "internalType": "bytes32",
+              "name": "userOpHash",
+              "type": "bytes32"
+            },
+            {
+              "internalType": "uint256",
+              "name": "missingAccountFunds",
+              "type": "uint256"
+            }
+          ],
+          "stateMutability": "payable",
+          "type": "function",
+          "name": "validateUserOp",
+          "outputs": [
+            {
+              "internalType": "uint256",
+              "name": "validationData",
+              "type": "uint256"
+            }
+          ]
+        }
+      ],
+      "devdoc": {
+        "kind": "dev",
+        "methods": {
+          "accountId()": {
+            "details": "Returns the account id of the smart account",
+            "returns": {
+              "accountImplementationId": "the account id of the smart account the accountId should be structured like so:        \"vendorname.accountname.semver\""
+            }
+          },
+          "execute(bytes32,bytes)": {
+            "details": "Executes a transaction on behalf of the account.         This function is intended to be called by ERC-4337 EntryPoint.solEnsure adequate authorization control: i.e. onlyEntryPointOrSelfMSA MUST implement this function signature. If a mode is requested that is not supported by the Account, it MUST revert",
+            "params": {
+              "executionCalldata": "The encoded execution call data",
+              "mode": "The encoded execution mode of the transaction. See ModeLib.sol for details"
+            }
+          },
+          "executeFromExecutor(bytes32,bytes)": {
+            "details": "Executes a transaction on behalf of the account.         This function is intended to be called by Executor ModulesEnsure adequate authorization control: i.e. onlyExecutorModuleMSA MUST implement this function signature. If a mode is requested that is not supported by the Account, it MUST revert",
+            "params": {
+              "executionCalldata": "The encoded execution call data",
+              "mode": "The encoded execution mode of the transaction. See ModeLib.sol for details"
+            }
+          },
+          "executeUserOp((address,uint256,bytes,bytes,bytes32,uint256,bytes32,bytes,bytes),bytes32)": {
+            "params": {
+              "userOp": "- The operation that was just validated.",
+              "userOpHash": "- Hash of the user's request data."
+            }
+          },
+          "initializeAccount(bytes)": {
+            "details": "Initializes the account. Function might be called directly, or by a Factory",
+            "params": {
+              "data": ". encoded data that can be used during the initialization phase"
+            }
+          },
+          "installModule(uint256,address,bytes)": {
+            "details": "installs a Module of a certain type on the smart accountImplement Authorization control of your chosing",
+            "params": {
+              "initData": "arbitrary data that may be required on the module during `onInstall` initialization.",
+              "module": "the module address",
+              "moduleTypeId": "the module type ID according the ERC-7579 spec"
+            }
+          },
+          "isModuleInstalled(uint256,address,bytes)": {
+            "params": {
+              "additionalContext": "additional context data that the smart account may interpret to                          identifiy conditions under which the module is installed.                          usually this is not necessary, but for some special hooks that                          are stored in mappings, this param might be needed",
+              "module": "the module address",
+              "moduleTypeId": "the module type ID according the ERC-7579 spec      Note: keep in mind that some contracts can be multiple module types at the same time. It            thus may be necessary to query multiple module types"
+            }
+          },
+          "isValidSignature(bytes32,bytes)": {
+            "details": "ERC-1271 isValidSignature         This function is intended to be used to validate a smart account signature and may forward the call to a validator module",
+            "params": {
+              "data": "The data that is signed",
+              "hash": "The hash of the data that is signed"
+            }
+          },
+          "supportsExecutionMode(bytes32)": {
+            "params": { "encodedMode": "the encoded mode" }
+          },
+          "supportsModule(uint256)": {
+            "params": {
+              "moduleTypeId": "the module type ID according the ERC-7579 spec"
+            }
+          },
+          "uninstallModule(uint256,address,bytes)": {
+            "details": "uninstalls a Module of a certain type on the smart accountImplement Authorization control of your chosing",
+            "params": {
+              "deInitData": "arbitrary data that may be required on the module during `onUninstall` de-initialization.",
+              "module": "the module address",
+              "moduleTypeId": "the module type ID according the ERC-7579 spec"
+            }
+          },
+          "validateUserOp((address,uint256,bytes,bytes,bytes32,uint256,bytes32,bytes,bytes),bytes32,uint256)": {
+            "details": "Must validate caller is the entryPoint.      Must validate the signature and nonce",
+            "params": {
+              "missingAccountFunds": "- Missing funds on the account's deposit in the entrypoint.                              This is the minimum amount to transfer to the sender(entryPoint) to be                              able to make the call. The excess is left as a deposit in the entrypoint                              for future calls. Can be withdrawn anytime using \"entryPoint.withdrawTo()\".                              In case there is a paymaster in the request (or the current deposit is high                              enough), this value will be zero.",
+              "userOp": "- The operation that is about to be executed.",
+              "userOpHash": "- Hash of the user's request data. can be used as the basis for signature."
+            },
+            "returns": {
+              "validationData": "      - Packaged ValidationData structure. use `_packValidationData` and                              `_unpackValidationData` to encode and decode.                              <20-byte> sigAuthorizer - 0 for valid signature, 1 to mark signature failure,                                 otherwise, an address of an \"authorizer\" contract.                              <6-byte> validUntil - Last timestamp this operation is valid. 0 for \"indefinite\"                              <6-byte> validAfter - First timestamp this operation is valid                                                    If an account doesn't use time-range, it is enough to                                                    return SIG_VALIDATION_FAILED value (1) for signature failure.                              Note that the validation code cannot use block.timestamp (or block.number) directly."
+            }
+          }
+        },
+        "version": 1
+      },
+      "userdoc": {
+        "kind": "user",
+        "methods": {
+          "executeUserOp((address,uint256,bytes,bytes,bytes32,uint256,bytes32,bytes,bytes),bytes32)": {
+            "notice": "Account may implement this execute method. passing this methodSig at the beginning of callData will cause the entryPoint to pass the full UserOp (and hash) to the account. The account should skip the methodSig, and use the callData (and optionally, other UserOp fields)"
+          },
+          "isModuleInstalled(uint256,address,bytes)": {
+            "notice": "Function to check if the account has a certain module installed"
+          },
+          "supportsExecutionMode(bytes32)": {
+            "notice": "Function to check if the account supports a certain CallType or ExecType (see ModeLib.sol)"
+          },
+          "supportsModule(uint256)": {
+            "notice": "Function to check if the account supports installation of a certain module type Id"
+          },
+          "validateUserOp((address,uint256,bytes,bytes,bytes32,uint256,bytes32,bytes,bytes),bytes32,uint256)": {
+            "notice": "Validate user's signature and nonce the entryPoint will make the call to the recipient only if this validation call returns successfully. signature failure should be reported by returning SIG_VALIDATION_FAILED (1). This allows making a \"simulation call\" without a valid signature Other failures (e.g. nonce mismatch, or invalid signature format) should still revert to signal failure."
+          }
+        },
+        "version": 1
+      }
+    },
+    "settings": {
+      "remappings": [
+        "@ERC4337/=node_modules/@ERC4337/",
+        "@openzeppelin/=node_modules/@openzeppelin/",
+        "@prb/math/=node_modules/@prb/math/src/",
+        "@rhinestone/=node_modules/@rhinestone/",
+        "@safe-global/=node_modules/@safe-global/",
+        "account-abstraction-v0.6/=node_modules/@ERC4337/account-abstraction-v0.6/contracts/",
+        "account-abstraction/=node_modules/@ERC4337/account-abstraction/contracts/",
+        "ds-test/=node_modules/ds-test/src/",
+        "erc4337-validation/=node_modules/@rhinestone/erc4337-validation/src/",
+        "erc7579/=node_modules/erc7579/src/",
+        "forge-std/=node_modules/forge-std/src/",
+        "hardhat-deploy/=node_modules/hardhat-deploy/",
+        "hardhat/=node_modules/hardhat/",
+        "module-bases/=node_modules/@rhinestone/module-bases/src/",
+        "modulekit/=node_modules/@rhinestone/modulekit/src/",
+        "sentinellist/=node_modules/@rhinestone/sentinellist/src/",
+        "solady/=node_modules/solady/src/",
+        "solarray/=node_modules/solarray/src/"
+      ],
+      "optimizer": { "enabled": true, "runs": 200 },
+      "metadata": { "bytecodeHash": "ipfs" },
+      "compilationTarget": {
+        "node_modules/erc7579/src/interfaces/IMSA.sol": "IMSA"
+      },
+      "evmVersion": "paris",
+      "libraries": {}
+    },
+    "sources": {
+      "node_modules/@ERC4337/account-abstraction/contracts/interfaces/PackedUserOperation.sol": {
+        "keccak256": "0x1129b46381db68eddbc5cb49e50664667b66b03c480453858e7b25eabe444359",
+        "urls": [
+          "bzz-raw://499a948aba60480dba6e25c763b8d918f1c246eb7a3302e04f493e080f3295be",
+          "dweb:/ipfs/QmeRhhswf4NACcBKam2PyjpTP2ddSm648kah5kkQJsvwz3"
+        ],
+        "license": "GPL-3.0"
+      },
+      "node_modules/erc7579/src/interfaces/IERC4337Account.sol": {
+        "keccak256": "0x55f4a9fe65535a8b3f6db727c764aad1eb237a22828f2565941d0c079e9b7e3e",
+        "urls": [
+          "bzz-raw://cc161771a4b8cf0a71da17b63f8bc41b325ce92a3b0185f42c7565512b21c614",
+          "dweb:/ipfs/QmTLH2JGFoAGd1KpYMxyEXVCxtGqrumairejZfS9pc64TG"
+        ],
+        "license": "MIT"
+      },
+      "node_modules/erc7579/src/interfaces/IERC7579Account.sol": {
+        "keccak256": "0x08368aba5f1bb83eb57e9f8d31a04edee4be69159b4844a6443f65100917011c",
+        "urls": [
+          "bzz-raw://789244f53fb8b25f4bacb8ac0b9c2f5ea2067a9c5c7bd13fd00e10618e52e2ff",
+          "dweb:/ipfs/QmVSbGSyDpfL6UfyvaMBQHmV9u52wway1h3caJnvXVgkvn"
+        ],
+        "license": "MIT"
+      },
+      "node_modules/erc7579/src/interfaces/IMSA.sol": {
+        "keccak256": "0x649ef44dfc5ba9b485b31cda765335e96f35aa6e595fd8d86c28a62aa8982cbe",
+        "urls": [
+          "bzz-raw://43dac226bde7880ef807331972ec074d1bd046ca0bd776c69fec026416469e05",
+          "dweb:/ipfs/QmWjEtYgMggSGBiQp1JaowyVux27a2WCGVmku4hn1oLcVn"
+        ],
+        "license": "MIT"
+      },
+      "node_modules/erc7579/src/lib/ModeLib.sol": {
+        "keccak256": "0x02ce0fc8805d1427841f32e2335157e3fae18e99d5c49ba46d53e12fcd1a5185",
+        "urls": [
+          "bzz-raw://9900d0dfb593b136a058a16f1817f60d5096c3eca6adea662381e12c241b14b4",
+          "dweb:/ipfs/QmdsfLLtfzY9oEpZxk1Ve1PLuPQdphZcNK92L6mHa8n1h7"
+        ],
+        "license": "MIT"
+      }
+    },
+    "version": 1
+  },
+  "id": 63
+}

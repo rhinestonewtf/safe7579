@@ -1,0 +1,19 @@
+{
+  "broadcastEOA": "0xD1dcdD8e6Fe04c338aC3f76f7D7105bEcab74F77",
+  "chainId": 11155111,
+  "deployments": {
+    "safe7579": {
+      "address": "0x757900cb2F8831f8a96653d12DdC7fa4CC7C0001",
+      "deployer": "0xD1dcdD8e6Fe04c338aC3f76f7D7105bEcab74F77",
+      "factory": "0x914d7Fec6aaC8cd542e72Bca78B30650d45643d7",
+      "salt": "0x00000000000000000000000000000000000000008b673f43373ca3031292d980"
+    },
+    "safe7579Launchpad": {
+      "address": "0x7579b0972C95D9dFDDb4be0f59fd8be14Ff200FF",
+      "deployer": "0xD1dcdD8e6Fe04c338aC3f76f7D7105bEcab74F77",
+      "factory": "0x914d7Fec6aaC8cd542e72Bca78B30650d45643d7",
+      "salt": "0x0000000000000000000000000000000000000000e5d609cada14d90391a9df51"
+    },
+    "timestamp": 1720807020
+  }
+}
