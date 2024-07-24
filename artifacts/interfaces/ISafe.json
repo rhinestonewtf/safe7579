@@ -1,0 +1,462 @@
+{
+  "abi": [
+    {
+      "type": "function",
+      "name": "VERSION",
+      "inputs": [],
+      "outputs": [{ "name": "", "type": "string", "internalType": "string" }],
+      "stateMutability": "pure"
+    },
+    {
+      "type": "function",
+      "name": "checkSignatures",
+      "inputs": [
+        { "name": "dataHash", "type": "bytes32", "internalType": "bytes32" },
+        { "name": "data", "type": "bytes", "internalType": "bytes" },
+        { "name": "signatures", "type": "bytes", "internalType": "bytes" }
+      ],
+      "outputs": [],
+      "stateMutability": "view"
+    },
+    {
+      "type": "function",
+      "name": "domainSeparator",
+      "inputs": [],
+      "outputs": [{ "name": "", "type": "bytes32", "internalType": "bytes32" }],
+      "stateMutability": "view"
+    },
+    {
+      "type": "function",
+      "name": "enableModule",
+      "inputs": [
+        { "name": "module", "type": "address", "internalType": "address" }
+      ],
+      "outputs": [],
+      "stateMutability": "nonpayable"
+    },
+    {
+      "type": "function",
+      "name": "execTransactionFromModule",
+      "inputs": [
+        { "name": "to", "type": "address", "internalType": "address" },
+        { "name": "value", "type": "uint256", "internalType": "uint256" },
+        { "name": "data", "type": "bytes", "internalType": "bytes" },
+        {
+          "name": "operation",
+          "type": "uint8",
+          "internalType": "enum ISafe.Operation"
+        }
+      ],
+      "outputs": [
+        { "name": "success", "type": "bool", "internalType": "bool" }
+      ],
+      "stateMutability": "nonpayable"
+    },
+    {
+      "type": "function",
+      "name": "execTransactionFromModuleReturnData",
+      "inputs": [
+        { "name": "to", "type": "address", "internalType": "address" },
+        { "name": "value", "type": "uint256", "internalType": "uint256" },
+        { "name": "data", "type": "bytes", "internalType": "bytes" },
+        {
+          "name": "operation",
+          "type": "uint8",
+          "internalType": "enum ISafe.Operation"
+        }
+      ],
+      "outputs": [
+        { "name": "success", "type": "bool", "internalType": "bool" },
+        { "name": "returnData", "type": "bytes", "internalType": "bytes" }
+      ],
+      "stateMutability": "nonpayable"
+    },
+    {
+      "type": "function",
+      "name": "getModulesPaginated",
+      "inputs": [
+        { "name": "start", "type": "address", "internalType": "address" },
+        { "name": "pageSize", "type": "uint256", "internalType": "uint256" }
+      ],
+      "outputs": [
+        { "name": "array", "type": "address[]", "internalType": "address[]" },
+        { "name": "next", "type": "address", "internalType": "address" }
+      ],
+      "stateMutability": "view"
+    },
+    {
+      "type": "function",
+      "name": "getStorageAt",
+      "inputs": [
+        { "name": "offset", "type": "uint256", "internalType": "uint256" },
+        { "name": "length", "type": "uint256", "internalType": "uint256" }
+      ],
+      "outputs": [{ "name": "", "type": "bytes", "internalType": "bytes" }],
+      "stateMutability": "view"
+    },
+    {
+      "type": "function",
+      "name": "setFallbackHandler",
+      "inputs": [
+        { "name": "handler", "type": "address", "internalType": "address" }
+      ],
+      "outputs": [],
+      "stateMutability": "nonpayable"
+    },
+    {
+      "type": "function",
+      "name": "setup",
+      "inputs": [
+        { "name": "_owners", "type": "address[]", "internalType": "address[]" },
+        { "name": "_threshold", "type": "uint256", "internalType": "uint256" },
+        { "name": "to", "type": "address", "internalType": "address" },
+        { "name": "data", "type": "bytes", "internalType": "bytes" },
+        {
+          "name": "fallbackHandler",
+          "type": "address",
+          "internalType": "address"
+        },
+        {
+          "name": "paymentToken",
+          "type": "address",
+          "internalType": "address"
+        },
+        { "name": "payment", "type": "uint256", "internalType": "uint256" },
+        {
+          "name": "paymentReceiver",
+          "type": "address",
+          "internalType": "address payable"
+        }
+      ],
+      "outputs": [],
+      "stateMutability": "nonpayable"
+    },
+    {
+      "type": "function",
+      "name": "signedMessages",
+      "inputs": [{ "name": "", "type": "bytes32", "internalType": "bytes32" }],
+      "outputs": [{ "name": "", "type": "uint256", "internalType": "uint256" }],
+      "stateMutability": "view"
+    },
+    {
+      "type": "function",
+      "name": "simulateAndRevert",
+      "inputs": [
+        {
+          "name": "targetContract",
+          "type": "address",
+          "internalType": "address"
+        },
+        { "name": "calldataPayload", "type": "bytes", "internalType": "bytes" }
+      ],
+      "outputs": [],
+      "stateMutability": "nonpayable"
+    }
+  ],
+  "bytecode": { "object": "0x", "sourceMap": "", "linkReferences": {} },
+  "deployedBytecode": { "object": "0x", "sourceMap": "", "linkReferences": {} },
+  "methodIdentifiers": {
+    "VERSION()": "ffa1ad74",
+    "checkSignatures(bytes32,bytes,bytes)": "934f3a11",
+    "domainSeparator()": "f698da25",
+    "enableModule(address)": "610b5925",
+    "execTransactionFromModule(address,uint256,bytes,uint8)": "468721a7",
+    "execTransactionFromModuleReturnData(address,uint256,bytes,uint8)": "5229073f",
+    "getModulesPaginated(address,uint256)": "cc2f8452",
+    "getStorageAt(uint256,uint256)": "5624b25b",
+    "setFallbackHandler(address)": "f08a0323",
+    "setup(address[],uint256,address,bytes,address,address,uint256,address)": "b63e800d",
+    "signedMessages(bytes32)": "5ae6bd37",
+    "simulateAndRevert(address,bytes)": "b4faba09"
+  },
+  "rawMetadata": "{\"compiler\":{\"version\":\"0.8.26+commit.8a97fa7a\"},\"language\":\"Solidity\",\"output\":{\"abi\":[{\"inputs\":[],\"name\":\"VERSION\",\"outputs\":[{\"internalType\":\"string\",\"name\":\"\",\"type\":\"string\"}],\"stateMutability\":\"pure\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"dataHash\",\"type\":\"bytes32\"},{\"internalType\":\"bytes\",\"name\":\"data\",\"type\":\"bytes\"},{\"internalType\":\"bytes\",\"name\":\"signatures\",\"type\":\"bytes\"}],\"name\":\"checkSignatures\",\"outputs\":[],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"domainSeparator\",\"outputs\":[{\"internalType\":\"bytes32\",\"name\":\"\",\"type\":\"bytes32\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"module\",\"type\":\"address\"}],\"name\":\"enableModule\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"to\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"value\",\"type\":\"uint256\"},{\"internalType\":\"bytes\",\"name\":\"data\",\"type\":\"bytes\"},{\"internalType\":\"enum ISafe.Operation\",\"name\":\"operation\",\"type\":\"uint8\"}],\"name\":\"execTransactionFromModule\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"success\",\"type\":\"bool\"}],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"to\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"value\",\"type\":\"uint256\"},{\"internalType\":\"bytes\",\"name\":\"data\",\"type\":\"bytes\"},{\"internalType\":\"enum ISafe.Operation\",\"name\":\"operation\",\"type\":\"uint8\"}],\"name\":\"execTransactionFromModuleReturnData\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"success\",\"type\":\"bool\"},{\"internalType\":\"bytes\",\"name\":\"returnData\",\"type\":\"bytes\"}],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"start\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"pageSize\",\"type\":\"uint256\"}],\"name\":\"getModulesPaginated\",\"outputs\":[{\"internalType\":\"address[]\",\"name\":\"array\",\"type\":\"address[]\"},{\"internalType\":\"address\",\"name\":\"next\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"offset\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"length\",\"type\":\"uint256\"}],\"name\":\"getStorageAt\",\"outputs\":[{\"internalType\":\"bytes\",\"name\":\"\",\"type\":\"bytes\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"handler\",\"type\":\"address\"}],\"name\":\"setFallbackHandler\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address[]\",\"name\":\"_owners\",\"type\":\"address[]\"},{\"internalType\":\"uint256\",\"name\":\"_threshold\",\"type\":\"uint256\"},{\"internalType\":\"address\",\"name\":\"to\",\"type\":\"address\"},{\"internalType\":\"bytes\",\"name\":\"data\",\"type\":\"bytes\"},{\"internalType\":\"address\",\"name\":\"fallbackHandler\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"paymentToken\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"payment\",\"type\":\"uint256\"},{\"internalType\":\"address payable\",\"name\":\"paymentReceiver\",\"type\":\"address\"}],\"name\":\"setup\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"\",\"type\":\"bytes32\"}],\"name\":\"signedMessages\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"targetContract\",\"type\":\"address\"},{\"internalType\":\"bytes\",\"name\":\"calldataPayload\",\"type\":\"bytes\"}],\"name\":\"simulateAndRevert\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"}],\"devdoc\":{\"kind\":\"dev\",\"methods\":{\"checkSignatures(bytes32,bytes,bytes)\":{\"details\":\"Checks whether the signature provided is valid for the provided data, hash. Will revert otherwise.\",\"params\":{\"data\":\"That should be signed (this is passed to an external validator contract)\",\"dataHash\":\"Hash of the data (could be either a message hash or transaction hash)\",\"signatures\":\"Signature data that should be verified. Can be ECDSA signature, contract signature (EIP-1271) or approved hash.\"}},\"domainSeparator()\":{\"details\":\"Returns the domain separator for this contract, as defined in the EIP-712 standard.\",\"returns\":{\"_0\":\"bytes32 The domain separator hash.\"}},\"enableModule(address)\":{\"details\":\"This can only be done via a Safe transaction.\",\"params\":{\"module\":\"Module to be enabled.\"}},\"execTransactionFromModule(address,uint256,bytes,uint8)\":{\"details\":\"Allows a Module to execute a Safe transaction without any further confirmations.\",\"params\":{\"data\":\"Data payload of module transaction.\",\"operation\":\"Operation type of module transaction.\",\"to\":\"Destination address of module transaction.\",\"value\":\"Ether value of module transaction.\"}},\"execTransactionFromModuleReturnData(address,uint256,bytes,uint8)\":{\"params\":{\"data\":\"Data payload of module transaction.\",\"operation\":\"Operation type of module transaction.\",\"to\":\"Destination address of module transaction.\",\"value\":\"Ether value of module transaction.\"},\"returns\":{\"returnData\":\"Data returned by the call.\",\"success\":\"Boolean flag indicating if the call succeeded.\"}},\"getModulesPaginated(address,uint256)\":{\"details\":\"Returns array of modules.\",\"params\":{\"pageSize\":\"Maximum number of modules that should be returned.\",\"start\":\"Start of the page.\"},\"returns\":{\"array\":\"Array of modules.\",\"next\":\"Start of the next page.\"}}},\"version\":1},\"userdoc\":{\"kind\":\"user\",\"methods\":{\"enableModule(address)\":{\"notice\":\"Enables the module `module` for the Safe.\"},\"execTransactionFromModuleReturnData(address,uint256,bytes,uint8)\":{\"notice\":\"Execute `operation` (0: Call, 1: DelegateCall) to `to` with `value` (Native Token) and return data\"}},\"version\":1}},\"settings\":{\"compilationTarget\":{\"src/interfaces/ISafe.sol\":\"ISafe\"},\"evmVersion\":\"paris\",\"libraries\":{},\"metadata\":{\"bytecodeHash\":\"ipfs\"},\"optimizer\":{\"enabled\":true,\"runs\":200},\"remappings\":[\":@ERC4337/=node_modules/@ERC4337/\",\":@gnosis.pm/=node_modules/@gnosis.pm/\",\":@openzeppelin/=node_modules/@openzeppelin/\",\":@prb/math/=node_modules/@prb/math/src/\",\":@rhinestone/=node_modules/@rhinestone/\",\":@safe-global/=node_modules/@safe-global/\",\":account-abstraction-v0.6/=node_modules/@ERC4337/account-abstraction-v0.6/contracts/\",\":account-abstraction/=node_modules/@ERC4337/account-abstraction/contracts/\",\":ds-test/=node_modules/ds-test/src/\",\":erc4337-validation/=node_modules/@rhinestone/erc4337-validation/src/\",\":erc7579/=node_modules/erc7579/src/\",\":forge-std/=node_modules/forge-std/src/\",\":hardhat-deploy/=node_modules/hardhat-deploy/\",\":hardhat/=node_modules/hardhat/\",\":module-bases/=node_modules/@rhinestone/module-bases/src/\",\":modulekit/=node_modules/@rhinestone/modulekit/src/\",\":sentinellist/=node_modules/@rhinestone/sentinellist/src/\",\":solady/=node_modules/solady/src/\",\":solarray/=node_modules/solarray/src/\"]},\"sources\":{\"src/interfaces/ISafe.sol\":{\"keccak256\":\"0x1e8b6e12f66c5ea5609ea89048e9985bc921c69fdfbbf54315c40c64dc5f9a6f\",\"license\":\"LGPL-3.0-only\",\"urls\":[\"bzz-raw://dab4c6c2fdb2418c41e7acce370b9be26b4d66f9654d4f04b6aacdae1aa73457\",\"dweb:/ipfs/QmTbkzmhvMHwhLMpDBEYFscrkAkfEtnkbhGYVVMkVP7Qx4\"]}},\"version\":1}",
+  "metadata": {
+    "compiler": { "version": "0.8.26+commit.8a97fa7a" },
+    "language": "Solidity",
+    "output": {
+      "abi": [
+        {
+          "inputs": [],
+          "stateMutability": "pure",
+          "type": "function",
+          "name": "VERSION",
+          "outputs": [
+            { "internalType": "string", "name": "", "type": "string" }
+          ]
+        },
+        {
+          "inputs": [
+            {
+              "internalType": "bytes32",
+              "name": "dataHash",
+              "type": "bytes32"
+            },
+            { "internalType": "bytes", "name": "data", "type": "bytes" },
+            { "internalType": "bytes", "name": "signatures", "type": "bytes" }
+          ],
+          "stateMutability": "view",
+          "type": "function",
+          "name": "checkSignatures"
+        },
+        {
+          "inputs": [],
+          "stateMutability": "view",
+          "type": "function",
+          "name": "domainSeparator",
+          "outputs": [
+            { "internalType": "bytes32", "name": "", "type": "bytes32" }
+          ]
+        },
+        {
+          "inputs": [
+            { "internalType": "address", "name": "module", "type": "address" }
+          ],
+          "stateMutability": "nonpayable",
+          "type": "function",
+          "name": "enableModule"
+        },
+        {
+          "inputs": [
+            { "internalType": "address", "name": "to", "type": "address" },
+            { "internalType": "uint256", "name": "value", "type": "uint256" },
+            { "internalType": "bytes", "name": "data", "type": "bytes" },
+            {
+              "internalType": "enum ISafe.Operation",
+              "name": "operation",
+              "type": "uint8"
+            }
+          ],
+          "stateMutability": "nonpayable",
+          "type": "function",
+          "name": "execTransactionFromModule",
+          "outputs": [
+            { "internalType": "bool", "name": "success", "type": "bool" }
+          ]
+        },
+        {
+          "inputs": [
+            { "internalType": "address", "name": "to", "type": "address" },
+            { "internalType": "uint256", "name": "value", "type": "uint256" },
+            { "internalType": "bytes", "name": "data", "type": "bytes" },
+            {
+              "internalType": "enum ISafe.Operation",
+              "name": "operation",
+              "type": "uint8"
+            }
+          ],
+          "stateMutability": "nonpayable",
+          "type": "function",
+          "name": "execTransactionFromModuleReturnData",
+          "outputs": [
+            { "internalType": "bool", "name": "success", "type": "bool" },
+            { "internalType": "bytes", "name": "returnData", "type": "bytes" }
+          ]
+        },
+        {
+          "inputs": [
+            { "internalType": "address", "name": "start", "type": "address" },
+            { "internalType": "uint256", "name": "pageSize", "type": "uint256" }
+          ],
+          "stateMutability": "view",
+          "type": "function",
+          "name": "getModulesPaginated",
+          "outputs": [
+            {
+              "internalType": "address[]",
+              "name": "array",
+              "type": "address[]"
+            },
+            { "internalType": "address", "name": "next", "type": "address" }
+          ]
+        },
+        {
+          "inputs": [
+            { "internalType": "uint256", "name": "offset", "type": "uint256" },
+            { "internalType": "uint256", "name": "length", "type": "uint256" }
+          ],
+          "stateMutability": "view",
+          "type": "function",
+          "name": "getStorageAt",
+          "outputs": [{ "internalType": "bytes", "name": "", "type": "bytes" }]
+        },
+        {
+          "inputs": [
+            { "internalType": "address", "name": "handler", "type": "address" }
+          ],
+          "stateMutability": "nonpayable",
+          "type": "function",
+          "name": "setFallbackHandler"
+        },
+        {
+          "inputs": [
+            {
+              "internalType": "address[]",
+              "name": "_owners",
+              "type": "address[]"
+            },
+            {
+              "internalType": "uint256",
+              "name": "_threshold",
+              "type": "uint256"
+            },
+            { "internalType": "address", "name": "to", "type": "address" },
+            { "internalType": "bytes", "name": "data", "type": "bytes" },
+            {
+              "internalType": "address",
+              "name": "fallbackHandler",
+              "type": "address"
+            },
+            {
+              "internalType": "address",
+              "name": "paymentToken",
+              "type": "address"
+            },
+            { "internalType": "uint256", "name": "payment", "type": "uint256" },
+            {
+              "internalType": "address payable",
+              "name": "paymentReceiver",
+              "type": "address"
+            }
+          ],
+          "stateMutability": "nonpayable",
+          "type": "function",
+          "name": "setup"
+        },
+        {
+          "inputs": [
+            { "internalType": "bytes32", "name": "", "type": "bytes32" }
+          ],
+          "stateMutability": "view",
+          "type": "function",
+          "name": "signedMessages",
+          "outputs": [
+            { "internalType": "uint256", "name": "", "type": "uint256" }
+          ]
+        },
+        {
+          "inputs": [
+            {
+              "internalType": "address",
+              "name": "targetContract",
+              "type": "address"
+            },
+            {
+              "internalType": "bytes",
+              "name": "calldataPayload",
+              "type": "bytes"
+            }
+          ],
+          "stateMutability": "nonpayable",
+          "type": "function",
+          "name": "simulateAndRevert"
+        }
+      ],
+      "devdoc": {
+        "kind": "dev",
+        "methods": {
+          "checkSignatures(bytes32,bytes,bytes)": {
+            "details": "Checks whether the signature provided is valid for the provided data, hash. Will revert otherwise.",
+            "params": {
+              "data": "That should be signed (this is passed to an external validator contract)",
+              "dataHash": "Hash of the data (could be either a message hash or transaction hash)",
+              "signatures": "Signature data that should be verified. Can be ECDSA signature, contract signature (EIP-1271) or approved hash."
+            }
+          },
+          "domainSeparator()": {
+            "details": "Returns the domain separator for this contract, as defined in the EIP-712 standard.",
+            "returns": { "_0": "bytes32 The domain separator hash." }
+          },
+          "enableModule(address)": {
+            "details": "This can only be done via a Safe transaction.",
+            "params": { "module": "Module to be enabled." }
+          },
+          "execTransactionFromModule(address,uint256,bytes,uint8)": {
+            "details": "Allows a Module to execute a Safe transaction without any further confirmations.",
+            "params": {
+              "data": "Data payload of module transaction.",
+              "operation": "Operation type of module transaction.",
+              "to": "Destination address of module transaction.",
+              "value": "Ether value of module transaction."
+            }
+          },
+          "execTransactionFromModuleReturnData(address,uint256,bytes,uint8)": {
+            "params": {
+              "data": "Data payload of module transaction.",
+              "operation": "Operation type of module transaction.",
+              "to": "Destination address of module transaction.",
+              "value": "Ether value of module transaction."
+            },
+            "returns": {
+              "returnData": "Data returned by the call.",
+              "success": "Boolean flag indicating if the call succeeded."
+            }
+          },
+          "getModulesPaginated(address,uint256)": {
+            "details": "Returns array of modules.",
+            "params": {
+              "pageSize": "Maximum number of modules that should be returned.",
+              "start": "Start of the page."
+            },
+            "returns": {
+              "array": "Array of modules.",
+              "next": "Start of the next page."
+            }
+          }
+        },
+        "version": 1
+      },
+      "userdoc": {
+        "kind": "user",
+        "methods": {
+          "enableModule(address)": {
+            "notice": "Enables the module `module` for the Safe."
+          },
+          "execTransactionFromModuleReturnData(address,uint256,bytes,uint8)": {
+            "notice": "Execute `operation` (0: Call, 1: DelegateCall) to `to` with `value` (Native Token) and return data"
+          }
+        },
+        "version": 1
+      }
+    },
+    "settings": {
+      "remappings": [
+        "@ERC4337/=node_modules/@ERC4337/",
+        "@gnosis.pm/=node_modules/@gnosis.pm/",
+        "@openzeppelin/=node_modules/@openzeppelin/",
+        "@prb/math/=node_modules/@prb/math/src/",
+        "@rhinestone/=node_modules/@rhinestone/",
+        "@safe-global/=node_modules/@safe-global/",
+        "account-abstraction-v0.6/=node_modules/@ERC4337/account-abstraction-v0.6/contracts/",
+        "account-abstraction/=node_modules/@ERC4337/account-abstraction/contracts/",
+        "ds-test/=node_modules/ds-test/src/",
+        "erc4337-validation/=node_modules/@rhinestone/erc4337-validation/src/",
+        "erc7579/=node_modules/erc7579/src/",
+        "forge-std/=node_modules/forge-std/src/",
+        "hardhat-deploy/=node_modules/hardhat-deploy/",
+        "hardhat/=node_modules/hardhat/",
+        "module-bases/=node_modules/@rhinestone/module-bases/src/",
+        "modulekit/=node_modules/@rhinestone/modulekit/src/",
+        "sentinellist/=node_modules/@rhinestone/sentinellist/src/",
+        "solady/=node_modules/solady/src/",
+        "solarray/=node_modules/solarray/src/"
+      ],
+      "optimizer": { "enabled": true, "runs": 200 },
+      "metadata": { "bytecodeHash": "ipfs" },
+      "compilationTarget": { "src/interfaces/ISafe.sol": "ISafe" },
+      "evmVersion": "paris",
+      "libraries": {}
+    },
+    "sources": {
+      "src/interfaces/ISafe.sol": {
+        "keccak256": "0x1e8b6e12f66c5ea5609ea89048e9985bc921c69fdfbbf54315c40c64dc5f9a6f",
+        "urls": [
+          "bzz-raw://dab4c6c2fdb2418c41e7acce370b9be26b4d66f9654d4f04b6aacdae1aa73457",
+          "dweb:/ipfs/QmTbkzmhvMHwhLMpDBEYFscrkAkfEtnkbhGYVVMkVP7Qx4"
+        ],
+        "license": "LGPL-3.0-only"
+      }
+    },
+    "version": 1
+  },
+  "id": 127
+}

@@ -1,15 +1,30 @@
 // SPDX-License-Identifier: GPL-3.0
 pragma solidity ^0.8.20;
 
-import { IAccount, PackedUserOperation } from "account-abstraction/interfaces/IAccount.sol";
+import { _packValidationData } from "@ERC4337/account-abstraction/contracts/core/Helpers.sol";
+import { SafeOp } from "./core/SafeOp.sol";
+
+import {
+    IAccount,
+    PackedUserOperation
+} from "@ERC4337/account-abstraction/contracts/interfaces/IAccount.sol";
 import { ISafe } from "./interfaces/ISafe.sol";
+import { ISafeOp } from "./interfaces/ISafeOp.sol";
 import { ISafe7579 } from "./ISafe7579.sol";
 import { IERC7484 } from "./interfaces/IERC7484.sol";
 import "./DataTypes.sol";
 
+import { UserOperationLib } from "@ERC4337/account-abstraction/contracts/core/UserOperationLib.sol";
+
 import { IValidator } from "erc7579/interfaces/IERC7579Module.sol";
 
 import { SafeStorage } from "@safe-global/safe-contracts/contracts/libraries/SafeStorage.sol";
+
+import { MODULE_TYPE_VALIDATOR } from "erc7579/interfaces/IERC7579Module.sol";
+import { CheckSignatures } from "@rhinestone/checknsignatures/src/CheckNSignatures.sol";
+import { LibSort } from "solady/utils/LibSort.sol";
+import { SupportViewer } from "./core/SupportViewer.sol";
+import { IERC7579AccountEvents } from "./interfaces/IERC7579Account.sol";
 
 /**
  * Launchpad to deploy a Safe account and connect the Safe7579 adapter.
@@ -18,11 +33,15 @@ import { SafeStorage } from "@safe-global/safe-contracts/contracts/libraries/Saf
  * technique](https://github.com/safe-global/safe-modules/pull/184)
  * @author rhinestone | zeroknots.eth
  */
-contract Safe7579Launchpad is IAccount, SafeStorage {
-    event ModuleInstalled(uint256 moduleTypeId, address module);
-
-    bytes32 private constant DOMAIN_SEPARATOR_TYPEHASH =
-        keccak256("EIP712Domain(uint256 chainId,address verifyingContract)");
+contract Safe7579Launchpad is
+    IAccount,
+    SafeStorage,
+    SafeOp,
+    SupportViewer,
+    IERC7579AccountEvents
+{
+    using LibSort for address[];
+    using CheckSignatures for bytes32;
 
     // keccak256("Safe7579Launchpad.initHash") - 1
     uint256 private constant INIT_HASH_SLOT =
@@ -42,16 +61,13 @@ contract Safe7579Launchpad is IAccount, SafeStorage {
         bytes callData;
     }
 
-    // solhint-disable max-line-length
-    bytes32 private constant SAFE_INIT_TYPEHASH = keccak256(
-        "InitData(address singleton,address[] owners,uint256 threshold,address setupTo,bytes setupData,address safe7579,ModuleInit[] validators,bytes callData)"
-    );
-
     address private immutable SELF;
     address public immutable SUPPORTED_ENTRYPOINT;
     IERC7484 public immutable REGISTRY;
 
     error InvalidEntryPoint();
+    error InvalidSetup();
+    error Safe7579LaunchpadAlreadyInitialized();
     error OnlyDelegatecall();
     error OnlyProxy();
     error PreValidationSetupFailed();
@@ -66,7 +82,7 @@ contract Safe7579Launchpad is IAccount, SafeStorage {
         REGISTRY = registry;
     }
 
-    modifier onlyDelegatecall() {
+    modifier onlySelfDelegatecall() {
         if (msg.sender != address(this)) revert OnlyDelegatecall();
         _;
     }
@@ -81,7 +97,7 @@ contract Safe7579Launchpad is IAccount, SafeStorage {
         _;
     }
 
-    receive() external payable { }
+    receive() external payable onlyProxy { }
 
     /**
      * This function is intended to be delegatecalled by the ISafe.setup function. It configures the
@@ -97,11 +113,36 @@ contract Safe7579Launchpad is IAccount, SafeStorage {
         uint8 threshold
     )
         public
-        onlyDelegatecall
+        onlySelfDelegatecall
     {
         ISafe(address(this)).enableModule(safe7579);
-        ISafe7579(payable(safe7579)).initializeAccount({
+        ISafe7579(payable(this)).initializeAccount({
             validators: new ModuleInit[](0),
+            executors: executors,
+            fallbacks: fallbacks,
+            hooks: hooks,
+            registryInit: RegistryInit({ registry: REGISTRY, attesters: attesters, threshold: threshold })
+        });
+    }
+
+    /**
+     * This function allows existing safe accounts to add the Safe7579 adapter to their account
+     */
+    function addSafe7579(
+        address safe7579,
+        ModuleInit[] calldata validators,
+        ModuleInit[] calldata executors,
+        ModuleInit[] calldata fallbacks,
+        ModuleInit[] calldata hooks,
+        address[] calldata attesters,
+        uint8 threshold
+    )
+        external
+    {
+        ISafe(address(this)).enableModule(safe7579);
+        ISafe(address(this)).setFallbackHandler(safe7579);
+        ISafe7579(payable(this)).initializeAccount({
+            validators: validators,
             executors: executors,
             fallbacks: fallbacks,
             hooks: hooks,
@@ -125,6 +166,8 @@ contract Safe7579Launchpad is IAccount, SafeStorage {
         external
         onlyProxy
     {
+        if (getInitHash() != bytes32(0)) revert Safe7579LaunchpadAlreadyInitialized();
+
         // sstore inithash
         _setInitHash(initHash);
 
@@ -160,7 +203,6 @@ contract Safe7579Launchpad is IAccount, SafeStorage {
         uint256 missingAccountFunds
     )
         external
-        override
         onlyProxy // ensure SafeProxy called this
         onlySupportedEntryPoint
         returns (uint256 validationData)
@@ -171,7 +213,7 @@ contract Safe7579Launchpad is IAccount, SafeStorage {
 
         InitData memory initData = abi.decode(userOp.callData[4:], (InitData));
         // read stored initHash from SafeProxy storage. only proceed if the InitData hash matches
-        if (hash(initData) != _initHash()) revert InvalidInitHash();
+        if (hash(initData) != getInitHash()) revert InvalidInitHash();
 
         // get validator from nonce encoding
         address validator;
@@ -182,26 +224,50 @@ contract Safe7579Launchpad is IAccount, SafeStorage {
         }
 
         // initialize validator on behalf of the safe account
-        ISafe7579(initData.safe7579).launchpadValidators(initData.validators);
+        // the call below is equivalent to:
+        // ISafe7579(initData.safe7579).initializeAccountWithValidators(initData.validators);
+        // but we need to append msg.sender (entrypoint) to ERC2771 style access control, to protect
+        // the launchpadValidator function
+        (bool success,) = address(initData.safe7579).call(
+            abi.encodePacked(
+                abi.encodeCall(ISafe7579.initializeAccountWithValidators, (initData.validators)), // validators
+                msg.sender // ERC2771 access control
+            )
+        );
+
+        // ensure that the call was successful
+        if (!success) revert InvalidUserOperationData();
 
         // Call onInstall on each validator module to set up the validators.
-        // Since this function is delegatecalled by the SafeProxy, the Validator Module is called
+        // Since this function is delegatecalled by the SafeProxy, the Validator Module is
+        // called
         // with msg.sender == SafeProxy.
         bool userOpValidatorInstalled;
         uint256 validatorsLength = initData.validators.length;
         for (uint256 i; i < validatorsLength; i++) {
             address validatorModule = initData.validators[i].module;
             IValidator(validatorModule).onInstall(initData.validators[i].initData);
-            emit ModuleInstalled(1, validatorModule);
+            emit ModuleInstalled(MODULE_TYPE_VALIDATOR, validatorModule);
 
             if (validatorModule == validator) userOpValidatorInstalled = true;
         }
+
         // Ensure that the validator module selected in the userOp was
         // part of the validators in InitData
-        if (!userOpValidatorInstalled) return 1;
+        if (userOpValidatorInstalled) {
+            // validate userOp with selected validation module.
+            validationData = IValidator(validator).validateUserOp(userOp, userOpHash);
+        } else {
+            // otherwise we fall back to safe-style validation, like in the safe7579
+            (bool validSig, uint48 validUntil, uint48 validAfter) =
+                _isValidSafeSigners(initData, userOp);
 
-        // validate userOp with selected validation module.
-        validationData = IValidator(validator).validateUserOp(userOp, userOpHash);
+            validationData = _packValidationData({
+                sigFailed: !validSig,
+                validUntil: validUntil,
+                validAfter: validAfter
+            });
+        }
 
         // pay back gas to EntryPoint
         if (missingAccountFunds > 0) {
@@ -210,6 +276,45 @@ contract Safe7579Launchpad is IAccount, SafeStorage {
                 pop(call(gas(), caller(), missingAccountFunds, 0, 0, 0, 0))
             }
         }
+    }
+
+    function _isValidSafeSigners(
+        InitData memory safeSetupCallData,
+        PackedUserOperation calldata userOp
+    )
+        internal
+        view
+        returns (bool validSig, uint48 validUntil, uint48 validAfter)
+    {
+        bytes memory operationData;
+        bytes memory signatures;
+        // decode ERC4337 userOp into Safe operation.
+        (operationData, validAfter, validUntil, signatures) =
+            ISafeOp(safeSetupCallData.safe7579).getSafeOp(userOp, SUPPORTED_ENTRYPOINT);
+        bytes32 _hash = keccak256(operationData);
+
+        address[] memory signers = _hash.recoverNSignatures(signatures, safeSetupCallData.threshold);
+        signers.insertionSort();
+
+        address[] memory owners = safeSetupCallData.owners;
+
+        // sorting owners here instead of requiring sorted list for improved UX
+        owners.insertionSort();
+        owners.uniquifySorted();
+
+        uint256 ownersLength = owners.length;
+
+        uint256 validSigs;
+        for (uint256 i; i < ownersLength; i++) {
+            (bool found,) = signers.searchSorted(owners[i]);
+            if (found) {
+                validSigs++;
+                if (validSigs >= safeSetupCallData.threshold) {
+                    return (true, validUntil, validAfter);
+                }
+            }
+        }
+        return (false, validUntil, validAfter);
     }
 
     /**
@@ -228,9 +333,11 @@ contract Safe7579Launchpad is IAccount, SafeStorage {
         // from now on, ISafe can be used to interact with the SafeProxy
         SafeStorage.singleton = initData.singleton;
 
-        // setup SafeAccount
         // setupTo should be this launchpad
-        // setupData should be a call to this.initSafe7579()
+        if (initData.setupTo != SELF) revert InvalidSetup();
+        // // setupData should be a call to this.initSafe7579()
+        if (bytes4(initData.setupData[:4]) != this.initSafe7579.selector) revert InvalidSetup();
+        // setup SafeAccount
         ISafe(address(this)).setup({
             _owners: initData.owners,
             _threshold: initData.threshold,
@@ -261,12 +368,8 @@ contract Safe7579Launchpad is IAccount, SafeStorage {
         }
     }
 
-    function _domainSeparator() internal view returns (bytes32) {
-        return keccak256(abi.encode(DOMAIN_SEPARATOR_TYPEHASH, block.chainid, SELF));
-    }
-
     // sload inithash from SafeProxy storage
-    function _initHash() public view returns (bytes32 value) {
+    function getInitHash() public view returns (bytes32 value) {
         // solhint-disable-next-line no-inline-assembly
         assembly ("memory-safe") {
             value := sload(INIT_HASH_SLOT)

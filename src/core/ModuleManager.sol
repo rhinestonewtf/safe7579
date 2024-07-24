@@ -33,7 +33,6 @@ import {
  * respective section
  */
 abstract contract ModuleManager is ISafe7579, AccessControl, Receiver, RegistryAdapter {
-    using SentinelListLib for SentinelListLib.SentinelList;
     using SentinelList4337Lib for SentinelList4337Lib.SentinelList;
 
     /*´:°•.°+.*•´.*:˚.°*.˚•´.°:°•.°•.*•´.*:˚.°*.˚•´.°:°•.°+.*•´.*:*/
@@ -97,8 +96,8 @@ abstract contract ModuleManager is ISafe7579, AccessControl, Receiver, RegistryA
     /**
      * Get paginated list of installed validators
      */
-    function getValidatorPaginated(
-        address start,
+    function getValidatorsPaginated(
+        address cursor,
         uint256 pageSize
     )
         external
@@ -108,7 +107,7 @@ abstract contract ModuleManager is ISafe7579, AccessControl, Receiver, RegistryA
     {
         return $validators.getEntriesPaginated({
             account: msg.sender,
-            start: start,
+            start: cursor,
             pageSize: pageSize
         });
     }
@@ -116,8 +115,8 @@ abstract contract ModuleManager is ISafe7579, AccessControl, Receiver, RegistryA
     /*´:°•.°+.*•´.*:˚.°*.˚•´.°:°•.°•.*•´.*:˚.°*.˚•´.°:°•.°+.*•´.*:*/
     /*                      EXECUTOR MODULES                      */
     /*.•°:°.´+˚.*°.˚:*.´•*.+°.•°:´*.´•*.•°.•°:°.´:•˚°.*°.˚:*.´+°.•*/
-    mapping(address smartAccount => SentinelListLib.SentinelList _executors) internal
-        $executorStorage;
+
+    SentinelList4337Lib.SentinelList internal $executors;
 
     modifier onlyExecutorModule() {
         if (!_isExecutorInstalled(_msgSender())) revert InvalidModule(_msgSender());
@@ -138,8 +137,7 @@ abstract contract ModuleManager is ISafe7579, AccessControl, Receiver, RegistryA
         withRegistry(executor, MODULE_TYPE_EXECUTOR)
         returns (bytes memory moduleInitData)
     {
-        SentinelListLib.SentinelList storage $executors = $executorStorage[msg.sender];
-        $executors.push(executor);
+        $executors.push({ account: msg.sender, newEntry: executor });
         return data;
     }
 
@@ -156,15 +154,18 @@ abstract contract ModuleManager is ISafe7579, AccessControl, Receiver, RegistryA
         internal
         returns (bytes memory moduleDeInitData)
     {
-        SentinelListLib.SentinelList storage $executors = $executorStorage[msg.sender];
         address prev;
         (prev, moduleDeInitData) = abi.decode(data, (address, bytes));
-        $executors.pop(prev, executor);
+        $executors.pop({ account: msg.sender, prevEntry: prev, popEntry: executor });
     }
 
-    function _isExecutorInstalled(address executor) internal view virtual returns (bool) {
-        SentinelListLib.SentinelList storage $executors = $executorStorage[msg.sender];
-        return $executors.contains(executor);
+    function _isExecutorInstalled(address executor)
+        internal
+        view
+        virtual
+        returns (bool isInstalled)
+    {
+        isInstalled = $executors.contains({ account: msg.sender, entry: executor });
     }
 
     /**
@@ -172,22 +173,25 @@ abstract contract ModuleManager is ISafe7579, AccessControl, Receiver, RegistryA
      */
     function getExecutorsPaginated(
         address cursor,
-        uint256 size
+        uint256 pageSize
     )
         external
         view
         virtual
         returns (address[] memory array, address next)
     {
-        SentinelListLib.SentinelList storage $executors = $executorStorage[msg.sender];
-        return $executors.getEntriesPaginated(cursor, size);
+        return $executors.getEntriesPaginated({
+            account: msg.sender,
+            start: cursor,
+            pageSize: pageSize
+        });
     }
 
     /*´:°•.°+.*•´.*:˚.°*.˚•´.°:°•.°•.*•´.*:˚.°*.˚•´.°:°•.°+.*•´.*:*/
     /*                      FALLBACK MODULES                      */
     /*.•°:°.´+˚.*°.˚:*.´•*.+°.•°:´*.´•*.•°.•°:°.´:•˚°.*°.˚:*.´+°.•*/
 
-    mapping(address smartAccount => mapping(bytes4 selector => FallbackHandler handlerConfig))
+    mapping(bytes4 selector => mapping(address smartAccount => FallbackHandler handlerConfig))
         internal $fallbackStorage;
 
     function _installFallbackHandler(
@@ -207,9 +211,15 @@ abstract contract ModuleManager is ISafe7579, AccessControl, Receiver, RegistryA
         if (
             functionSig == IModule.onInstall.selector || functionSig == IModule.onUninstall.selector
         ) revert InvalidFallbackHandler(functionSig);
+
+        // disallow unsupported calltypes
+        if (calltype != CALLTYPE_SINGLE && calltype != CALLTYPE_STATIC) {
+            revert InvalidCallType(calltype);
+        }
+
         if (_isFallbackHandlerInstalled(functionSig)) revert FallbackInstalled(functionSig);
 
-        FallbackHandler storage $fallbacks = $fallbackStorage[msg.sender][functionSig];
+        FallbackHandler storage $fallbacks = $fallbackStorage[functionSig][msg.sender];
         $fallbacks.calltype = calltype;
         $fallbacks.handler = handler;
 
@@ -217,7 +227,7 @@ abstract contract ModuleManager is ISafe7579, AccessControl, Receiver, RegistryA
     }
 
     function _isFallbackHandlerInstalled(bytes4 functionSig) internal view virtual returns (bool) {
-        FallbackHandler storage $fallbacks = $fallbackStorage[msg.sender][functionSig];
+        FallbackHandler storage $fallbacks = $fallbackStorage[functionSig][msg.sender];
         return $fallbacks.handler != address(0);
     }
 
@@ -232,7 +242,7 @@ abstract contract ModuleManager is ISafe7579, AccessControl, Receiver, RegistryA
         bytes4 functionSig;
         (functionSig, moduleDeInitData) = abi.decode(context, (bytes4, bytes));
 
-        FallbackHandler storage $fallbacks = $fallbackStorage[msg.sender][functionSig];
+        FallbackHandler storage $fallbacks = $fallbackStorage[functionSig][msg.sender];
         delete $fallbacks.handler;
     }
 
@@ -247,7 +257,7 @@ abstract contract ModuleManager is ISafe7579, AccessControl, Receiver, RegistryA
     {
         bytes4 functionSig = abi.decode(additionalContext, (bytes4));
 
-        FallbackHandler storage $fallbacks = $fallbackStorage[msg.sender][functionSig];
+        FallbackHandler storage $fallbacks = $fallbackStorage[functionSig][msg.sender];
         return $fallbacks.handler == _handler;
     }
 
@@ -278,7 +288,7 @@ abstract contract ModuleManager is ISafe7579, AccessControl, Receiver, RegistryA
         returns (bytes memory fallbackRet)
     {
         // get handler for specific function selector
-        FallbackHandler storage $fallbacks = $fallbackStorage[msg.sender][msg.sig];
+        FallbackHandler storage $fallbacks = $fallbackStorage[msg.sig][msg.sender];
         address handler = $fallbacks.handler;
         CallType calltype = $fallbacks.calltype;
         // if no handler is set for the msg.sig, revert
@@ -309,7 +319,7 @@ abstract contract ModuleManager is ISafe7579, AccessControl, Receiver, RegistryA
     /*.•°:°.´+˚.*°.˚:*.´•*.+°.•°:´*.´•*.•°.•°:°.´:•˚°.*°.˚:*.´+°.•*/
 
     mapping(address smartAccount => address globalHook) internal $globalHook;
-    mapping(address smartAccount => mapping(bytes4 => address hook)) internal $hookManager;
+    mapping(bytes4 selector => mapping(address smartAccount => address hook)) internal $hookManager;
 
     /**
      * Run precheck hook for global and function selector specific
@@ -375,10 +385,23 @@ abstract contract ModuleManager is ISafe7579, AccessControl, Receiver, RegistryA
      */
     modifier withHook(bytes4 selector) {
         address globalHook = $globalHook[msg.sender];
-        address sigHook = $hookManager[msg.sender][selector];
+        address sigHook = $hookManager[selector][msg.sender];
         (bytes memory global, bytes memory sig) = _preHooks(globalHook, sigHook);
         _;
         _postHooks(globalHook, sigHook, global, sig);
+    }
+
+    modifier tryWithHook(address module, bytes4 selector) {
+        address globalHook = $globalHook[msg.sender];
+        address sigHook = $hookManager[selector][msg.sender];
+
+        if (module != globalHook && module != sigHook) {
+            (bytes memory global, bytes memory sig) = _preHooks(globalHook, sigHook);
+            _;
+            _postHooks(globalHook, sigHook, global, sig);
+        } else {
+            _;
+        }
     }
 
     /**
@@ -410,13 +433,13 @@ abstract contract ModuleManager is ISafe7579, AccessControl, Receiver, RegistryA
             }
             $globalHook[msg.sender] = hook;
         } else if (hookType == HookType.SIG) {
+            currentHook = $hookManager[selector][msg.sender];
             // Dont allow hooks to be overwritten. If a hook is currently installed, it must be
             // uninstalled first
             if (currentHook != address(0)) {
                 revert HookAlreadyInstalled(currentHook);
             }
-            currentHook = $hookManager[msg.sender][selector];
-            $hookManager[msg.sender][selector] = hook;
+            $hookManager[selector][msg.sender] = hook;
         } else {
             revert InvalidHookType();
         }
@@ -438,7 +461,7 @@ abstract contract ModuleManager is ISafe7579, AccessControl, Receiver, RegistryA
         if (hookType == HookType.GLOBAL && selector == 0x0) {
             delete $globalHook[msg.sender];
         } else if (hookType == HookType.SIG) {
-            delete $hookManager[msg.sender][selector];
+            delete $hookManager[selector][msg.sender];
         } else {
             revert InvalidHookType();
         }
@@ -457,7 +480,7 @@ abstract contract ModuleManager is ISafe7579, AccessControl, Receiver, RegistryA
             hook = $globalHook[msg.sender];
         }
         if (hookType == HookType.SIG) {
-            hook = $hookManager[msg.sender][selector];
+            hook = $hookManager[selector][msg.sender];
         }
     }
 
@@ -475,7 +498,7 @@ abstract contract ModuleManager is ISafe7579, AccessControl, Receiver, RegistryA
     }
 
     function getActiveHook(bytes4 selector) public view returns (address hook) {
-        return $hookManager[msg.sender][selector];
+        return $hookManager[selector][msg.sender];
     }
 
     function getActiveHook() public view returns (address hook) {
@@ -486,7 +509,7 @@ abstract contract ModuleManager is ISafe7579, AccessControl, Receiver, RegistryA
     /**
      * To make it easier to install multiple modules at once, this function will
      * install multiple modules at once. The init data is expected to be a abi encoded tuple
-     * of (uint[] types, bytes[] contexts, bytes[] moduleInitData)
+     * of (uint[] types, bytes[] contexts, bytes moduleInitData)
      * @dev Install multiple modules at once
      * @param module address of the module
      * @param initData initialization data for the module
@@ -554,10 +577,84 @@ abstract contract ModuleManager is ISafe7579, AccessControl, Receiver, RegistryA
             /*.•°:°.´+˚.*°.˚:*.´•*.+°.•°:´*.´•*.•°.•°:°.´:•˚°.*°.˚:*.´+°.•*/
             else if (_type == MODULE_TYPE_HOOK) {
                 _installHook(module, contexts[i]);
+            } else {
+                revert InvalidModuleType(module, _type);
             }
         }
         // memory allocate the moduleInitData to return. This data should be used by the caller to
         // initialize the module
         _moduleInitData = moduleInitData;
+    }
+
+    function _multiTypeUninstall(
+        address module,
+        bytes calldata initData
+    )
+        internal
+        returns (bytes memory _moduleDeInitData)
+    {
+        uint256[] calldata types;
+        bytes[] calldata contexts;
+        bytes calldata moduleDeInitData;
+
+        // equivalent of:
+        // (types, contexs, moduleInitData) = abi.decode(initData,(uint[],bytes[],bytes)
+        // solhint-disable-next-line no-inline-assembly
+        assembly ("memory-safe") {
+            let offset := initData.offset
+            let baseOffset := offset
+            let dataPointer := add(baseOffset, calldataload(offset))
+
+            types.offset := add(dataPointer, 32)
+            types.length := calldataload(dataPointer)
+            offset := add(offset, 32)
+
+            dataPointer := add(baseOffset, calldataload(offset))
+            contexts.offset := add(dataPointer, 32)
+            contexts.length := calldataload(dataPointer)
+            offset := add(offset, 32)
+
+            dataPointer := add(baseOffset, calldataload(offset))
+            moduleDeInitData.offset := add(dataPointer, 32)
+            moduleDeInitData.length := calldataload(dataPointer)
+        }
+
+        uint256 length = types.length;
+        if (contexts.length != length) revert InvalidInput();
+
+        // iterate over all module types and install the module as a type accordingly
+        for (uint256 i; i < length; i++) {
+            uint256 _type = types[i];
+
+            /*´:°•.°+.*•´.*:˚.°*.˚•´.°:°•.°•.*•´.*:˚.°*.˚•´.°:°•.°+.*•´.*:*/
+            /*                      INSTALL VALIDATORS                    */
+            /*.•°:°.´+˚.*°.˚:*.´•*.+°.•°:´*.´•*.•°.•°:°.´:•˚°.*°.˚:*.´+°.•*/
+            if (_type == MODULE_TYPE_VALIDATOR) {
+                _uninstallValidator(module, contexts[i]);
+            }
+            /*´:°•.°+.*•´.*:˚.°*.˚•´.°:°•.°•.*•´.*:˚.°*.˚•´.°:°•.°+.*•´.*:*/
+            /*                       INSTALL EXECUTORS                    */
+            /*.•°:°.´+˚.*°.˚:*.´•*.+°.•°:´*.´•*.•°.•°:°.´:•˚°.*°.˚:*.´+°.•*/
+            else if (_type == MODULE_TYPE_EXECUTOR) {
+                _uninstallExecutor(module, contexts[i]);
+            }
+            /*´:°•.°+.*•´.*:˚.°*.˚•´.°:°•.°•.*•´.*:˚.°*.˚•´.°:°•.°+.*•´.*:*/
+            /*                       INSTALL FALLBACK                     */
+            /*.•°:°.´+˚.*°.˚:*.´•*.+°.•°:´*.´•*.•°.•°:°.´:•˚°.*°.˚:*.´+°.•*/
+            else if (_type == MODULE_TYPE_FALLBACK) {
+                _uninstallFallbackHandler(module, contexts[i]);
+            }
+            /*´:°•.°+.*•´.*:˚.°*.˚•´.°:°•.°•.*•´.*:˚.°*.˚•´.°:°•.°+.*•´.*:*/
+            /*          INSTALL HOOK (global or sig specific)             */
+            /*.•°:°.´+˚.*°.˚:*.´•*.+°.•°:´*.´•*.•°.•°:°.´:•˚°.*°.˚:*.´+°.•*/
+            else if (_type == MODULE_TYPE_HOOK) {
+                _uninstallHook(module, contexts[i]);
+            } else {
+                revert InvalidModuleType(module, _type);
+            }
+        }
+        // memory allocate the moduleInitData to return. This data should be used by the caller to
+        // initialize the module
+        _moduleDeInitData = moduleDeInitData;
     }
 }

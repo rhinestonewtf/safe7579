@@ -9,32 +9,6 @@ import { Execution, ExecutionLib } from "erc7579/lib/ExecutionLib.sol";
 import { IEntryPoint } from "@ERC4337/account-abstraction/contracts/interfaces/IEntryPoint.sol";
 import { IERC7579Account } from "erc7579/interfaces/IERC7579Account.sol";
 
-interface IPermissionChecker {
-    function checkPermissionForSmartAccount(
-        address smartAccount,
-        bytes calldata permissionDataFromContext
-    )
-        external
-        view
-        returns (bytes32 permissionPrefix);
-}
-
-type ValidAfter is uint48;
-
-type ValidUntil is uint48;
-
-struct SingleSignerPermission {
-    ValidUntil validUntil;
-    ValidAfter validAfter;
-    address signatureValidationAlgorithm;
-    bytes signer;
-    // TODO: change it to address[] and bytes[] to be able to
-    // stack policies for a permission
-    // as of now it is enough to have a single policy for demo purposes
-    address policy;
-    bytes policyData;
-}
-
 contract Safe7579UserOperationBuilder is IUserOperationBuilder {
     IEntryPoint internal immutable _entryPoint;
 
@@ -99,7 +73,15 @@ contract Safe7579UserOperationBuilder is IUserOperationBuilder {
         view
         returns (bytes memory signature)
     {
-        return context;
+        bytes32 signerId = bytes32(context);
+        signature = abi.encodePacked(
+            bytes1(0x00),
+            context,
+            abi.encode(
+                hex"e8b94748580ca0b4993c9a1b86b5be851bfc076ff5ce3a1ff65bf16392acfcb800f9b4f1aef1555c7fce5599fffb17e7c635502154a0333ba21f3ae491839af51c",
+                hex"07855b46a623a8ecabac76ed697aa4e13631e3b6718c8a0d342860c13c30d2fc00000000000000000000000000000000000000000000000000000000000000e0010000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000001400000000000000000000000000000000000000000000000000000000000000024456b4f30bac4a8994b010d127650e6f22669f7f7aec4475f80f8c2a8d2ed02872b0aca713e929d8a28596b42f325fa9587a16a8eb2bc07e4b3a3e9c14a7b988100000000000000000000000000000000000000000000000000000000000000251584482fdf7a4d0b7eb9d45cf835288cb59e55b8249fff356e33be88ecc546d11d0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000957b2274797065223a22776562617574686e2e676574222c226368616c6c656e6765223a22307831383138356261383531633032383032323035366564396634326261313434396532613138663739323932326238383939363937313962616665373861653563222c226f726967696e223a2268747470733a2f2f646576656c6f706d656e742e666f72756d64616f732e636f6d227d0000000000000000000000"
+            )
+        );
     }
 
     function getSignature(
@@ -111,57 +93,31 @@ contract Safe7579UserOperationBuilder is IUserOperationBuilder {
         view
         returns (bytes memory signature)
     {
-        address permissionValidator = address(bytes20(context[0:20]));
+        if (context[0] == 0x01) {
+            // enable module
+            (
+                uint8 permissionIndex,
+                bytes memory permissionEnableData,
+                bytes memory permissionEnableDataSignature,
+                bytes memory permissionData
+            ) = abi.decode(context[1:], (uint8, bytes, bytes, bytes));
 
-        // What if permission has already been set?
-        bytes32 result = IPermissionChecker(permissionValidator).checkPermissionForSmartAccount(
-            smartAccount, context[20:]
-        );
-
-        if (result == keccak256("Permission Not Enabled")) {
-            // just use the full data required to enable the permission
-            signature = getEnablePermissionValidatorSignatureFromContext(
-                context[20:], userOperation.signature
+            signature = abi.encodePacked(
+                context[0],
+                permissionIndex,
+                abi.encode(
+                    permissionEnableData,
+                    permissionEnableDataSignature,
+                    permissionData,
+                    userOperation.signature
+                )
             );
         } else {
-            /* commented this out bc currently deployed permission validator is hardcode to 
-             the check _isSessionEnableTransaction to alway return true */
-            // just use the permissionId returned as result
-            //signature = abi.encode(result, userOperation.signature);
-
-            //so for now returning same signature as enable permissions
-            signature = getEnablePermissionValidatorSignatureFromContext(
-                context[20:], userOperation.signature
-            );
+            // use existing signerId
+            bytes32 signerId = bytes32(context[1:33]);
+            (bytes memory sig1, bytes memory sig2) =
+                abi.decode(userOperation.signature, (bytes, bytes));
+            signature = abi.encodePacked(context, abi.encode(sig1, sig2));
         }
-    }
-
-    function getEnablePermissionValidatorSignatureFromContext(
-        bytes calldata permissionDataFromContext,
-        bytes calldata rawSignature
-    )
-        private
-        pure
-        returns (bytes memory)
-    {
-        (
-            uint256 permissionIndex,
-            SingleSignerPermission memory permission,
-            bytes memory permissionEnableData,
-            bytes memory permissionEnableSignature
-        ) = abi.decode(
-            permissionDataFromContext[1:], (uint256, SingleSignerPermission, bytes, bytes)
-        );
-
-        return abi.encodePacked(
-            permissionDataFromContext[:1], //enable tx flag
-            abi.encode(
-                permissionIndex,
-                permission,
-                permissionEnableData,
-                permissionEnableSignature,
-                rawSignature
-            )
-        );
     }
 }

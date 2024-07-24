@@ -34,12 +34,13 @@ abstract contract ExecutionHelper is Safe7579DCUtilSetup {
     }
 
     function _exec(ISafe safe, address target, uint256 value, bytes memory callData) internal {
-        bool success = safe.execTransactionFromModule(target, value, callData, 0);
+        bool success = safe.execTransactionFromModule(target, value, callData, ISafe.Operation.Call);
         if (!success) revert ExecutionFailed();
     }
 
     function _delegatecall(ISafe safe, address target, bytes memory callData) internal {
-        bool success = safe.execTransactionFromModule(target, 0, callData, 1);
+        bool success =
+            safe.execTransactionFromModule(target, 0, callData, ISafe.Operation.DelegateCall);
         if (!success) revert ExecutionFailed();
     }
 
@@ -58,12 +59,14 @@ abstract contract ExecutionHelper is Safe7579DCUtilSetup {
         internal
         returns (bytes[] memory retDatas)
     {
-        bytes memory tmp = _delegatecallReturn({
-            safe: safe,
-            target: UTIL,
-            callData: abi.encodeCall(BatchedExecUtil.executeReturn, executions)
-        });
-        retDatas = abi.decode(tmp, (bytes[]));
+        retDatas = abi.decode(
+            _delegatecallReturn({
+                safe: safe,
+                target: UTIL,
+                callData: abi.encodeCall(BatchedExecUtil.executeReturn, executions)
+            }),
+            (bytes[])
+        );
     }
 
     function _execReturn(
@@ -76,7 +79,8 @@ abstract contract ExecutionHelper is Safe7579DCUtilSetup {
         returns (bytes memory retData)
     {
         bool success;
-        (success, retData) = safe.execTransactionFromModuleReturnData(target, value, callData, 0);
+        (success, retData) =
+            safe.execTransactionFromModuleReturnData(target, value, callData, ISafe.Operation.Call);
         if (!success) revert ExecutionFailed();
     }
 
@@ -89,7 +93,9 @@ abstract contract ExecutionHelper is Safe7579DCUtilSetup {
         returns (bytes memory retData)
     {
         bool success;
-        (success, retData) = safe.execTransactionFromModuleReturnData(target, 0, callData, 1);
+        (success, retData) = safe.execTransactionFromModuleReturnData(
+            target, 0, callData, ISafe.Operation.DelegateCall
+        );
         if (!success) revert ExecutionFailed();
     }
 
@@ -110,12 +116,13 @@ abstract contract ExecutionHelper is Safe7579DCUtilSetup {
     }
 
     function _tryExec(ISafe safe, address target, uint256 value, bytes memory callData) internal {
-        bool success = safe.execTransactionFromModule(target, value, callData, 0);
+        bool success = safe.execTransactionFromModule(target, value, callData, ISafe.Operation.Call);
         if (!success) emit TryExecutionFailed(safe, 0);
     }
 
     function _tryDelegatecall(ISafe safe, address target, bytes memory callData) internal {
-        bool success = safe.execTransactionFromModule(target, 0, callData, 1);
+        bool success =
+            safe.execTransactionFromModule(target, 0, callData, ISafe.Operation.DelegateCall);
         if (!success) emit TryExecutionFailed(safe, 0);
     }
 
@@ -141,6 +148,11 @@ abstract contract ExecutionHelper is Safe7579DCUtilSetup {
             callData: abi.encodeCall(BatchedExecUtil.tryExecuteReturn, executions)
         });
         (success, retDatas) = abi.decode(tmp, (bool[], bytes[]));
+
+        uint256 length = success.length;
+        for (uint256 i; i < length; i++) {
+            if (!success[i]) emit TryExecutionFailed(safe, i);
+        }
     }
 
     function _tryExecReturn(
@@ -153,7 +165,8 @@ abstract contract ExecutionHelper is Safe7579DCUtilSetup {
         returns (bytes memory retData)
     {
         bool success;
-        (success, retData) = safe.execTransactionFromModuleReturnData(target, value, callData, 0);
+        (success, retData) =
+            safe.execTransactionFromModuleReturnData(target, value, callData, ISafe.Operation.Call);
         if (!success) emit TryExecutionFailed(safe, 0);
     }
 
@@ -166,7 +179,10 @@ abstract contract ExecutionHelper is Safe7579DCUtilSetup {
         returns (bytes memory retData)
     {
         bool success;
-        (success, retData) = safe.execTransactionFromModuleReturnData(target, 0, callData, 1);
+        (success, retData) = safe.execTransactionFromModuleReturnData(
+            target, 0, callData, ISafe.Operation.DelegateCall
+        );
+
         if (!success) emit TryExecutionFailed(safe, 0);
     }
 
