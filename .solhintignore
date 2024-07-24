@@ -1,3 +1,4 @@
 node_modules/
 test/
+script/DeployAccount.s.sol
 src/utils/Safe7579UserOperationBuilder.sol
