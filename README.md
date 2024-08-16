@@ -1,6 +1,6 @@
 # Safe7579
 
-**An ERC-7579 adapter for Safe Accounts**
+**An ERC-7579 adapter for Safe accounts**
 
 ## How Safe7579 works
 
