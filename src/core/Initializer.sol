@@ -36,17 +36,19 @@ abstract contract Initializer is ISafe7579, ModuleManager {
         override
         onlyEntryPointOrSelf
     {
-        // this will revert if already initialized
-        $validators.init({ account: msg.sender });
-        uint256 length = validators.length;
-        for (uint256 i; i < length; i++) {
-            ModuleInit calldata validator = validators[i];
-            $validators.push({ account: msg.sender, newEntry: validator.module });
-            // @dev No events emitted here. Launchpad is expected to do this.
-            // at this point, the safeproxy singleton is not yet updated to the SafeSingleton
-            // calling execTransactionFromModule is not available yet.
+        if (!$validators.alreadyInitialized({ account: msg.sender })) {
+            // this will revert if already initialized
+            $validators.init({ account: msg.sender });
+            uint256 length = validators.length;
+            for (uint256 i; i < length; i++) {
+                ModuleInit calldata validator = validators[i];
+                $validators.push({ account: msg.sender, newEntry: validator.module });
+                // @dev No events emitted here. Launchpad is expected to do this.
+                // at this point, the safeproxy singleton is not yet updated to the SafeSingleton
+                // calling execTransactionFromModule is not available yet.
+            }
+            emit Safe7579Initialized(msg.sender);
         }
-        emit Safe7579Initialized(msg.sender);
     }
 
     /**
