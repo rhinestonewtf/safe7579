@@ -33,7 +33,7 @@ import { IERC7579AccountEvents } from "./interfaces/IERC7579Account.sol";
  * account during the execution phase of the first UserOperation in order to comply with ERC-4337.
  * This means that if the exection of the first UserOperation fails, the account could be
  * permanently bricked. To avoid this, make sure that all the initialization and call data are
- * correctly set up and do not cause a revert.
+ * correctly set up and do not cause a revert on any chain that the account should be deployed on.
  * Special thanks to [nlordell (Safe)](https://github.com/nlordell), who came up with [this
  * technique](https://github.com/safe-global/safe-modules/pull/184)
  * @author rhinestone | zeroknots.eth
