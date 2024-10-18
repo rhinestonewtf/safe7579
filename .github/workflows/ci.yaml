@@ -19,3 +19,13 @@ jobs:
       foundry-fuzz-runs: 5000
       foundry-profile: "test"
       match-path: "test/**/*.sol"
+
+  release-artifacts:
+    needs: ["build"]
+    uses: "rhinestonewtf/reusable-workflows/.github/workflows/forge-release.yaml@main"
+    strategy:
+      matrix:
+        contract-name: ["Safe7579", "Safe7579Launchpad"]
+    with:
+      contract-name: ${{ matrix.contract-name }}
+      store-artifacts: true
