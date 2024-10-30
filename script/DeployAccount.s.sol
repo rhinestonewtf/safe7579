@@ -38,12 +38,12 @@ import "forge-std/console2.sol";
  */
 contract DeployAccountScript is Script {
     function run() public {
-        IERC7484 registry = IERC7484(0x1D8c40F958Fb6998067e9B8B26850d2ae30b7c70);
-        address payable safe7579 = payable(address(0xbaCA6f74a5549368568f387FD989C279f940f1A5));
-        address singleton = address(0x8d70Ae4aE3fB2A73E78F57DA16e6E1eDbe9fD3eb);
-        address payable launchpad = payable(address(0x1EC6A1e000dD440995667e48cB880785C7d6831C));
+        IERC7484 registry = IERC7484(0x000000000069E2a187AEFFb852bF3cCdC95151B2);
+        address payable safe7579 = payable(address(0x7579EE8307284F293B1927136486880611F20002));
+        address singleton = address(0x29fcB43b46531BcA003ddC8FCB67FFE91900C762);
+        address payable launchpad = payable(address(0x7579011aB74c46090561ea277Ba79D510c6C00ff));
         address validator = address(0x503b54Ed1E62365F0c9e4caF1479623b08acbe77);
-        address safeProxyFactory = address(0xE89e194E5bD3e5a8d40C4cd9c95Dd2C56a8A6ed6);
+        address safeProxyFactory = address(0x4e1DCf7AD4e460CfD30791CCC4F9c8a4f820ec67);
 
         ModuleInit[] memory validators = new ModuleInit[](1);
         validators[0] = ModuleInit({ module: validator, initData: bytes("") });
@@ -53,7 +53,7 @@ contract DeployAccountScript is Script {
 
         Safe7579Launchpad.InitData memory initData = Safe7579Launchpad.InitData({
             singleton: singleton,
-            owners: Solarray.addresses(address(0xF7C012789aac54B5E33EA5b88064ca1F1172De05)),
+            owners: Solarray.addresses(address(0x7484d43c22461C34DAA7C5Ee4e26e3F3D8Acf944)),
             threshold: 1,
             setupTo: launchpad,
             setupData: abi.encodeCall(
@@ -63,7 +63,10 @@ contract DeployAccountScript is Script {
                     executors,
                     fallbacks,
                     hooks,
-                    Solarray.addresses(address(0xF7C012789aac54B5E33EA5b88064ca1F1172De05)),
+                    Solarray.addresses(
+                        address(0x000000333034E9f539ce08819E12c1b8Cb29084d),
+                        address(0xA4C777199658a41688E9488c4EcbD7a2925Cc23A)
+                    ),
                     1
                 )
             ),
