@@ -40,10 +40,10 @@ contract DeployAccountScript is Script {
     function run() public {
         IERC7484 registry = IERC7484(0x000000000069E2a187AEFFb852bF3cCdC95151B2);
         address payable safe7579 = payable(address(0x7579EE8307284F293B1927136486880611F20002));
-        address singleton = address(0x29fcB43b46531BcA003ddC8FCB67FFE91900C762);
+        address singleton = address(0x24372682Db02aA5d5bA54168B49F3b54c1128154);
         address payable launchpad = payable(address(0x7579011aB74c46090561ea277Ba79D510c6C00ff));
         address validator = address(0x503b54Ed1E62365F0c9e4caF1479623b08acbe77);
-        address safeProxyFactory = address(0x4e1DCf7AD4e460CfD30791CCC4F9c8a4f820ec67);
+        address safeProxyFactory = address(0xD769885563414753C62864fE7fC07522aa764937);
 
         ModuleInit[] memory validators = new ModuleInit[](1);
         validators[0] = ModuleInit({ module: validator, initData: bytes("") });
@@ -160,11 +160,9 @@ contract DeployAccountScript is Script {
             nonce: safe7579.getNonce(account, validator),
             initCode: "",
             callData: "",
-            accountGasLimits: bytes32(
-                0x00000000000000000000000000060e7400000000000000000000000000051d3c
-            ),
-            preVerificationGas: 69_660,
-            gasFees: bytes32(0x0000000000000000000000005241210000000000000000000000000ca36194f7),
+            accountGasLimits: bytes32(abi.encodePacked(uint128(2e6), uint128(2e6))),
+            preVerificationGas: 2e6,
+            gasFees: bytes32(abi.encodePacked(uint128(1), uint128(1))),
             paymasterAndData: bytes(""),
             signature: abi.encodePacked(hex"41414141")
         });
