@@ -26,7 +26,7 @@ import {
 } from "@safe-global/safe-contracts/contracts/proxies/SafeProxyFactory.sol";
 import { LibClone } from "solady/utils/LibClone.sol";
 import { Safe7579Launchpad } from "src/Safe7579Launchpad.sol";
-
+import { ECDSA } from "solady/utils/ECDSA.sol";
 import { Solarray } from "solarray/Solarray.sol";
 import "test/dependencies/EntryPoint.sol";
 
@@ -118,8 +118,10 @@ contract DeployAccountScript is Script {
 
         bytes32 userOpHash = entryPoint.getUserOpHash(userOp);
 
-        (uint8 v, bytes32 r, bytes32 s) =
-            vm.sign(0x7d244a960a545eb62ab7fe2412a5892e608dba4fe5c142dbe6d7141ec082183f, userOpHash);
+        (uint8 v, bytes32 r, bytes32 s) = vm.sign(
+            0x7d244a960a545eb62ab7fe2412a5892e608dba4fe5c142dbe6d7141ec082183f,
+            ECDSA.toEthSignedMessageHash(userOpHash)
+        );
         userOp.signature = abi.encodePacked(r, s, v);
 
         PackedUserOperation[] memory userOps = new PackedUserOperation[](1);
@@ -131,7 +133,7 @@ contract DeployAccountScript is Script {
 
         // send eth to userOp sender
 
-        entryPoint.handleOps(userOps, payable(address(0x69)));
+        entryPoint.handleOps(userOps, payable(address(0xF7C012789aac54B5E33EA5b88064ca1F1172De05)));
 
         vm.stopBroadcast();
     }
@@ -170,7 +172,7 @@ contract DeployAccountScript is Script {
             initCode: "",
             callData: "",
             accountGasLimits: bytes32(abi.encodePacked(uint128(2e6), uint128(2e6))),
-            preVerificationGas: 2e6,
+            preVerificationGas: 2e2,
             gasFees: bytes32(abi.encodePacked(uint128(1), uint128(1))),
             paymasterAndData: bytes(""),
             signature: abi.encodePacked(hex"41414141")
