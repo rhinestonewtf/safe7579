@@ -42,14 +42,22 @@ contract DeployAccountScript is Script {
         address payable safe7579 = payable(address(0x7579EE8307284F293B1927136486880611F20002));
         address singleton = address(0x24372682Db02aA5d5bA54168B49F3b54c1128154);
         address payable launchpad = payable(address(0x7579011aB74c46090561ea277Ba79D510c6C00ff));
-        address validator = address(0x503b54Ed1E62365F0c9e4caF1479623b08acbe77);
+        address validator = address(0x2483DA3A338895199E5e538530213157e931Bf06);
         address safeProxyFactory = address(0xD769885563414753C62864fE7fC07522aa764937);
 
         ModuleInit[] memory validators = new ModuleInit[](1);
-        validators[0] = ModuleInit({ module: validator, initData: bytes("") });
         ModuleInit[] memory executors = new ModuleInit[](0);
         ModuleInit[] memory fallbacks = new ModuleInit[](0);
         ModuleInit[] memory hooks = new ModuleInit[](0);
+
+        {
+            // we love stack too deep
+            address[] memory owners = new address[](1);
+            owners[0] = address(0x5027918E940125c63C262e22D1E7FF71e61f67b5);
+
+            validators[0] =
+                ModuleInit({ module: validator, initData: abi.encode(uint256(1), owners) });
+        }
 
         Safe7579Launchpad.InitData memory initData = Safe7579Launchpad.InitData({
             singleton: singleton,
@@ -106,13 +114,14 @@ contract DeployAccountScript is Script {
             factoryInitializer: factoryInitializer
         });
         userOp.sender = predict;
-        userOp.signature = abi.encodePacked(
-            uint48(0), uint48(type(uint48).max), hex"4141414141414141414141414141414141"
-        );
-
         IEntryPoint entryPoint = IEntryPoint(address(0x0000000071727De22E5E9d8BAf0edAc6f37da032));
 
         bytes32 userOpHash = entryPoint.getUserOpHash(userOp);
+
+        (uint8 v, bytes32 r, bytes32 s) =
+            vm.sign(0x7d244a960a545eb62ab7fe2412a5892e608dba4fe5c142dbe6d7141ec082183f, userOpHash);
+        userOp.signature = abi.encodePacked(r, s, v);
+
         PackedUserOperation[] memory userOps = new PackedUserOperation[](1);
         userOps[0] = userOp;
 
