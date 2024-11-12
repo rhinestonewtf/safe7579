@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: GPL-3.0
-pragma solidity ^0.8.25;
+pragma solidity ^0.8.23;
 
 import { IERC7484 } from "./interfaces/IERC7484.sol";
 import { CallType } from "./lib/ModeLib.sol";
