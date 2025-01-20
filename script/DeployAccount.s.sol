@@ -40,10 +40,10 @@ contract DeployAccountScript is Script {
     function run() public {
         IERC7484 registry = IERC7484(0x000000000069E2a187AEFFb852bF3cCdC95151B2);
         address payable safe7579 = payable(address(0x7579EE8307284F293B1927136486880611F20002));
-        address singleton = address(0x24372682Db02aA5d5bA54168B49F3b54c1128154);
+        address singleton = address(0x29fcB43b46531BcA003ddC8FCB67FFE91900C762);
         address payable launchpad = payable(address(0x7579011aB74c46090561ea277Ba79D510c6C00ff));
         address validator = address(0x2483DA3A338895199E5e538530213157e931Bf06);
-        address safeProxyFactory = address(0xD769885563414753C62864fE7fC07522aa764937);
+        address safeProxyFactory = address(0x4e1DCf7AD4e460CfD30791CCC4F9c8a4f820ec67);
 
         ModuleInit[] memory validators = new ModuleInit[](1);
         ModuleInit[] memory executors = new ModuleInit[](0);
