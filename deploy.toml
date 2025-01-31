@@ -1,0 +1,41 @@
+[deployments]
+rpcs = [
+    # "http://localhost:8545",
+    #"http://localhost:8846",
+    #"http://localhost:8847",
+    #"http://localhost:8848",
+
+    # Mainnet
+    #"https://eth.llamarpc.com",
+    #"http://localhost:8545",
+    "https://ethereum-sepolia-rpc.publicnode.com",
+
+    # Optimism
+    #"https://optimism.llamarpc.com",
+    #"https://sepolia.optimism.io",
+
+    # Base
+    #"https://base.llamarpc.com",
+    #"https://sepolia.base.org",
+
+    # Arbitrum
+    #"https://arbitrum.llamarpc.com",
+    #"https://public.stackup.sh/api/v1/node/arbitrum-sepolia",
+]
+
+# verification_url="https://api.tenderly.co/api/v1/account/rhinestone/project/chain-abstraction/etherscan/verify"
+# [deployments.verifier]
+# required to enable verification
+# api_key ="TENDERLY_API_KEY"
+#optional verifier url - default is etherscan.io. Supports chain injection as {{chain_id}} place holder
+# url = "https://api.tenderly.co/api/v1/account/rhinestone/project/chain-abstraction/etherscan/verify/network/{{chain_id}}"
+
+
+
+[deployments.dependencies]
+
+
+[deployments.singleton.Safe7579]
+file = "./artifacts/Safe7579/Safe7579.json"
+source_file="./artifacts/Safe7579/verify.json"
+salt = "0x000000000000000000000000000000000000000054eb9d8a32e548026d135a6f"
