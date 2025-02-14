@@ -8,7 +8,7 @@ rpcs = [
     # Mainnet
     #"https://eth.llamarpc.com",
     #"http://localhost:8545",
-    "https://ethereum-sepolia-rpc.publicnode.com",
+    # "https://ethereum-sepolia-rpc.publicnode.com",
 
     # Optimism
     #"https://optimism.llamarpc.com",
@@ -19,7 +19,7 @@ rpcs = [
     #"https://sepolia.base.org",
 
     # Arbitrum
-    #"https://arbitrum.llamarpc.com",
+    "https://arbitrum.llamarpc.com",
     #"https://public.stackup.sh/api/v1/node/arbitrum-sepolia",
 ]
 
@@ -34,6 +34,9 @@ rpcs = [
 
 [deployments.dependencies]
 
+[deployments.verifier]
+# required to enable verification
+api_key ="${ETHERSCAN_API_KEY}"
 
 [deployments.singleton.Safe7579]
 file = "./artifacts/Safe7579/Safe7579.json"
