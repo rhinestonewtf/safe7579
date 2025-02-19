@@ -23,7 +23,7 @@ abstract contract SafeOp is ISafeOp {
      * @return signatures The Safe owner signatures extracted from the user operation.
      */
     function getSafeOp(
-        PackedUserOperation calldata userOp,
+        PackedUserOperation memory userOp,
         address entryPoint
     )
         public
@@ -38,11 +38,40 @@ abstract contract SafeOp is ISafeOp {
         // Extract additional Safe operation fields from the user operation signature which is
         // encoded as:
         // `abi.encodePacked(validAfter, validUntil, signatures)`
-        {
-            bytes calldata sig = userOp.signature;
-            validAfter = uint48(bytes6(sig[0:6]));
-            validUntil = uint48(bytes6(sig[6:12]));
-            signatures = sig[12:];
+        // This is how we can extract signature components from memory
+        bytes memory sig = userOp.signature;
+        uint256 sigLength = sig.length;
+
+        assembly {
+            // Get the signature data pointer (skip the length word)
+            let sigDataPtr := add(sig, 0x20)
+
+            // Load first 12 bytes (as a uint96) then split into two uint48
+            let timeData := mload(sigDataPtr)
+            // Shift right by 48 bits (6 bytes) and mask to get validAfter
+            validAfter := and(shr(48, timeData), 0xFFFFFFFFFFFF)
+            // Mask to get validUntil
+            validUntil := and(timeData, 0xFFFFFFFFFFFF)
+
+            // Handle signatures - allocate new memory and copy remaining bytes
+            let signaturesLength := sub(sigLength, 12)
+            signatures := mload(0x40) // get free memory pointer
+            mstore(signatures, signaturesLength) // store length
+
+            // Update free memory pointer
+            let nextMemPtr := add(add(signatures, 0x20), signaturesLength)
+            // Round up to 32-byte boundary
+            nextMemPtr := and(add(nextMemPtr, 31), not(31))
+            mstore(0x40, nextMemPtr)
+
+            // Copy signature data
+            let sourcePtr := add(sigDataPtr, 12)
+            let destPtr := add(signatures, 0x20)
+
+            // Copy 32 bytes at a time
+            for { let i := 0 } lt(i, signaturesLength) { i := add(i, 32) } {
+                mstore(add(destPtr, i), mload(add(sourcePtr, i)))
+            }
         }
 
         // It is important that **all** user operation fields are represented in the `SafeOp` data
@@ -67,11 +96,11 @@ abstract contract SafeOp is ISafeOp {
                 nonce: userOp.nonce,
                 initCodeHash: keccak256(userOp.initCode),
                 callDataHash: keccak256(userOp.callData),
-                verificationGasLimit: uint128(userOp.unpackVerificationGasLimit()),
-                callGasLimit: uint128(userOp.unpackCallGasLimit()),
+                verificationGasLimit: uint128(unpackVerificationGasLimit(userOp)),
+                callGasLimit: uint128(unpackCallGasLimit(userOp)),
                 preVerificationGas: userOp.preVerificationGas,
-                maxPriorityFeePerGas: uint128(userOp.unpackMaxPriorityFeePerGas()),
-                maxFeePerGas: uint128(userOp.unpackMaxFeePerGas()),
+                maxPriorityFeePerGas: uint128(unpackMaxPriorityFeePerGas(userOp)),
+                maxFeePerGas: uint128(unpackMaxFeePerGas(userOp)),
                 paymasterAndDataHash: keccak256(userOp.paymasterAndData),
                 validAfter: validAfter,
                 validUntil: validUntil,
@@ -96,5 +125,29 @@ abstract contract SafeOp is ISafeOp {
 
     function domainSeparator() public view returns (bytes32) {
         return keccak256(abi.encode(DOMAIN_SEPARATOR_TYPEHASH, block.chainid, this));
+    }
+
+    function unpackVerificationGasLimit(PackedUserOperation memory userOp)
+        private
+        pure
+        returns (uint256)
+    {
+        return UserOperationLib.unpackHigh128(userOp.accountGasLimits);
+    }
+
+    function unpackCallGasLimit(PackedUserOperation memory userOp) private pure returns (uint256) {
+        return UserOperationLib.unpackLow128(userOp.accountGasLimits);
+    }
+
+    function unpackMaxPriorityFeePerGas(PackedUserOperation memory userOp)
+        private
+        pure
+        returns (uint256)
+    {
+        return UserOperationLib.unpackHigh128(userOp.gasFees);
+    }
+
+    function unpackMaxFeePerGas(PackedUserOperation memory userOp) private pure returns (uint256) {
+        return UserOperationLib.unpackLow128(userOp.gasFees);
     }
 }

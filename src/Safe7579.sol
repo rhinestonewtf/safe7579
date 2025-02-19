@@ -18,7 +18,9 @@ import {
     MODULE_TYPE_VALIDATOR,
     MODULE_TYPE_HOOK,
     MODULE_TYPE_EXECUTOR,
-    MODULE_TYPE_FALLBACK
+    MODULE_TYPE_FALLBACK,
+    MODULE_TYPE_PREVALIDATION_HOOK_ERC1271,
+    MODULE_TYPE_PREVALIDATION_HOOK_ERC4337
 } from "erc7579/interfaces/IERC7579Module.sol";
 import { ModuleInstallUtil } from "./utils/DCUtil.sol";
 import { AccessControl } from "./core/AccessControl.sol";
@@ -250,7 +252,7 @@ contract Safe7579 is ISafe7579, SafeOp, SupportViewer, AccessControl, Initialize
      * @inheritdoc ISafe7579
      */
     function validateUserOp(
-        PackedUserOperation calldata userOp,
+        PackedUserOperation memory userOp,
         bytes32 userOpHash,
         uint256 missingAccountFunds
     )
@@ -265,6 +267,10 @@ contract Safe7579 is ISafe7579, SafeOp, SupportViewer, AccessControl, Initialize
         assembly {
             validator := shr(96, nonce)
         }
+
+        // Call 4337 pre-validation hook
+        (userOpHash, userOp.signature) =
+            _withPreValidationHook(userOpHash, userOp, missingAccountFunds);
 
         // check if validator is enabled. If not, use Safe's checkSignatures()
         if (validator == address(0) || !_isValidatorInstalled(validator)) {
@@ -295,7 +301,7 @@ contract Safe7579 is ISafe7579, SafeOp, SupportViewer, AccessControl, Initialize
      * Function used as signature check fallback, if no valid validation module was selected.
      * will use safe's ECDSA multisig. This code was copied of Safe's ERC4337 module
      */
-    function _validateSignatures(PackedUserOperation calldata userOp)
+    function _validateSignatures(PackedUserOperation memory userOp)
         internal
         view
         returns (uint256 validationData)
@@ -335,6 +341,8 @@ contract Safe7579 is ISafe7579, SafeOp, SupportViewer, AccessControl, Initialize
 
         // check for safe's approved hashes
         if (data.length == 0) {
+            // Call 1271 pre-validation hook
+            (hash,) = _withPreValidationHook(_msgSender(), hash, data);
             bytes32 messageHash = keccak256(
                 EIP712.encodeMessageData(
                     safe.domainSeparator(),
@@ -348,6 +356,9 @@ contract Safe7579 is ISafe7579, SafeOp, SupportViewer, AccessControl, Initialize
             return IERC1271.isValidSignature.selector;
         }
         address validationModule = address(bytes20(data[:20]));
+        // Call 1271 pre-validation hook
+        bytes memory data_;
+        (hash, data_) = _withPreValidationHook(_msgSender(), hash, data[20:]);
 
         // If validation module with address(0) or no valid validator was provided,
         // The signature validation mechanism falls back to Safe's checkSignatures() function
@@ -358,7 +369,7 @@ contract Safe7579 is ISafe7579, SafeOp, SupportViewer, AccessControl, Initialize
 
             bytes32 messageHash = keccak256(messageData);
 
-            safe.checkSignatures(messageHash, messageData, data[20:]);
+            safe.checkSignatures(messageHash, messageData, data_);
             return IERC1271.isValidSignature.selector;
         }
 
@@ -366,9 +377,7 @@ contract Safe7579 is ISafe7579, SafeOp, SupportViewer, AccessControl, Initialize
         bytes memory ret = _staticcallReturn({
             safe: ISafe(msg.sender),
             target: validationModule,
-            callData: abi.encodeCall(
-                IValidator.isValidSignatureWithSender, (_msgSender(), hash, data[20:])
-            )
+            callData: abi.encodeCall(IValidator.isValidSignatureWithSender, (_msgSender(), hash, data_))
         });
         magicValue = abi.decode(ret, (bytes4));
     }
@@ -399,6 +408,11 @@ contract Safe7579 is ISafe7579, SafeOp, SupportViewer, AccessControl, Initialize
             moduleInitData = _installHook(module, initData);
         } else if (moduleType == MULTITYPE_MODULE) {
             moduleInitData = _multiTypeInstall(module, initData);
+        } else if (
+            moduleType == MODULE_TYPE_PREVALIDATION_HOOK_ERC1271
+                || moduleType == MODULE_TYPE_PREVALIDATION_HOOK_ERC4337
+        ) {
+            moduleInitData = _installPreValidationHook(module, initData);
         } else {
             revert UnsupportedModuleType(moduleType);
         }
@@ -439,6 +453,11 @@ contract Safe7579 is ISafe7579, SafeOp, SupportViewer, AccessControl, Initialize
             moduleDeInitData = _uninstallHook(module, deInitData);
         } else if (moduleType == MULTITYPE_MODULE) {
             moduleDeInitData = _multiTypeUninstall(module, deInitData);
+        } else if (
+            moduleType == MODULE_TYPE_PREVALIDATION_HOOK_ERC1271
+                || moduleType == MODULE_TYPE_PREVALIDATION_HOOK_ERC4337
+        ) {
+            moduleDeInitData = _uninstallPreValidationHook(module, deInitData);
         } else {
             revert UnsupportedModuleType(moduleType);
         }
@@ -478,6 +497,11 @@ contract Safe7579 is ISafe7579, SafeOp, SupportViewer, AccessControl, Initialize
             return _isFallbackHandlerInstalled(module, additionalContext);
         } else if (moduleType == MODULE_TYPE_HOOK) {
             return _isHookInstalled(module, additionalContext);
+        } else if (
+            moduleType == MODULE_TYPE_PREVALIDATION_HOOK_ERC1271
+                || moduleType == MODULE_TYPE_PREVALIDATION_HOOK_ERC4337
+        ) {
+            return _isPreValidationHookInstalled(module, additionalContext);
         } else {
             return false;
         }

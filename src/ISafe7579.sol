@@ -260,6 +260,9 @@ interface ISafe7579 is IERC7579Account, ISafeOp {
     error HookAlreadyInstalled(address currentHook);
     error InvalidHookType();
 
+    // PreValidation Hooks
+    error PreValidationHookAlreadyInstalled(address currentHook, uint256 moduleType);
+
     // Registry Adapter
     event ERC7484RegistryConfigured(address indexed smartAccount, IERC7484 indexed registry);
 }

@@ -16,8 +16,14 @@ import {
     MODULE_TYPE_VALIDATOR,
     MODULE_TYPE_EXECUTOR,
     MODULE_TYPE_FALLBACK,
-    MODULE_TYPE_HOOK
+    MODULE_TYPE_HOOK,
+    MODULE_TYPE_PREVALIDATION_HOOK_ERC1271,
+    MODULE_TYPE_PREVALIDATION_HOOK_ERC4337,
+    IPreValidationHookERC1271,
+    IPreValidationHookERC4337
 } from "erc7579/interfaces/IERC7579Module.sol";
+import { PackedUserOperation } from
+    "@ERC4337/account-abstraction/contracts/core/UserOperationLib.sol";
 
 /**
  * @title ModuleManager
@@ -503,6 +509,156 @@ abstract contract ModuleManager is ISafe7579, AccessControl, Receiver, RegistryA
 
     function getActiveHook() public view returns (address hook) {
         return $globalHook[msg.sender];
+    }
+
+    /*´:°•.°+.*•´.*:˚.°*.˚•´.°:°•.°•.*•´.*:˚.°*.˚•´.°:°•.°+.*•´.*:*/
+    /*                        PREVALIDATION HOOK MODULES                        */
+    /*.•°:°.´+˚.*°.˚:*.´•*.+°.•°:´*.´•*.•°.•°:°.´:•˚°.*°.˚:*.´+°.•*/
+
+    mapping(address smartAccount => address preValidationHook4337) internal $preValidationHook4337;
+    mapping(address smartAccount => address preValidationHook1271) internal $preValidationHook1271;
+
+    function _withPreValidationHook(
+        address sender,
+        bytes32 hash,
+        bytes calldata signature
+    )
+        internal
+        view
+        returns (bytes32 postHash, bytes memory postSig)
+    {
+        address preValidationHook = getPrevalidationHook(MODULE_TYPE_PREVALIDATION_HOOK_ERC1271);
+        if (preValidationHook == address(0)) {
+            return (hash, signature);
+        } else {
+            bytes memory ret = _staticcallReturn({
+                safe: ISafe(msg.sender),
+                target: preValidationHook,
+                callData: abi.encodeCall(
+                    IPreValidationHookERC1271.preValidationHookERC1271, (sender, hash, signature)
+                )
+            });
+            return abi.decode(ret, (bytes32, bytes));
+        }
+    }
+
+    function _withPreValidationHook(
+        bytes32 hash,
+        PackedUserOperation memory userOp,
+        uint256 missingAccountFunds
+    )
+        internal
+        returns (bytes32 postHash, bytes memory postSig)
+    {
+        address preValidationHook = getPrevalidationHook(MODULE_TYPE_PREVALIDATION_HOOK_ERC4337);
+        if (preValidationHook == address(0)) {
+            return (hash, userOp.signature);
+        } else {
+            bytes memory ret = _execReturn({
+                safe: ISafe(msg.sender),
+                target: preValidationHook,
+                value: 0,
+                callData: abi.encodeCall(
+                    IPreValidationHookERC4337.preValidationHookERC4337,
+                    (userOp, missingAccountFunds, hash)
+                )
+            });
+            return abi.decode(ret, (bytes32, bytes));
+        }
+    }
+
+    function _installPreValidationHook(
+        address hook,
+        bytes calldata data
+    )
+        internal
+        returns (bytes memory moduleInitData)
+    {
+        uint256 moduleType;
+        (moduleType, moduleInitData) = abi.decode(data, (uint256, bytes));
+        if (moduleType == MODULE_TYPE_PREVALIDATION_HOOK_ERC4337) {
+            _installPreValidationHook4337(hook);
+        } else if (moduleType == MODULE_TYPE_PREVALIDATION_HOOK_ERC1271) {
+            _installPreValidationHook1271(hook);
+        } else {
+            revert InvalidHookType();
+        }
+        return moduleInitData;
+    }
+
+    function _installPreValidationHook4337(address hook)
+        internal
+        virtual
+        withRegistry(hook, MODULE_TYPE_PREVALIDATION_HOOK_ERC4337)
+    {
+        address currentHook = $preValidationHook4337[msg.sender];
+        if (currentHook != address(0)) {
+            revert PreValidationHookAlreadyInstalled(
+                currentHook, MODULE_TYPE_PREVALIDATION_HOOK_ERC4337
+            );
+        }
+        $preValidationHook4337[msg.sender] = hook;
+    }
+
+    function _installPreValidationHook1271(address hook)
+        internal
+        virtual
+        withRegistry(hook, MODULE_TYPE_PREVALIDATION_HOOK_ERC1271)
+    {
+        address currentHook = $preValidationHook1271[msg.sender];
+        if (currentHook != address(0)) {
+            revert PreValidationHookAlreadyInstalled(
+                currentHook, MODULE_TYPE_PREVALIDATION_HOOK_ERC1271
+            );
+        }
+        $preValidationHook1271[msg.sender] = hook;
+    }
+
+    function _uninstallPreValidationHook(
+        address, /*hook*/
+        bytes calldata data
+    )
+        internal
+        returns (bytes memory moduleDeInitData)
+    {
+        uint256 moduleType;
+        (moduleType, moduleDeInitData) = abi.decode(data, (uint256, bytes));
+        if (moduleType == MODULE_TYPE_PREVALIDATION_HOOK_ERC4337) {
+            delete $preValidationHook4337[msg.sender];
+        } else if (moduleType == MODULE_TYPE_PREVALIDATION_HOOK_ERC1271) {
+            delete $preValidationHook1271[msg.sender];
+        } else {
+            revert InvalidHookType();
+        }
+        return moduleDeInitData;
+    }
+
+    function getPrevalidationHook(uint256 moduleType) public view returns (address hook) {
+        if (moduleType == MODULE_TYPE_PREVALIDATION_HOOK_ERC4337) {
+            return $preValidationHook4337[msg.sender];
+        } else if (moduleType == MODULE_TYPE_PREVALIDATION_HOOK_ERC1271) {
+            return $preValidationHook1271[msg.sender];
+        } else {
+            revert InvalidHookType();
+        }
+    }
+
+    function _isPreValidationHookInstalled(
+        address module,
+        bytes calldata context
+    )
+        internal
+        view
+        returns (bool)
+    {
+        uint256 moduleType = abi.decode(context, (uint256));
+        if (moduleType == MODULE_TYPE_PREVALIDATION_HOOK_ERC4337) {
+            return $preValidationHook4337[msg.sender] == module;
+        } else if (moduleType == MODULE_TYPE_PREVALIDATION_HOOK_ERC1271) {
+            return $preValidationHook1271[msg.sender] == module;
+        } else {
+            revert InvalidHookType();
+        }
     }
 
     // solhint-disable-next-line code-complexity
