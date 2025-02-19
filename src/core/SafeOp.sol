@@ -6,9 +6,11 @@ import {
     UserOperationLib
 } from "@ERC4337/account-abstraction/contracts/core/UserOperationLib.sol";
 import { SAFE_OP_TYPEHASH, ISafeOp } from "../interfaces/ISafeOp.sol";
+import { LibBytes } from "solady/utils/LibBytes.sol";
 
 abstract contract SafeOp is ISafeOp {
     using UserOperationLib for PackedUserOperation;
+    using LibBytes for bytes;
 
     bytes32 private constant DOMAIN_SEPARATOR_TYPEHASH =
         0x47e79534a245952e8b16893a336b85a3d9ea9fa8c573f3d803afb92a79469218;
@@ -39,39 +41,11 @@ abstract contract SafeOp is ISafeOp {
         // encoded as:
         // `abi.encodePacked(validAfter, validUntil, signatures)`
         // This is how we can extract signature components from memory
-        bytes memory sig = userOp.signature;
-        uint256 sigLength = sig.length;
-
-        assembly {
-            // Get the signature data pointer (skip the length word)
-            let sigDataPtr := add(sig, 0x20)
-
-            // Load first 12 bytes (as a uint96) then split into two uint48
-            let timeData := mload(sigDataPtr)
-            // Shift right by 48 bits (6 bytes) and mask to get validAfter
-            validAfter := and(shr(48, timeData), 0xFFFFFFFFFFFF)
-            // Mask to get validUntil
-            validUntil := and(timeData, 0xFFFFFFFFFFFF)
-
-            // Handle signatures - allocate new memory and copy remaining bytes
-            let signaturesLength := sub(sigLength, 12)
-            signatures := mload(0x40) // get free memory pointer
-            mstore(signatures, signaturesLength) // store length
-
-            // Update free memory pointer
-            let nextMemPtr := add(add(signatures, 0x20), signaturesLength)
-            // Round up to 32-byte boundary
-            nextMemPtr := and(add(nextMemPtr, 31), not(31))
-            mstore(0x40, nextMemPtr)
-
-            // Copy signature data
-            let sourcePtr := add(sigDataPtr, 12)
-            let destPtr := add(signatures, 0x20)
-
-            // Copy 32 bytes at a time
-            for { let i := 0 } lt(i, signaturesLength) { i := add(i, 32) } {
-                mstore(add(destPtr, i), mload(add(sourcePtr, i)))
-            }
+        {
+            bytes memory sig = userOp.signature;
+            validAfter = uint48(bytes6(sig.slice(0, 6)));
+            validUntil = uint48(bytes6(sig.slice(6, 12)));
+            signatures = sig.slice(12);
         }
 
         // It is important that **all** user operation fields are represented in the `SafeOp` data
