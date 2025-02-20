@@ -733,6 +733,14 @@ abstract contract ModuleManager is ISafe7579, AccessControl, Receiver, RegistryA
             /*.•°:°.´+˚.*°.˚:*.´•*.+°.•°:´*.´•*.•°.•°:°.´:•˚°.*°.˚:*.´+°.•*/
             else if (_type == MODULE_TYPE_HOOK) {
                 _installHook(module, contexts[i]);
+            }
+            /*´:°•.°+.*•´.*:˚.°*.˚•´.°:°•.°•.*•´.*:˚.°*.˚•´.°:°•.°+.*•´.*:*/
+            /*          INSTALL PREVALIDATION HOOK (ERC1271 or ERC4337)    */
+            else if (
+                _type == MODULE_TYPE_PREVALIDATION_HOOK_ERC1271
+                    || _type == MODULE_TYPE_PREVALIDATION_HOOK_ERC4337
+            ) {
+                _installPreValidationHook(module, contexts[i]);
             } else {
                 revert InvalidModuleType(module, _type);
             }
