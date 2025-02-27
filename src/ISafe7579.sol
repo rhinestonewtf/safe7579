@@ -230,6 +230,12 @@ interface ISafe7579 is IERC7579Account, ISafeOp {
         view
         returns (address[] memory array, address next);
 
+    /**
+     * Get the current active prevalidation hook for the given module type
+     * @param moduleType the prevalidation hook type
+     */
+    function getPrevalidationHook(uint256 moduleType) external view returns (address hook);
+
     /*´:°•.°+.*•´.*:˚.°*.˚•´.°:°•.°•.*•´.*:˚.°*.˚•´.°:°•.°+.*•´.*:*/
     /*                        Query Misc                          */
     /*.•°:°.´+˚.*°.˚:*.´•*.+°.•°:´*.´•*.•°.•°:°.´:•˚°.*°.˚:*.´+°.•*/

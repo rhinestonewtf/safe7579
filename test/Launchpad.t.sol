@@ -167,10 +167,6 @@ contract LaunchpadBase is Test {
         );
     }
 
-    function test_foo() public {
-        assertTrue(true);
-    }
-
     function getDefaultUserOp(
         address account,
         address validator

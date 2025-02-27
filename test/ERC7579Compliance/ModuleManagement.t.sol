@@ -4,14 +4,22 @@ pragma solidity ^0.8.0;
 import "./Base.t.sol";
 // import "src/lib/ModeLib.sol";
 import { ModuleManager } from "src/core/ModuleManager.sol";
+import {
+    MODULE_TYPE_PREVALIDATION_HOOK_ERC4337,
+    MODULE_TYPE_PREVALIDATION_HOOK_ERC1271
+} from "erc7579/interfaces/IERC7579Module.sol";
+import { MockPreValidationHook } from "test/mocks/MockPrevalidationHook.sol";
+import { ISafe7579 } from "src/ISafe7579.sol";
 
 import { CALLTYPE_SINGLE, CALLTYPE_BATCH, CALLTYPE_DELEGATECALL } from "erc7579/lib/ModeLib.sol";
 
 contract ModuleManagementTest is BaseTest {
     bytes _data;
+    MockPreValidationHook preValidationHook;
 
     function setUp() public virtual override {
         super.setUp();
+        preValidationHook = new MockPreValidationHook();
     }
 
     function onInstall(bytes calldata data) public virtual override {
@@ -52,6 +60,152 @@ contract ModuleManagementTest is BaseTest {
         assertTrue(account.isModuleInstalled(3, SELF, abi.encode(selector)));
         account.uninstallModule(3, SELF, abi.encode(selector, _data));
         assertFalse(account.isModuleInstalled(3, SELF, abi.encode(selector)));
+    }
+
+    function test_WhenInstallingPreValidationHookERC1271() external asEntryPoint {
+        _data = hex"4141414141414141";
+
+        // Verify hook is not installed initially
+        assertFalse(
+            account.isModuleInstalled(
+                MODULE_TYPE_PREVALIDATION_HOOK_ERC1271,
+                address(preValidationHook),
+                abi.encode(MODULE_TYPE_PREVALIDATION_HOOK_ERC1271)
+            )
+        );
+
+        // Install the hook
+        account.installModule(
+            MODULE_TYPE_PREVALIDATION_HOOK_ERC1271,
+            address(preValidationHook),
+            abi.encode(MODULE_TYPE_PREVALIDATION_HOOK_ERC1271, _data)
+        );
+
+        // Verify it's installed
+        assertTrue(
+            account.isModuleInstalled(
+                MODULE_TYPE_PREVALIDATION_HOOK_ERC1271,
+                address(preValidationHook),
+                abi.encode(MODULE_TYPE_PREVALIDATION_HOOK_ERC1271)
+            )
+        );
+
+        // Check it's accessible through getPrevalidationHook
+        assertEq(
+            ISafe7579(address(account)).getPrevalidationHook(MODULE_TYPE_PREVALIDATION_HOOK_ERC1271),
+            address(preValidationHook)
+        );
+
+        // Uninstall the hook
+        account.uninstallModule(
+            MODULE_TYPE_PREVALIDATION_HOOK_ERC1271,
+            address(preValidationHook),
+            abi.encode(MODULE_TYPE_PREVALIDATION_HOOK_ERC1271, _data)
+        );
+
+        // Verify it's no longer installed
+        assertFalse(
+            account.isModuleInstalled(
+                MODULE_TYPE_PREVALIDATION_HOOK_ERC1271,
+                address(preValidationHook),
+                abi.encode(MODULE_TYPE_PREVALIDATION_HOOK_ERC1271)
+            )
+        );
+    }
+
+    function test_WhenInstallingPreValidationHookERC4337() external asEntryPoint {
+        _data = hex"4141414141414141";
+
+        // Verify hook is not installed initially
+        assertFalse(
+            account.isModuleInstalled(
+                MODULE_TYPE_PREVALIDATION_HOOK_ERC4337,
+                address(preValidationHook),
+                abi.encode(MODULE_TYPE_PREVALIDATION_HOOK_ERC4337)
+            )
+        );
+
+        // Install the hook
+        account.installModule(
+            MODULE_TYPE_PREVALIDATION_HOOK_ERC4337,
+            address(preValidationHook),
+            abi.encode(MODULE_TYPE_PREVALIDATION_HOOK_ERC4337, _data)
+        );
+
+        // Verify it's installed
+        assertTrue(
+            account.isModuleInstalled(
+                MODULE_TYPE_PREVALIDATION_HOOK_ERC4337,
+                address(preValidationHook),
+                abi.encode(MODULE_TYPE_PREVALIDATION_HOOK_ERC4337)
+            )
+        );
+
+        // Check it's accessible through getPrevalidationHook
+        assertEq(
+            ISafe7579(address(account)).getPrevalidationHook(MODULE_TYPE_PREVALIDATION_HOOK_ERC4337),
+            address(preValidationHook)
+        );
+
+        // Uninstall the hook
+        account.uninstallModule(
+            MODULE_TYPE_PREVALIDATION_HOOK_ERC4337,
+            address(preValidationHook),
+            abi.encode(MODULE_TYPE_PREVALIDATION_HOOK_ERC4337, _data)
+        );
+
+        // Verify it's no longer installed
+        assertFalse(
+            account.isModuleInstalled(
+                MODULE_TYPE_PREVALIDATION_HOOK_ERC4337,
+                address(preValidationHook),
+                abi.encode(MODULE_TYPE_PREVALIDATION_HOOK_ERC4337)
+            )
+        );
+    }
+
+    function test_WhenInstallingMultiplePreValidationHooks() external asEntryPoint {
+        _data = hex"4141414141414141";
+        MockPreValidationHook secondHook = new MockPreValidationHook();
+
+        // Install the first hook type
+        account.installModule(
+            MODULE_TYPE_PREVALIDATION_HOOK_ERC1271,
+            address(preValidationHook),
+            abi.encode(MODULE_TYPE_PREVALIDATION_HOOK_ERC1271, _data)
+        );
+
+        // Try to install a second hook of the same type (should revert)
+        vm.expectRevert(); // This should revert with PreValidationHookAlreadyInstalled
+        account.installModule(
+            MODULE_TYPE_PREVALIDATION_HOOK_ERC1271,
+            address(secondHook),
+            abi.encode(MODULE_TYPE_PREVALIDATION_HOOK_ERC1271, _data)
+        );
+
+        // Should be able to install a different type of hook
+        account.installModule(
+            MODULE_TYPE_PREVALIDATION_HOOK_ERC4337,
+            address(preValidationHook),
+            abi.encode(MODULE_TYPE_PREVALIDATION_HOOK_ERC4337, _data)
+        );
+
+        // Verify both hooks are installed
+        assertTrue(
+            account.isModuleInstalled(
+                MODULE_TYPE_PREVALIDATION_HOOK_ERC1271,
+                address(preValidationHook),
+                abi.encode(MODULE_TYPE_PREVALIDATION_HOOK_ERC1271)
+            )
+        );
+
+        assertTrue(
+            account.isModuleInstalled(
+                MODULE_TYPE_PREVALIDATION_HOOK_ERC4337,
+                address(preValidationHook),
+                abi.encode(MODULE_TYPE_PREVALIDATION_HOOK_ERC4337)
+            )
+        );
     }
 
     function _installHook(HookType hookType, bytes4 selector, bytes memory initData) public {
@@ -115,5 +269,118 @@ contract ModuleManagementTest is BaseTest {
 
         assertFalse(account.isModuleInstalled(1, SELF, ""));
         assertFalse(account.isModuleInstalled(2, SELF, ""));
+    }
+
+    function test_multiTypeInstallWithPreValidationHooks() public asEntryPoint {
+        uint256[] memory types = Solarray.uint256s(
+            MODULE_TYPE_PREVALIDATION_HOOK_ERC1271, MODULE_TYPE_PREVALIDATION_HOOK_ERC4337
+        );
+
+        _data = hex"4141414141414141";
+
+        bytes[] memory contexts = Solarray.bytess(
+            abi.encode(MODULE_TYPE_PREVALIDATION_HOOK_ERC1271, _data),
+            abi.encode(MODULE_TYPE_PREVALIDATION_HOOK_ERC4337, _data)
+        );
+
+        bytes memory moduleInitData = _data;
+        bytes memory initData = abi.encode(types, contexts, moduleInitData);
+
+        account.installModule(0, SELF, initData);
+
+        // Verify both hook types were installed
+        assertTrue(
+            account.isModuleInstalled(
+                MODULE_TYPE_PREVALIDATION_HOOK_ERC1271,
+                SELF,
+                abi.encode(MODULE_TYPE_PREVALIDATION_HOOK_ERC1271)
+            )
+        );
+
+        assertTrue(
+            account.isModuleInstalled(
+                MODULE_TYPE_PREVALIDATION_HOOK_ERC4337,
+                SELF,
+                abi.encode(MODULE_TYPE_PREVALIDATION_HOOK_ERC4337)
+            )
+        );
+    }
+
+    function test_multiTypeUninstallWithPreValidationHooks() public asEntryPoint {
+        // Install
+        uint256[] memory types = Solarray.uint256s(
+            MODULE_TYPE_PREVALIDATION_HOOK_ERC1271, MODULE_TYPE_PREVALIDATION_HOOK_ERC4337
+        );
+
+        _data = hex"4141414141414141";
+
+        bytes[] memory contexts = Solarray.bytess(
+            abi.encode(MODULE_TYPE_PREVALIDATION_HOOK_ERC1271, _data),
+            abi.encode(MODULE_TYPE_PREVALIDATION_HOOK_ERC4337, _data)
+        );
+
+        bytes memory moduleInitData = _data;
+        bytes memory initData = abi.encode(types, contexts, moduleInitData);
+
+        account.installModule(0, SELF, initData);
+
+        // Verify both hook types were installed
+        assertTrue(
+            account.isModuleInstalled(
+                MODULE_TYPE_PREVALIDATION_HOOK_ERC1271,
+                SELF,
+                abi.encode(MODULE_TYPE_PREVALIDATION_HOOK_ERC1271)
+            )
+        );
+
+        assertTrue(
+            account.isModuleInstalled(
+                MODULE_TYPE_PREVALIDATION_HOOK_ERC4337,
+                SELF,
+                abi.encode(MODULE_TYPE_PREVALIDATION_HOOK_ERC4337)
+            )
+        );
+
+        // Create uninstall data
+        types = Solarray.uint256s(
+            MODULE_TYPE_PREVALIDATION_HOOK_ERC1271, MODULE_TYPE_PREVALIDATION_HOOK_ERC4337
+        );
+
+        _data = hex"4141414141414141";
+
+        contexts = Solarray.bytess(
+            abi.encode(MODULE_TYPE_PREVALIDATION_HOOK_ERC1271, _data),
+            abi.encode(MODULE_TYPE_PREVALIDATION_HOOK_ERC4337, _data)
+        );
+
+        moduleInitData = _data;
+        bytes memory uninstallData = abi.encode(types, contexts, moduleInitData);
+
+        // Uninstall both hooks
+        account.uninstallModule(0, SELF, uninstallData);
+
+        // Verify both hook types were uninstalled
+        assertFalse(
+            account.isModuleInstalled(
+                MODULE_TYPE_PREVALIDATION_HOOK_ERC1271,
+                SELF,
+                abi.encode(MODULE_TYPE_PREVALIDATION_HOOK_ERC1271)
+            )
+        );
+
+        assertFalse(
+            account.isModuleInstalled(
+                MODULE_TYPE_PREVALIDATION_HOOK_ERC4337,
+                SELF,
+                abi.encode(MODULE_TYPE_PREVALIDATION_HOOK_ERC4337)
+            )
+        );
+    }
+
+    function test_checkVersion() public {
+        string memory version = account.accountId();
+
+        string memory versionExpected = "rhinestone.safe7579.v1.0.0";
+        assertEq(version, versionExpected);
     }
 }

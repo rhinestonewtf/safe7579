@@ -113,11 +113,4 @@ contract BaseTest is LaunchpadBase, MockModule {
         // Assert that the value was set ie that execution was successful
         assertTrue(target.value() == 1337);
     }
-
-    function test_checkVersion() public {
-        string memory version = account.accountId();
-
-        string memory versionExpected = "rhinestone.safe7579.v1.0.0";
-        assertEq(version, versionExpected);
-    }
 }

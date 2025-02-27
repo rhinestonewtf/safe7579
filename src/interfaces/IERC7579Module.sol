@@ -9,6 +9,8 @@ uint256 constant MODULE_TYPE_VALIDATOR = 1;
 uint256 constant MODULE_TYPE_EXECUTOR = 2;
 uint256 constant MODULE_TYPE_FALLBACK = 3;
 uint256 constant MODULE_TYPE_HOOK = 4;
+uint256 constant MODULE_TYPE_PREVALIDATION_HOOK_ERC1271 = 8;
+uint256 constant MODULE_TYPE_PREVALIDATION_HOOK_ERC4337 = 9;
 
 interface IModule {
     /**

@@ -813,6 +813,11 @@ abstract contract ModuleManager is ISafe7579, AccessControl, Receiver, RegistryA
             /*.•°:°.´+˚.*°.˚:*.´•*.+°.•°:´*.´•*.•°.•°:°.´:•˚°.*°.˚:*.´+°.•*/
             else if (_type == MODULE_TYPE_HOOK) {
                 _uninstallHook(module, contexts[i]);
+            } else if (
+                _type == MODULE_TYPE_PREVALIDATION_HOOK_ERC1271
+                    || _type == MODULE_TYPE_PREVALIDATION_HOOK_ERC4337
+            ) {
+                _uninstallPreValidationHook(module, contexts[i]);
             } else {
                 revert InvalidModuleType(module, _type);
             }
