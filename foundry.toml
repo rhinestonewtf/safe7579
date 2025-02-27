@@ -6,7 +6,6 @@ script = "script"
 libs = ["node_modules"]
 fs_permissions = [{ access = "read", path = "out-optimized" }]
 allow_paths = ["*", "/"]
-optimizer = true
 
 [rpc_endpoints]
 mainnet = "${MAINNET_RPC_URL}" 
