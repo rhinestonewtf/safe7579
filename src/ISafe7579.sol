@@ -217,11 +217,6 @@ interface ISafe7579 is IERC7579Account, ISafeOp {
      */
     function getActiveHook() external view returns (address hook);
 
-    /**
-     * Get the current active selector hook
-     */
-    function getActiveHook(bytes4 selector) external view returns (address hook);
-
     function getExecutorsPaginated(
         address cursor,
         uint256 size

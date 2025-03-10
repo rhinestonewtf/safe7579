@@ -496,7 +496,7 @@ contract Safe7579 is ISafe7579, SafeOp, SupportViewer, AccessControl, Initialize
         } else if (moduleType == MODULE_TYPE_FALLBACK) {
             return _isFallbackHandlerInstalled(module, additionalContext);
         } else if (moduleType == MODULE_TYPE_HOOK) {
-            return _isHookInstalled(module, additionalContext);
+            return _isHookInstalled(module);
         } else if (
             moduleType == MODULE_TYPE_PREVALIDATION_HOOK_ERC1271
                 || moduleType == MODULE_TYPE_PREVALIDATION_HOOK_ERC4337

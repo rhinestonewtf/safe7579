@@ -208,36 +208,22 @@ contract ModuleManagementTest is BaseTest {
         );
     }
 
-    function _installHook(HookType hookType, bytes4 selector, bytes memory initData) public {
-        bytes memory data = abi.encode(hookType, selector, initData);
+    function _installHook(bytes memory initData) public {
+        bytes memory data = abi.encode(initData);
         account.installModule(4, SELF, data);
-        assertTrue(account.isModuleInstalled(4, SELF, abi.encode(hookType, selector)));
+        assertTrue(account.isModuleInstalled(4, SELF, bytes("")));
     }
 
-    function _uninstallHook(HookType hookType, bytes4 selector, bytes memory initData) public {
-        bytes memory data = abi.encode(hookType, selector, initData);
-        account.uninstallModule(4, SELF, data);
-        assertFalse(account.isModuleInstalled(4, SELF, abi.encode(hookType, selector)));
-    }
-
-    function test_WhenInstallingHooks_SIG() external asEntryPoint {
-        HookType hookType = HookType.SIG;
-        bytes4 selector = MockTarget.set.selector;
-        _data = hex"4141414141414141";
-
-        _installHook(hookType, selector, _data);
-        _uninstallHook(hookType, selector, _data);
+    function _uninstallHook(bytes memory initData) public {
+        account.uninstallModule(4, SELF, "");
+        assertFalse(account.isModuleInstalled(4, SELF, bytes("")));
     }
 
     function test_WhenInstallingHooks_GLOBAL() external asEntryPoint {
-        HookType hookType = HookType.GLOBAL;
-        bytes4 selector = 0x00000000;
         _data = hex"4141414141414141";
+        account.installModule(4, SELF, _data);
 
-        bytes memory data = abi.encode(hookType, selector, _data);
-        account.installModule(4, SELF, data);
-
-        account.uninstallModule(4, SELF, data);
+        account.uninstallModule(4, SELF, _data);
     }
 
     function test_multiTypeInstall() public asEntryPoint {

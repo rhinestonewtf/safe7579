@@ -9,11 +9,6 @@ struct FallbackHandler {
     CallType calltype;
 }
 
-enum HookType {
-    GLOBAL,
-    SIG
-}
-
 struct ModuleInit {
     address module;
     bytes initData;
