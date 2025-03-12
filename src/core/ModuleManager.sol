@@ -9,7 +9,6 @@ import { ISafe7579 } from "../ISafe7579.sol";
 import "../DataTypes.sol";
 
 import { RegistryAdapter } from "./RegistryAdapter.sol";
-import { Receiver } from "erc7579/core/Receiver.sol";
 import { AccessControl } from "./AccessControl.sol";
 import { CallType, CALLTYPE_STATIC, CALLTYPE_SINGLE } from "../lib/ModeLib.sol";
 import {
@@ -38,7 +37,7 @@ import { PackedUserOperation } from
  * Note: the Storage mappings for each section, are not listed on the very top, but in the
  * respective section
  */
-abstract contract ModuleManager is ISafe7579, AccessControl, Receiver, RegistryAdapter {
+abstract contract ModuleManager is ISafe7579, AccessControl, RegistryAdapter {
     using SentinelList4337Lib for SentinelList4337Lib.SentinelList;
 
     /*´:°•.°+.*•´.*:˚.°*.˚•´.°:°•.°•.*•´.*:˚.°*.˚•´.°:°•.°+.*•´.*:*/
@@ -280,14 +279,14 @@ abstract contract ModuleManager is ISafe7579, AccessControl, Receiver, RegistryA
         external
         payable
         virtual
-        override(Receiver)
-        receiverFallback
         withHook(msg.sig)
         returns (bytes memory fallbackRet)
     {
         // using JUMPI to avoid stack too deep
         return _callFallbackHandler(callData);
     }
+
+    receive() external payable { }
 
     function _callFallbackHandler(bytes calldata callData)
         private
@@ -297,9 +296,22 @@ abstract contract ModuleManager is ISafe7579, AccessControl, Receiver, RegistryA
         FallbackHandler storage $fallbacks = $fallbackStorage[msg.sig][msg.sender];
         address handler = $fallbacks.handler;
         CallType calltype = $fallbacks.calltype;
-        // if no handler is set for the msg.sig, revert
-        if (handler == address(0)) revert NoFallbackHandler(msg.sig);
-
+        // if no handler is set for the msg.sig, try default handlers for ERC721/1155 fallback. If
+        // no default handler is set, revert
+        if (handler == address(0)) {
+            /// @solidity memory-safe-assembly
+            assembly {
+                let s := shr(224, calldataload(0))
+                // 0x150b7a02: `onERC721Received(address,address,uint256,bytes)`.
+                // 0xf23a6e61: `onERC1155Received(address,address,uint256,uint256,bytes)`.
+                // 0xbc197c81: `onERC1155BatchReceived(address,address,uint256[],uint256[],bytes)`.
+                if or(eq(s, 0x150b7a02), or(eq(s, 0xf23a6e61), eq(s, 0xbc197c81))) {
+                    mstore(0x20, s) // Store `msg.sig`.
+                    return(0x3c, 0x20) // Return `msg.sig`.
+                }
+            }
+            revert NoFallbackHandler(msg.sig);
+        }
         // according to ERC7579, when calling to fallback modules, ERC2771 msg.sender has to be
         // appended to the calldata, this allows fallback modules to implement
         // authorization control
