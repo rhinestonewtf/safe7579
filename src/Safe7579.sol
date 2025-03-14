@@ -268,7 +268,9 @@ contract Safe7579 is ISafe7579, SafeOp, SupportViewer, AccessControl, Initialize
             validator := shr(96, nonce)
         }
 
-        // Call 4337 pre-validation hook
+        // Call 4337 pre-validation hook, the prevalidation hook processes the userOpHash, userOp
+        // and missingAccountFunds which allows for the pre-validation hook to modify and validate
+        // the userOpHash and signature before the actual validation happens
         (userOpHash, userOp.signature) =
             _withPreValidationHook(userOpHash, userOp, missingAccountFunds);
 
@@ -339,7 +341,7 @@ contract Safe7579 is ISafe7579, SafeOp, SupportViewer, AccessControl, Initialize
     {
         ISafe safe = ISafe(msg.sender);
 
-        // check for safe's approved hashes
+        // If signature is empty, check for safe's approved hashes
         if (data.length == 0) {
             // Call 1271 pre-validation hook
             (hash,) = _withPreValidationHook(_msgSender(), hash, data);

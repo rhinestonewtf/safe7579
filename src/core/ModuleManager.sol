@@ -436,9 +436,8 @@ abstract contract ModuleManager is ISafe7579, AccessControl, RegistryAdapter {
     }
 
     /*´:°•.°+.*•´.*:˚.°*.˚•´.°:°•.°•.*•´.*:˚.°*.˚•´.°:°•.°+.*•´.*:*/
-    /*                        PREVALIDATION HOOK MODULES                        */
+    /*                 PREVALIDATION HOOK MODULES                 */
     /*.•°:°.´+˚.*°.˚:*.´•*.+°.•°:´*.´•*.•°.•°:°.´:•˚°.*°.˚:*.´+°.•*/
-
     mapping(address smartAccount => address preValidationHook4337) internal $preValidationHook4337;
     mapping(address smartAccount => address preValidationHook1271) internal $preValidationHook1271;
 
