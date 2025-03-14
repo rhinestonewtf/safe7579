@@ -6,7 +6,9 @@ import {
     PackedUserOperation,
     MODULE_TYPE_PREVALIDATION_HOOK_ERC4337,
     MODULE_TYPE_PREVALIDATION_HOOK_ERC1271,
-    IValidator
+    IValidator,
+    IPreValidationHookERC1271,
+    IPreValidationHookERC4337
 } from "erc7579/interfaces/IERC7579Module.sol";
 import { IERC1271 } from "src/interfaces/IERC1271.sol";
 import { MockPreValidationHook } from "test/mocks/MockPrevalidationHook.sol";

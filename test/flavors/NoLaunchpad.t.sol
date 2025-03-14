@@ -3,7 +3,7 @@ pragma solidity ^0.8.23;
 
 import { MultiSend } from "@safe-global/safe-contracts/contracts/libraries/MultiSend.sol";
 import "../SafeERC7579.t.sol";
-import { ModeLib } from "erc7579/lib/ModeLib.sol";
+import { ModeLib } from "src/lib/ModeLib.sol";
 
 import "forge-std/console2.sol";
 

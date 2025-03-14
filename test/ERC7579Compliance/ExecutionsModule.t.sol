@@ -10,7 +10,7 @@ import {
     EXECTYPE_TRY,
     CALLTYPE_SINGLE,
     CALLTYPE_BATCH
-} from "erc7579/lib/ModeLib.sol";
+} from "src/lib/ModeLib.sol";
 
 contract ExecutionsModuleTest is BaseTest {
     function setUp() public virtual override {

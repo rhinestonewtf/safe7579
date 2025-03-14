@@ -4,10 +4,10 @@ pragma solidity ^0.8.24;
 import {
     IUserOperationBuilder, PackedUserOperation
 } from "src/interfaces/IUserOperationBuilder.sol";
-import { ModeLib } from "erc7579/lib/ModeLib.sol";
+import { ModeLib } from "src/lib/ModeLib.sol";
 import { Execution, ExecutionLib } from "erc7579/lib/ExecutionLib.sol";
 import { IEntryPoint } from "@ERC4337/account-abstraction/contracts/interfaces/IEntryPoint.sol";
-import { IERC7579Account } from "erc7579/interfaces/IERC7579Account.sol";
+import { ISafe7579 } from "src/ISafe7579.sol";
 
 contract Safe7579UserOperationBuilder is IUserOperationBuilder {
     IEntryPoint internal immutable _entryPoint;
@@ -39,7 +39,7 @@ contract Safe7579UserOperationBuilder is IUserOperationBuilder {
         bytes calldata context
     )
         external
-        view
+        pure
         returns (bytes memory)
     {
         if (executions.length == 0) {
@@ -47,7 +47,7 @@ contract Safe7579UserOperationBuilder is IUserOperationBuilder {
         }
         if (executions.length == 1) {
             return abi.encodeCall(
-                IERC7579Account.execute,
+                ISafe7579.execute,
                 (
                     ModeLib.encodeSimpleSingle(),
                     ExecutionLib.encodeSingle(
@@ -57,7 +57,7 @@ contract Safe7579UserOperationBuilder is IUserOperationBuilder {
             );
         } else {
             return abi.encodeCall(
-                IERC7579Account.execute,
+                ISafe7579.execute,
                 (ModeLib.encodeSimpleBatch(), ExecutionLib.encodeBatch(executions))
             );
         }
@@ -70,7 +70,7 @@ contract Safe7579UserOperationBuilder is IUserOperationBuilder {
         bytes calldata context
     )
         external
-        view
+        pure
         returns (bytes memory signature)
     {
         bytes32 signerId = bytes32(context);
@@ -90,7 +90,7 @@ contract Safe7579UserOperationBuilder is IUserOperationBuilder {
         bytes calldata context
     )
         external
-        view
+        pure
         returns (bytes memory signature)
     {
         if (context[0] == 0x01) {

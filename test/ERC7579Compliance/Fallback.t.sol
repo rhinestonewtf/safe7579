@@ -2,7 +2,7 @@
 pragma solidity ^0.8.0;
 
 import "./ModuleManagement.t.sol";
-import { ModeLib, CALLTYPE_SINGLE, CALLTYPE_STATIC } from "erc7579/lib/ModeLib.sol";
+import { ModeLib, CALLTYPE_SINGLE, CALLTYPE_STATIC } from "src/lib/ModeLib.sol";
 import { MockFallback } from "../mocks/MockFallback.sol";
 import "forge-std/console2.sol";
 
