@@ -11,7 +11,7 @@ import {
     CALLTYPE_SINGLE,
     CALLTYPE_BATCH,
     CALLTYPE_DELEGATECALL
-} from "./lib/ModeLib.sol";
+} from "src/lib/ModeLib.sol";
 import { ExecutionLib } from "./lib/ExecutionLib.sol";
 import {
     IValidator,

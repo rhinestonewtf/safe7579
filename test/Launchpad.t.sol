@@ -12,7 +12,7 @@ import { MockRegistry } from "./mocks/MockRegistry.sol";
 import { MockExecutor } from "./mocks/MockExecutor.sol";
 import { MockFallback } from "./mocks/MockFallback.sol";
 import { ExecutionLib } from "erc7579/lib/ExecutionLib.sol";
-import { ModeLib } from "erc7579/lib/ModeLib.sol";
+import { ModeLib } from "src/lib/ModeLib.sol";
 import { IERC7579Account, Execution } from "erc7579/interfaces/IERC7579Account.sol";
 import { MockTarget } from "./mocks/MockTarget.sol";
 
@@ -100,7 +100,7 @@ contract LaunchpadBase is Test {
             safe7579: ISafe7579(safe7579),
             validators: validators,
             callData: abi.encodeCall(
-                IERC7579Account.execute,
+                ISafe7579.execute,
                 (
                     ModeLib.encodeSimpleSingle(),
                     ExecutionLib.encodeSingle({

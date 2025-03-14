@@ -2,7 +2,7 @@
 pragma solidity ^0.8.23;
 
 import "./Launchpad.t.sol";
-import { ModeLib } from "erc7579/lib/ModeLib.sol";
+import { ModeLib } from "src/lib/ModeLib.sol";
 import { ISafeOp, SAFE_OP_TYPEHASH } from "src/interfaces/ISafeOp.sol";
 import {
     UserOperationLib,
@@ -66,7 +66,7 @@ contract SafeValidationTest is LaunchpadBase {
             safe7579: ISafe7579(safe7579),
             validators: validators,
             callData: abi.encodeCall(
-                IERC7579Account.execute,
+                ISafe7579.execute,
                 (
                     ModeLib.encodeSimpleSingle(),
                     ExecutionLib.encodeSingle({
@@ -125,7 +125,7 @@ contract SafeValidationTest is LaunchpadBase {
 
         // Encode the call into the calldata for the userOp
         bytes memory userOpCalldata = abi.encodeCall(
-            IERC7579Account.execute,
+            ISafe7579.execute,
             (
                 ModeLib.encodeSimpleSingle(),
                 ExecutionLib.encodeSingle(

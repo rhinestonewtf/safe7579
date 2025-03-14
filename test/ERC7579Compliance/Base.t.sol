@@ -2,9 +2,9 @@
 pragma solidity ^0.8.23;
 
 import "../Launchpad.t.sol";
-import { IERC7579Account } from "erc7579/interfaces/IERC7579Account.sol";
-import "erc7579/interfaces/IERC7579Module.sol";
-import { ModeLib } from "erc7579/lib/ModeLib.sol";
+import { ISafe7579 } from "src/ISafe7579.sol";
+import { ModeLib } from "src/lib/ModeLib.sol";
+import { IModule } from "erc7579/interfaces/IERC7579Module.sol";
 
 contract MockModule is IModule {
     bool initialized;
@@ -59,7 +59,7 @@ contract MockModule is IModule {
 }
 
 contract BaseTest is LaunchpadBase, MockModule {
-    IERC7579Account account;
+    ISafe7579 account;
 
     address SELF;
 
@@ -74,7 +74,7 @@ contract BaseTest is LaunchpadBase, MockModule {
         target = new MockTarget();
 
         initFirstExec();
-        account = IERC7579Account(address(safe));
+        account = ISafe7579(address(safe));
         SELF = address(this);
     }
 
@@ -91,7 +91,7 @@ contract BaseTest is LaunchpadBase, MockModule {
 
         // Encode the call into the calldata for the userOp
         bytes memory userOpCalldata = abi.encodeCall(
-            IERC7579Account.execute,
+            ISafe7579.execute,
             (
                 ModeLib.encodeSimpleSingle(),
                 ExecutionLib.encodeSingle(address(target), uint256(0), setValueOnTarget)

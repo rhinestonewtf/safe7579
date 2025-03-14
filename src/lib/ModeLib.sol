@@ -148,7 +148,7 @@ function eqCallType(CallType a, CallType b) pure returns (bool) {
 }
 
 function neqCallType(CallType a, CallType b) pure returns (bool) {
-    return CallType.unwrap(a) == CallType.unwrap(b);
+    return CallType.unwrap(a) != CallType.unwrap(b);
 }
 
 function eqExecType(ExecType a, ExecType b) pure returns (bool) {

@@ -208,8 +208,9 @@ abstract contract ModuleManager is ISafe7579, AccessControl, RegistryAdapter {
         withRegistry(handler, MODULE_TYPE_FALLBACK)
         returns (bytes memory moduleInitData)
     {
-        (bytes4 functionSig, CallType calltype, bytes memory initData) =
-            abi.decode(params, (bytes4, CallType, bytes));
+        bytes4 functionSig;
+        CallType calltype;
+        (functionSig, calltype, moduleInitData) = abi.decode(params, (bytes4, CallType, bytes));
 
         // disallow calls to onInstall or onUninstall.
         // this could create a security issue
@@ -227,8 +228,6 @@ abstract contract ModuleManager is ISafe7579, AccessControl, RegistryAdapter {
         FallbackHandler storage $fallbacks = $fallbackStorage[functionSig][msg.sender];
         $fallbacks.calltype = calltype;
         $fallbacks.handler = handler;
-
-        return initData;
     }
 
     function _isFallbackHandlerInstalled(bytes4 functionSig) internal view virtual returns (bool) {
@@ -503,10 +502,7 @@ abstract contract ModuleManager is ISafe7579, AccessControl, RegistryAdapter {
             _installPreValidationHook4337(hook);
         } else if (moduleType == MODULE_TYPE_PREVALIDATION_HOOK_ERC1271) {
             _installPreValidationHook1271(hook);
-        } else {
-            revert InvalidHookType();
         }
-        return moduleInitData;
     }
 
     function _installPreValidationHook4337(address hook)
@@ -550,10 +546,7 @@ abstract contract ModuleManager is ISafe7579, AccessControl, RegistryAdapter {
             delete $preValidationHook4337[msg.sender];
         } else if (moduleType == MODULE_TYPE_PREVALIDATION_HOOK_ERC1271) {
             delete $preValidationHook1271[msg.sender];
-        } else {
-            revert InvalidHookType();
         }
-        return moduleDeInitData;
     }
 
     function getPrevalidationHook(uint256 moduleType) public view returns (address hook) {
@@ -572,15 +565,13 @@ abstract contract ModuleManager is ISafe7579, AccessControl, RegistryAdapter {
     )
         internal
         view
-        returns (bool)
+        returns (bool isInstalled)
     {
         uint256 moduleType = abi.decode(context, (uint256));
         if (moduleType == MODULE_TYPE_PREVALIDATION_HOOK_ERC4337) {
             return $preValidationHook4337[msg.sender] == module;
         } else if (moduleType == MODULE_TYPE_PREVALIDATION_HOOK_ERC1271) {
             return $preValidationHook1271[msg.sender] == module;
-        } else {
-            revert InvalidHookType();
         }
     }
 
