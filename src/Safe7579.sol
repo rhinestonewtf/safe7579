@@ -368,9 +368,7 @@ contract Safe7579 is ISafe7579, SafeOp, SupportViewer, AccessControl, Initialize
             bytes memory messageData = EIP712.encodeMessageData(
                 safe.domainSeparator(), SAFE_MSG_TYPEHASH, abi.encode(keccak256(abi.encode(hash)))
             );
-
             bytes32 messageHash = keccak256(messageData);
-
             safe.checkSignatures(messageHash, messageData, data_);
             return IERC1271.isValidSignature.selector;
         }
