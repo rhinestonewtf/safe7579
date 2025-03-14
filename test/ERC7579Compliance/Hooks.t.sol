@@ -67,8 +67,7 @@ contract HookTest is BaseTest, MockFn {
         _caller = address(entrypoint);
         vm.startPrank(address(entrypoint));
 
-        bytes memory data = abi.encode(HookType.GLOBAL, 0x0, _data);
-        account.installModule(4, SELF, data);
+        account.installModule(4, SELF, _data);
 
         bytes memory setValueOnTarget = abi.encodeCall(MockTarget.set, 1337);
         account.execute(
@@ -84,9 +83,7 @@ contract HookTest is BaseTest, MockFn {
         vm.startPrank(address(entrypoint));
         // installing this test as an executor
         account.installModule(2, SELF, _data);
-
-        bytes memory data = abi.encode(HookType.GLOBAL, 0x0, _data);
-        account.installModule(4, SELF, data);
+        account.installModule(4, SELF, _data);
 
         vm.stopPrank();
 
@@ -97,7 +94,7 @@ contract HookTest is BaseTest, MockFn {
         );
     }
 
-    function test_WhenUsingFallbacks() external requireHookCalled(2) {
+    function test_WhenUsingFallbacks() external requireHookCalled(1) {
         // It should execute hook
         _data = hex"4141414141414141";
         _caller = address(this);
@@ -105,10 +102,7 @@ contract HookTest is BaseTest, MockFn {
         // installing fallback
         account.installModule(3, SELF, abi.encode(this.fallbackFn.selector, CALLTYPE_SINGLE, _data));
 
-        bytes memory data = abi.encode(HookType.SIG, this.fallbackFn.selector, _data);
-        account.installModule(4, SELF, data);
-        data = abi.encode(HookType.GLOBAL, 0x0, _data);
-        account.installModule(4, SELF, data);
+        account.installModule(4, SELF, _data);
         vm.stopPrank();
 
         bytes32 val = bytes32(bytes(hex"414141414141"));
@@ -117,16 +111,12 @@ contract HookTest is BaseTest, MockFn {
         assertEq(ret, val);
     }
 
-    function test_WhenInstallingModule() external requireHookCalled(3) {
+    function test_WhenInstallingModule() external requireHookCalled(1) {
         // It should execute hook
         _data = hex"4141414141414141";
         _caller = address(entrypoint);
         vm.startPrank(address(entrypoint));
-
-        bytes memory data = abi.encode(HookType.SIG, IERC7579Account.installModule.selector, _data);
-        account.installModule(4, SELF, data);
-        data = abi.encode(HookType.GLOBAL, 0x0, _data);
-        account.installModule(4, SELF, data);
+        account.installModule(4, SELF, _data);
 
         // installing fallback
         account.installModule(2, SELF, _data);

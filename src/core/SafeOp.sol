@@ -6,9 +6,11 @@ import {
     UserOperationLib
 } from "@ERC4337/account-abstraction/contracts/core/UserOperationLib.sol";
 import { SAFE_OP_TYPEHASH, ISafeOp } from "../interfaces/ISafeOp.sol";
+import { LibBytes } from "solady/utils/LibBytes.sol";
 
 abstract contract SafeOp is ISafeOp {
     using UserOperationLib for PackedUserOperation;
+    using LibBytes for bytes;
 
     bytes32 private constant DOMAIN_SEPARATOR_TYPEHASH =
         0x47e79534a245952e8b16893a336b85a3d9ea9fa8c573f3d803afb92a79469218;
@@ -23,7 +25,7 @@ abstract contract SafeOp is ISafeOp {
      * @return signatures The Safe owner signatures extracted from the user operation.
      */
     function getSafeOp(
-        PackedUserOperation calldata userOp,
+        PackedUserOperation memory userOp,
         address entryPoint
     )
         public
@@ -38,11 +40,12 @@ abstract contract SafeOp is ISafeOp {
         // Extract additional Safe operation fields from the user operation signature which is
         // encoded as:
         // `abi.encodePacked(validAfter, validUntil, signatures)`
+        // This is how we can extract signature components from memory
         {
-            bytes calldata sig = userOp.signature;
-            validAfter = uint48(bytes6(sig[0:6]));
-            validUntil = uint48(bytes6(sig[6:12]));
-            signatures = sig[12:];
+            bytes memory sig = userOp.signature;
+            validAfter = uint48(bytes6(sig.slice(0, 6)));
+            validUntil = uint48(bytes6(sig.slice(6, 12)));
+            signatures = sig.slice(12);
         }
 
         // It is important that **all** user operation fields are represented in the `SafeOp` data
@@ -67,11 +70,11 @@ abstract contract SafeOp is ISafeOp {
                 nonce: userOp.nonce,
                 initCodeHash: keccak256(userOp.initCode),
                 callDataHash: keccak256(userOp.callData),
-                verificationGasLimit: uint128(userOp.unpackVerificationGasLimit()),
-                callGasLimit: uint128(userOp.unpackCallGasLimit()),
+                verificationGasLimit: uint128(unpackVerificationGasLimit(userOp)),
+                callGasLimit: uint128(unpackCallGasLimit(userOp)),
                 preVerificationGas: userOp.preVerificationGas,
-                maxPriorityFeePerGas: uint128(userOp.unpackMaxPriorityFeePerGas()),
-                maxFeePerGas: uint128(userOp.unpackMaxFeePerGas()),
+                maxPriorityFeePerGas: uint128(unpackMaxPriorityFeePerGas(userOp)),
+                maxFeePerGas: uint128(unpackMaxFeePerGas(userOp)),
                 paymasterAndDataHash: keccak256(userOp.paymasterAndData),
                 validAfter: validAfter,
                 validUntil: validUntil,
@@ -96,5 +99,29 @@ abstract contract SafeOp is ISafeOp {
 
     function domainSeparator() public view returns (bytes32) {
         return keccak256(abi.encode(DOMAIN_SEPARATOR_TYPEHASH, block.chainid, this));
+    }
+
+    function unpackVerificationGasLimit(PackedUserOperation memory userOp)
+        private
+        pure
+        returns (uint256)
+    {
+        return UserOperationLib.unpackHigh128(userOp.accountGasLimits);
+    }
+
+    function unpackCallGasLimit(PackedUserOperation memory userOp) private pure returns (uint256) {
+        return UserOperationLib.unpackLow128(userOp.accountGasLimits);
+    }
+
+    function unpackMaxPriorityFeePerGas(PackedUserOperation memory userOp)
+        private
+        pure
+        returns (uint256)
+    {
+        return UserOperationLib.unpackHigh128(userOp.gasFees);
+    }
+
+    function unpackMaxFeePerGas(PackedUserOperation memory userOp) private pure returns (uint256) {
+        return UserOperationLib.unpackLow128(userOp.gasFees);
     }
 }

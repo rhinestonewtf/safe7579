@@ -217,11 +217,6 @@ interface ISafe7579 is IERC7579Account, ISafeOp {
      */
     function getActiveHook() external view returns (address hook);
 
-    /**
-     * Get the current active selector hook
-     */
-    function getActiveHook(bytes4 selector) external view returns (address hook);
-
     function getExecutorsPaginated(
         address cursor,
         uint256 size
@@ -229,6 +224,12 @@ interface ISafe7579 is IERC7579Account, ISafeOp {
         external
         view
         returns (address[] memory array, address next);
+
+    /**
+     * Get the current active prevalidation hook for the given module type
+     * @param moduleType the prevalidation hook type
+     */
+    function getPrevalidationHook(uint256 moduleType) external view returns (address hook);
 
     /*´:°•.°+.*•´.*:˚.°*.˚•´.°:°•.°•.*•´.*:˚.°*.˚•´.°:°•.°+.*•´.*:*/
     /*                        Query Misc                          */
@@ -259,6 +260,9 @@ interface ISafe7579 is IERC7579Account, ISafeOp {
     // Hooks
     error HookAlreadyInstalled(address currentHook);
     error InvalidHookType();
+
+    // PreValidation Hooks
+    error PreValidationHookAlreadyInstalled(address currentHook, uint256 moduleType);
 
     // Registry Adapter
     event ERC7484RegistryConfigured(address indexed smartAccount, IERC7484 indexed registry);
