@@ -653,13 +653,14 @@ abstract contract ModuleManager is ISafe7579, AccessControl, RegistryAdapter {
                 _installFallbackHandler(module, contexts[i]);
             }
             /*´:°•.°+.*•´.*:˚.°*.˚•´.°:°•.°•.*•´.*:˚.°*.˚•´.°:°•.°+.*•´.*:*/
-            /*          INSTALL HOOK (global or sig specific)             */
+            /*          INSTALL HOOK            */
             /*.•°:°.´+˚.*°.˚:*.´•*.+°.•°:´*.´•*.•°.•°:°.´:•˚°.*°.˚:*.´+°.•*/
             else if (_type == MODULE_TYPE_HOOK) {
                 _installHook(module, contexts[i]);
             }
             /*´:°•.°+.*•´.*:˚.°*.˚•´.°:°•.°•.*•´.*:˚.°*.˚•´.°:°•.°+.*•´.*:*/
-            /*          INSTALL PREVALIDATION HOOK (ERC1271 or ERC4337)    */
+            /*      INSTALL PREVALIDATION HOOK (ERC1271 or ERC4337)       */
+            /*.•°:°.´+˚.*°.˚:*.´•*.+°.•°:´*.´•*.•°.•°:°.´:•˚°.*°.˚:*.´+°.•*/
             else if (
                 _type == MODULE_TYPE_PREVALIDATION_HOOK_ERC1271
                     || _type == MODULE_TYPE_PREVALIDATION_HOOK_ERC4337
@@ -733,11 +734,15 @@ abstract contract ModuleManager is ISafe7579, AccessControl, RegistryAdapter {
                 _uninstallFallbackHandler(module, contexts[i]);
             }
             /*´:°•.°+.*•´.*:˚.°*.˚•´.°:°•.°•.*•´.*:˚.°*.˚•´.°:°•.°+.*•´.*:*/
-            /*          INSTALL HOOK (global or sig specific)             */
+            /*          INSTALL HOOK            */
             /*.•°:°.´+˚.*°.˚:*.´•*.+°.•°:´*.´•*.•°.•°:°.´:•˚°.*°.˚:*.´+°.•*/
             else if (_type == MODULE_TYPE_HOOK) {
                 _uninstallHook(module, contexts[i]);
-            } else if (
+            }
+            /*´:°•.°+.*•´.*:˚.°*.˚•´.°:°•.°•.*•´.*:˚.°*.˚•´.°:°•.°+.*•´.*:*/
+            /*      INSTALL PREVALIDATION HOOK (ERC1271 or ERC4337)       */
+            /*.•°:°.´+˚.*°.˚:*.´•*.+°.•°:´*.´•*.•°.•°:°.´:•˚°.*°.˚:*.´+°.•*/
+            else if (
                 _type == MODULE_TYPE_PREVALIDATION_HOOK_ERC1271
                     || _type == MODULE_TYPE_PREVALIDATION_HOOK_ERC4337
             ) {
