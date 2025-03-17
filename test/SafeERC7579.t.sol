@@ -1,12 +1,14 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.23;
 
-// import "erc7579/lib/ModeLib.sol";
+// import "src/lib/ModeLib.sol";
 // import "erc7579/lib/ExecutionLib.sol";
 import "./Launchpad.t.sol";
-import { ModeLib } from "erc7579/lib/ModeLib.sol";
+import { ModeLib } from "src/lib/ModeLib.sol";
 
 import "forge-std/console2.sol";
+
+import { ISafe7579 } from "src/ISafe7579.sol";
 
 contract Safe7579Test is LaunchpadBase {
     function setUp() public virtual override {
@@ -20,7 +22,7 @@ contract Safe7579Test is LaunchpadBase {
 
         // Encode the call into the calldata for the userOp
         bytes memory userOpCalldata = abi.encodeCall(
-            IERC7579Account.execute,
+            ISafe7579.execute,
             (
                 ModeLib.encodeSimpleSingle(),
                 ExecutionLib.encodeSingle(address(target), uint256(0), setValueOnTarget)
@@ -56,8 +58,7 @@ contract Safe7579Test is LaunchpadBase {
 
         // Encode the call into the calldata for the userOp
         bytes memory userOpCalldata = abi.encodeCall(
-            IERC7579Account.execute,
-            (ModeLib.encodeSimpleBatch(), ExecutionLib.encodeBatch(executions))
+            ISafe7579.execute, (ModeLib.encodeSimpleBatch(), ExecutionLib.encodeBatch(executions))
         );
 
         // Create the userOp and add the data
@@ -79,7 +80,7 @@ contract Safe7579Test is LaunchpadBase {
 
     function test_execViaExecutor() public virtual {
         defaultExecutor.executeViaAccount(
-            IERC7579Account(address(safe)),
+            ISafe7579(address(safe)),
             address(target),
             0,
             abi.encodeWithSelector(MockTarget.set.selector, 1337)
@@ -91,10 +92,8 @@ contract Safe7579Test is LaunchpadBase {
         Execution[] memory executions = new Execution[](2);
         executions[0] = Execution({ target: address(target), value: 0, callData: setValueOnTarget });
         executions[1] = Execution({ target: address(target), value: 0, callData: setValueOnTarget });
-        bytes[] memory ret = defaultExecutor.execBatch({
-            account: IERC7579Account(address(safe)),
-            execs: executions
-        });
+        bytes[] memory ret =
+            defaultExecutor.execBatch({ account: ISafe7579(address(safe)), execs: executions });
 
         assertEq(ret.length, 2);
         assertEq(abi.decode(ret[0], (uint256)), 1338);

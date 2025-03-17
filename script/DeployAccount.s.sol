@@ -15,7 +15,8 @@ import { MockRegistry } from "test/mocks/MockRegistry.sol";
 import { MockExecutor } from "test/mocks/MockExecutor.sol";
 import { MockFallback } from "test/mocks/MockFallback.sol";
 import { ExecutionLib } from "erc7579/lib/ExecutionLib.sol";
-import { ModeLib } from "erc7579/lib/ModeLib.sol";
+import { ModeLib } from "src/lib/ModeLib.sol";
+import { ModeLib as ModeLibOG } from "erc7579/lib/ModeLib.sol";
 import { IERC7579Account, Execution } from "erc7579/interfaces/IERC7579Account.sol";
 import { MockTarget } from "test/mocks/MockTarget.sol";
 
@@ -83,7 +84,7 @@ contract DeployAccountScript is Script {
             callData: abi.encodeCall(
                 IERC7579Account.execute,
                 (
-                    ModeLib.encodeSimpleSingle(),
+                    ModeLibOG.encodeSimpleSingle(),
                     ExecutionLib.encodeSingle({
                         target: address(0xF7C012789aac54B5E33EA5b88064ca1F1172De05),
                         value: 1,

@@ -2,7 +2,7 @@
 pragma solidity ^0.8.0;
 
 import "./ModuleManagement.t.sol";
-import { ModeLib } from "erc7579/lib/ModeLib.sol";
+import { ModeLib } from "src/lib/ModeLib.sol";
 import "forge-std/console2.sol";
 
 interface MockFn {

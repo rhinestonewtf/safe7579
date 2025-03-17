@@ -3,6 +3,7 @@ pragma solidity ^0.8.23;
 
 contract MockTarget {
     uint256 public value;
+    address public immutable self = address(this);
 
     event Access(address sender);
 
@@ -19,5 +20,12 @@ contract MockTarget {
         }
         value = _value;
         return _value;
+    }
+
+    function delegateCallTest() public view {
+        // Check if this was called by a delegatecall
+        if (address(this) == self) {
+            revert("MockTarget: not delegatecall");
+        }
     }
 }
