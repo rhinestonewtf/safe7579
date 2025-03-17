@@ -172,7 +172,7 @@ abstract contract Initializer is ISafe7579, ModuleManager {
         uint8 threshold
     )
         external
-        onlyEntryPointOrSelf
+        onlySelf
     {
         _configureRegistry(registry, attesters, threshold);
     }
