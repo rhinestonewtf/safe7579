@@ -231,6 +231,15 @@ interface ISafe7579 is IERC7579Account, ISafeOp {
      */
     function getPrevalidationHook(uint256 moduleType) external view returns (address hook);
 
+    /**
+     * Get the current active fallback handler and call type for the given selector
+     * @param selector the function selector
+     */
+    function getFallbackHandlerBySelector(bytes4 selector)
+        external
+        view
+        returns (CallType, address);
+
     /*´:°•.°+.*•´.*:˚.°*.˚•´.°:°•.°•.*•´.*:˚.°*.˚•´.°:°•.°+.*•´.*:*/
     /*                        Query Misc                          */
     /*.•°:°.´+˚.*°.˚:*.´•*.+°.•°:´*.´•*.•°.•°:°.´:•˚°.*°.˚:*.´+°.•*/

@@ -265,6 +265,15 @@ abstract contract ModuleManager is ISafe7579, AccessControl, RegistryAdapter {
         return $fallbacks.handler == _handler;
     }
 
+    function getFallbackHandlerBySelector(bytes4 selector)
+        external
+        view
+        returns (CallType, address)
+    {
+        FallbackHandler memory handler = $fallbackStorage[selector][msg.sender];
+        return (handler.calltype, handler.handler);
+    }
+
     /**
      * @dev AccessControl: any external contract / EOA may call this function
      * Safe7579 Fallback supports the following feature set:
