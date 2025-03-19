@@ -28,10 +28,10 @@
   "dependencies": {
     "@ERC4337/account-abstraction": "github:kopy-kat/account-abstraction#develop",
     "@ERC4337/account-abstraction-v0.6": "github:eth-infinitism/account-abstraction#v0.6.0",
+    "@rhinestone/checknsignatures": "github:rhinestonewtf/checknsignatures",
     "@rhinestone/erc4337-validation": "0.0.1-alpha.2",
     "@rhinestone/module-bases": "github:rhinestonewtf/module-bases",
     "@rhinestone/sentinellist": "github:rhinestonewtf/sentinellist",
-    "@rhinestone/checknsignatures": "github:rhinestonewtf/checknsignatures",
     "@safe-global/safe-contracts": "^1.4.1",
     "ds-test": "github:dapphub/ds-test",
     "erc7579": "github:erc7579/erc7579-implementation",
@@ -41,7 +41,7 @@
   },
   "devDependencies": {
     "prettier": "^2.8.8",
-    "solhint": "^5.0.1"
+    "solhint": "^5.0.5"
   },
   "files": [
     "artifacts",

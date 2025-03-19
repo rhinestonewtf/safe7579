@@ -7,10 +7,10 @@ on:
 
 jobs:
   lint:
-    uses: "rhinestonewtf/reusable-workflows/.github/workflows/forge-lint.yaml@main"
+    uses: "rhinestonewtf/reusable-workflows/.github/workflows/forge-lint.yaml@chore/foundry-toolchain"
 
   build:
-    uses: "rhinestonewtf/reusable-workflows/.github/workflows/forge-build.yaml@main"
+    uses: "rhinestonewtf/reusable-workflows/.github/workflows/forge-build.yaml@chore/foundry-toolchain"
 
   test:
     needs: ["lint", "build"]

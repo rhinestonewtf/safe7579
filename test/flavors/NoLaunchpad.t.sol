@@ -3,7 +3,7 @@ pragma solidity ^0.8.23;
 
 import { MultiSend } from "@safe-global/safe-contracts/contracts/libraries/MultiSend.sol";
 import "../SafeERC7579.t.sol";
-import { ModeLib } from "erc7579/lib/ModeLib.sol";
+import { ModeLib as ModeLibOG } from "erc7579/lib/ModeLib.sol";
 
 import "forge-std/console2.sol";
 
@@ -84,7 +84,7 @@ contract NoLaunchpad is Safe7579Test {
         bytes memory userOpCalldata = abi.encodeCall(
             IERC7579Account.execute,
             (
-                ModeLib.encodeSimpleSingle(),
+                ModeLibOG.encodeSimpleSingle(),
                 ExecutionLib.encodeSingle(address(target), uint256(0), setValueOnTarget)
             )
         );
@@ -117,7 +117,7 @@ contract NoLaunchpad is Safe7579Test {
         bytes memory userOpCalldata = abi.encodeCall(
             IERC7579Account.execute,
             (
-                ModeLib.encodeSimpleSingle(),
+                ModeLibOG.encodeSimpleSingle(),
                 ExecutionLib.encodeSingle(address(target), uint256(0), setValueOnTarget)
             )
         );
