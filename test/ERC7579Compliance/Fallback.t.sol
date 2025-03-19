@@ -479,4 +479,98 @@ contract FallbackTest is BaseTest {
         assertEq(counterValue, initialValue, "View function should return correct counter value");
         assertEq(caller, address(account), "View function should return correct caller");
     }
+
+    function test_GetFallbackHandlerBySelector() external {
+        // Install a fallback handler
+        bytes4 fnSelector = MockFallbackInterface.target.selector;
+
+        vm.startPrank(address(entrypoint));
+
+        account.installModule(
+            3, // MODULE_TYPE_FALLBACK
+            address(mockFallbackModule),
+            abi.encode(fnSelector, CALLTYPE_SINGLE, _installData)
+        );
+
+        // Get the installed handler
+        (CallType calltype, address handler) = account.getFallbackHandlerBySelector(fnSelector);
+
+        // Verify correct values are returned
+        assertEq(
+            handler,
+            address(mockFallbackModule),
+            "Should return the correct fallback handler address"
+        );
+        assertTrue(calltype == CALLTYPE_SINGLE, "Should return the correct call type");
+
+        // Test for a non-existent handler
+        bytes4 nonExistentSelector = MockFallbackInterface.doesNotExist.selector;
+        (CallType nullCalltype, address nullHandler) =
+            account.getFallbackHandlerBySelector(nonExistentSelector);
+
+        // Should return address(0) for non-existent handlers
+        assertEq(nullHandler, address(0), "Should return address(0) for non-existent handlers");
+
+        vm.stopPrank();
+    }
+
+    function test_GetFallbackHandlerAfterUninstall() external {
+        // First install a handler
+        bytes4 fnSelector = MockFallbackInterface.target.selector;
+
+        vm.startPrank(address(entrypoint));
+
+        account.installModule(
+            3, // MODULE_TYPE_FALLBACK
+            address(mockFallbackModule),
+            abi.encode(fnSelector, CALLTYPE_SINGLE, _installData)
+        );
+
+        // Verify it's installed
+        (CallType calltype, address handler) = account.getFallbackHandlerBySelector(fnSelector);
+        assertEq(handler, address(mockFallbackModule), "Handler should be installed");
+
+        // Uninstall the handler
+        account.uninstallModule(
+            3, address(mockFallbackModule), abi.encode(fnSelector, _installData)
+        );
+
+        // Verify it's removed
+        (CallType uninstalledCalltype, address uninstalledHandler) =
+            account.getFallbackHandlerBySelector(fnSelector);
+        assertEq(uninstalledHandler, address(0), "Handler should be removed after uninstall");
+
+        vm.stopPrank();
+    }
+
+    function test_GetFallbackHandlersWithDifferentCallTypes() external {
+        bytes4 fnSelector1 = MockFallbackInterface.target.selector;
+        bytes4 fnSelector2 = MockFallbackInterface.target2.selector;
+
+        vm.startPrank(address(entrypoint));
+
+        // Install first function with SINGLE calltype
+        account.installModule(
+            3, address(mockFallbackModule), abi.encode(fnSelector1, CALLTYPE_SINGLE, _installData)
+        );
+
+        // Install second function with STATIC calltype
+        account.installModule(
+            3, address(mockFallbackModule), abi.encode(fnSelector2, CALLTYPE_STATIC, _installData)
+        );
+
+        // Verify each handler's calltype is correctly returned
+        (CallType calltype1, address handler1) = account.getFallbackHandlerBySelector(fnSelector1);
+        (CallType calltype2, address handler2) = account.getFallbackHandlerBySelector(fnSelector2);
+
+        // Check handlers
+        assertEq(handler1, address(mockFallbackModule), "First handler should match");
+        assertEq(handler2, address(mockFallbackModule), "Second handler should match");
+
+        // Check call types
+        assertTrue(calltype1 == CALLTYPE_SINGLE, "First calltype should be SINGLE");
+        assertTrue(calltype2 == CALLTYPE_STATIC, "Second calltype should be STATIC");
+
+        vm.stopPrank();
+    }
 }
