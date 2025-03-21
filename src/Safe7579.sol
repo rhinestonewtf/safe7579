@@ -72,7 +72,7 @@ contract Safe7579 is ISafe7579, SafeOp, SupportViewer, AccessControl, Initialize
         bytes calldata executionCalldata
     )
         external
-        withHook(IERC7579Account.execute.selector)
+        withHook
         onlyEntryPointOrSelf
     {
         CallType callType;
@@ -154,7 +154,7 @@ contract Safe7579 is ISafe7579, SafeOp, SupportViewer, AccessControl, Initialize
         external
         override
         onlyExecutorModule
-        withHook(IERC7579Account.executeFromExecutor.selector)
+        withHook
         withRegistry(_msgSender(), MODULE_TYPE_EXECUTOR)
         returns (bytes[] memory returnDatas)
     {
@@ -392,7 +392,7 @@ contract Safe7579 is ISafe7579, SafeOp, SupportViewer, AccessControl, Initialize
     )
         external
         override
-        withHook(IERC7579Account.installModule.selector)
+        withHook
         onlyEntryPointOrSelf
     {
         // internal install functions will decode the initData param, and return sanitized
@@ -437,7 +437,7 @@ contract Safe7579 is ISafe7579, SafeOp, SupportViewer, AccessControl, Initialize
     )
         external
         override
-        tryWithHook(module, IERC7579Account.uninstallModule.selector)
+        tryWithHook(module)
         onlyEntryPointOrSelf
     {
         // internal uninstall functions will decode the deInitData param, and return sanitized

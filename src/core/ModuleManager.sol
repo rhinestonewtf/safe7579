@@ -59,6 +59,7 @@ abstract contract ModuleManager is ISafe7579, AccessControl, RegistryAdapter {
     )
         internal
         withRegistry(validator, MODULE_TYPE_VALIDATOR)
+        withCorrectModuleType(validator, MODULE_TYPE_VALIDATOR)
         returns (bytes memory moduleInitData)
     {
         $validators.push({ account: msg.sender, newEntry: validator });
@@ -140,6 +141,7 @@ abstract contract ModuleManager is ISafe7579, AccessControl, RegistryAdapter {
     )
         internal
         withRegistry(executor, MODULE_TYPE_EXECUTOR)
+        withCorrectModuleType(executor, MODULE_TYPE_EXECUTOR)
         returns (bytes memory moduleInitData)
     {
         $executors.push({ account: msg.sender, newEntry: executor });
@@ -206,6 +208,7 @@ abstract contract ModuleManager is ISafe7579, AccessControl, RegistryAdapter {
         internal
         virtual
         withRegistry(handler, MODULE_TYPE_FALLBACK)
+        withCorrectModuleType(handler, MODULE_TYPE_FALLBACK)
         returns (bytes memory moduleInitData)
     {
         bytes4 functionSig;
@@ -287,7 +290,7 @@ abstract contract ModuleManager is ISafe7579, AccessControl, RegistryAdapter {
         external
         payable
         virtual
-        withHook(msg.sig)
+        withHook
         returns (bytes memory fallbackRet)
     {
         // using JUMPI to avoid stack too deep
@@ -304,8 +307,8 @@ abstract contract ModuleManager is ISafe7579, AccessControl, RegistryAdapter {
         FallbackHandler storage $fallbacks = $fallbackStorage[msg.sig][msg.sender];
         address handler = $fallbacks.handler;
         CallType calltype = $fallbacks.calltype;
-        // if no handler is set for the msg.sig, try default handlers for ERC721/1155 fallback. If
-        // no default handler is set, revert
+        // if no handler is set for the msg.sig, return msg.sig for erc721/1155 selectors,
+        // otherwise revert
         if (handler == address(0)) {
             /// @solidity memory-safe-assembly
             assembly {
@@ -347,7 +350,7 @@ abstract contract ModuleManager is ISafe7579, AccessControl, RegistryAdapter {
     mapping(address smartAccount => address globalHook) internal $globalHook;
 
     /**
-     * Run precheck hook for global and function selector specific
+     * Run precheck for global hook
      */
     function _preHooks(address globalHook) internal returns (bytes memory global) {
         if (globalHook != address(0)) {
@@ -362,7 +365,7 @@ abstract contract ModuleManager is ISafe7579, AccessControl, RegistryAdapter {
     }
 
     /**
-     * Run post hooks (global and function sig)
+     * Run post hooks
      */
     function _postHooks(address globalHook, bytes memory global) internal {
         if (globalHook != address(0)) {
@@ -378,14 +381,14 @@ abstract contract ModuleManager is ISafe7579, AccessControl, RegistryAdapter {
     /**
      * modifier that executes global hook, and function signature specific hook if enabled
      */
-    modifier withHook(bytes4 selector) {
+    modifier withHook() {
         address globalHook = $globalHook[msg.sender];
         (bytes memory global) = _preHooks(globalHook);
         _;
         _postHooks(globalHook, global);
     }
 
-    modifier tryWithHook(address module, bytes4 selector) {
+    modifier tryWithHook(address module) {
         address globalHook = $globalHook[msg.sender];
         if (module != globalHook) {
             (bytes memory global) = _preHooks(globalHook);
@@ -409,6 +412,7 @@ abstract contract ModuleManager is ISafe7579, AccessControl, RegistryAdapter {
         internal
         virtual
         withRegistry(hook, MODULE_TYPE_HOOK)
+        withCorrectModuleType(hook, MODULE_TYPE_HOOK)
         returns (bytes memory moduleInitData)
     {
         // check if any hook is already installed
@@ -436,7 +440,7 @@ abstract contract ModuleManager is ISafe7579, AccessControl, RegistryAdapter {
 
     function _isHookInstalled(address module) internal view returns (bool) {
         address hook = getActiveHook();
-        return hook == module;
+        return module != address(0) && hook == module;
     }
 
     function getActiveHook() public view returns (address hook) {
@@ -446,6 +450,7 @@ abstract contract ModuleManager is ISafe7579, AccessControl, RegistryAdapter {
     /*´:°•.°+.*•´.*:˚.°*.˚•´.°:°•.°•.*•´.*:˚.°*.˚•´.°:°•.°+.*•´.*:*/
     /*                 PREVALIDATION HOOK MODULES                 */
     /*.•°:°.´+˚.*°.˚:*.´•*.+°.•°:´*.´•*.•°.•°:°.´:•˚°.*°.˚:*.´+°.•*/
+
     mapping(address smartAccount => address preValidationHook4337) internal $preValidationHook4337;
     mapping(address smartAccount => address preValidationHook1271) internal $preValidationHook1271;
 
@@ -518,6 +523,7 @@ abstract contract ModuleManager is ISafe7579, AccessControl, RegistryAdapter {
         internal
         virtual
         withRegistry(hook, MODULE_TYPE_PREVALIDATION_HOOK_ERC4337)
+        withCorrectModuleType(hook, MODULE_TYPE_PREVALIDATION_HOOK_ERC4337)
     {
         address currentHook = $preValidationHook4337[msg.sender];
         if (currentHook != address(0)) {
@@ -532,6 +538,7 @@ abstract contract ModuleManager is ISafe7579, AccessControl, RegistryAdapter {
         internal
         virtual
         withRegistry(hook, MODULE_TYPE_PREVALIDATION_HOOK_ERC1271)
+        withCorrectModuleType(hook, MODULE_TYPE_PREVALIDATION_HOOK_ERC1271)
     {
         address currentHook = $preValidationHook1271[msg.sender];
         if (currentHook != address(0)) {
@@ -753,5 +760,15 @@ abstract contract ModuleManager is ISafe7579, AccessControl, RegistryAdapter {
         // memory allocate the moduleInitData to return. This data should be used by the caller to
         // initialize the module
         _moduleDeInitData = moduleDeInitData;
+    }
+
+    /*
+     * @Dev Check's if a module is of a specific type, reverts if not
+     */
+    modifier withCorrectModuleType(address module, uint256 moduleType) {
+        if (!IModule(module).isModuleType(moduleType)) {
+            revert InvalidModuleType(module, moduleType);
+        }
+        _;
     }
 }
