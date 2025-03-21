@@ -11,7 +11,9 @@ import {
     MODULE_TYPE_VALIDATOR,
     MODULE_TYPE_HOOK,
     MODULE_TYPE_EXECUTOR,
-    MODULE_TYPE_FALLBACK
+    MODULE_TYPE_FALLBACK,
+    MODULE_TYPE_PREVALIDATION_HOOK_ERC1271,
+    MODULE_TYPE_PREVALIDATION_HOOK_ERC4337
 } from "erc7579/interfaces/IERC7579Module.sol";
 import { IERC7484 } from "../interfaces/IERC7484.sol";
 import { SentinelList4337Lib } from "sentinellist/SentinelList4337.sol";
@@ -42,6 +44,10 @@ abstract contract Initializer is ISafe7579, ModuleManager {
             uint256 length = validators.length;
             for (uint256 i; i < length; i++) {
                 ModuleInit calldata validator = validators[i];
+                // Ensure the module type is validator
+                if (validator.moduleType != MODULE_TYPE_VALIDATOR) {
+                    revert InvalidModuleType(validator.module, validator.moduleType);
+                }
                 $validators.push({ account: msg.sender, newEntry: validator.module });
                 // @dev No events emitted here. Launchpad is expected to do this.
                 // at this point, the safeproxy singleton is not yet updated to the SafeSingleton
@@ -55,10 +61,7 @@ abstract contract Initializer is ISafe7579, ModuleManager {
      * @inheritdoc ISafe7579
      */
     function initializeAccount(
-        ModuleInit[] calldata validators,
-        ModuleInit[] calldata executors,
-        ModuleInit[] calldata fallbacks,
-        ModuleInit[] calldata hooks,
+        ModuleInit[] calldata modules,
         RegistryInit calldata registryInit
     )
         external
@@ -66,96 +69,61 @@ abstract contract Initializer is ISafe7579, ModuleManager {
     {
         _configureRegistry(registryInit.registry, registryInit.attesters, registryInit.threshold);
         // this will revert if already initialized
-        _initModules(validators, executors, fallbacks, hooks);
+        _initModules(modules);
     }
 
     /**
      * _initModules may be used via launchpad deploymet or directly by already deployed Safe
      * accounts
      */
-    function _initModules(
-        ModuleInit[] calldata validators,
-        ModuleInit[] calldata executors,
-        ModuleInit[] calldata fallbacks,
-        ModuleInit[] calldata hooks
-    )
-        internal
-    {
+    function _initModules(ModuleInit[] calldata modules) internal {
         bytes memory moduleInitData;
-        uint256 length = validators.length;
-        // if this function is called by the launchpad, validators will be initialized via
-        // launchpadValidators()
-        // to avoid double initialization, we check if the validators are already initialized
-        if (!$validators.alreadyInitialized({ account: msg.sender })) {
-            $validators.init({ account: msg.sender });
-            for (uint256 i; i < length; i++) {
-                ModuleInit calldata validator = validators[i];
-                // enable module on Safe7579,  initialize module via Safe, emit events
-                moduleInitData = _installValidator(validator.module, validator.initData);
+        uint256 length = modules.length;
+        bool validatorsInitialized = $validators.alreadyInitialized({ account: msg.sender });
 
-                // Initialize Module via Safe
-                _delegatecall({
-                    safe: ISafe(msg.sender),
-                    target: UTIL,
-                    callData: abi.encodeCall(
-                        ModuleInstallUtil.installModule,
-                        (MODULE_TYPE_VALIDATOR, validator.module, moduleInitData)
-                    )
-                });
-            }
-        } else if (length != 0) {
-            revert InvalidInitData(msg.sender);
+        // Initialize validators list if needed
+        if (!validatorsInitialized) {
+            $validators.init({ account: msg.sender });
         }
 
-        // this will revert if already initialized.
+        // This will revert if already initialized.
         $executors.init({ account: msg.sender });
 
-        length = executors.length;
         for (uint256 i; i < length; i++) {
-            ModuleInit calldata executor = executors[i];
-            // enable module on Safe7579,  initialize module via Safe, emit events
-            moduleInitData = _installExecutor(executor.module, executor.initData);
+            ModuleInit calldata module = modules[i];
+            uint256 moduleType = module.moduleType;
 
-            // Initialize Module via Safe
+            if (module.moduleType == MODULE_TYPE_VALIDATOR) {
+                if (validatorsInitialized) {
+                    revert InvalidInitData(msg.sender);
+                }
+                // enable module on Safe7579, initialize module via Safe, emit events
+                moduleInitData = _installValidator(module.module, module.initData);
+            } else if (module.moduleType == MODULE_TYPE_EXECUTOR) {
+                // enable module on Safe7579, initialize module via Safe, emit events
+                moduleInitData = _installExecutor(module.module, module.initData);
+            } else if (module.moduleType == MODULE_TYPE_FALLBACK) {
+                // enable module on Safe7579, initialize module via Safe, emit events
+                moduleInitData = _installFallbackHandler(module.module, module.initData);
+            } else if (module.moduleType == MODULE_TYPE_HOOK) {
+                // enable module on Safe7579, initialize module via Safe, emit events
+                moduleInitData = _installHook(module.module, module.initData);
+            } else if (
+                module.moduleType == MODULE_TYPE_PREVALIDATION_HOOK_ERC1271
+                    || module.moduleType == MODULE_TYPE_PREVALIDATION_HOOK_ERC4337
+            ) {
+                // Handle pre-validation hooks or other module types
+                moduleInitData = _installPreValidationHook(module.module, module.initData);
+            } else {
+                revert InvalidModuleType(module.module, moduleType);
+            }
+
+            // Initialize Module via Safe for standard module types
             _delegatecall({
                 safe: ISafe(msg.sender),
                 target: UTIL,
                 callData: abi.encodeCall(
-                    ModuleInstallUtil.installModule,
-                    (MODULE_TYPE_EXECUTOR, executor.module, moduleInitData)
-                )
-            });
-        }
-
-        length = fallbacks.length;
-        for (uint256 i; i < length; i++) {
-            ModuleInit calldata _fallback = fallbacks[i];
-            // enable module on Safe7579,  initialize module via Safe, emit events
-            moduleInitData = _installFallbackHandler(_fallback.module, _fallback.initData);
-
-            // Initialize Module via Safe
-            _delegatecall({
-                safe: ISafe(msg.sender),
-                target: UTIL,
-                callData: abi.encodeCall(
-                    ModuleInstallUtil.installModule,
-                    (MODULE_TYPE_FALLBACK, _fallback.module, moduleInitData)
-                )
-            });
-        }
-
-        length = hooks.length;
-        for (uint256 i; i < length; i++) {
-            ModuleInit calldata hook = hooks[i];
-            // enable module on Safe7579,  initialize module via Safe, emit events
-            moduleInitData = _installHook(hook.module, hook.initData);
-
-            // Initialize Module via Safe
-            _delegatecall({
-                safe: ISafe(msg.sender),
-                target: UTIL,
-                callData: abi.encodeCall(
-                    ModuleInstallUtil.installModule, (MODULE_TYPE_HOOK, hook.module, moduleInitData)
+                    ModuleInstallUtil.installModule, (moduleType, module.module, moduleInitData)
                 )
             });
         }

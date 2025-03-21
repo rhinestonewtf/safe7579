@@ -26,7 +26,16 @@ import { Safe7579Launchpad } from "src/Safe7579Launchpad.sol";
 
 import { Solarray } from "solarray/Solarray.sol";
 import "./dependencies/EntryPoint.sol";
-
+import {
+    MODULE_TYPE_VALIDATOR,
+    MODULE_TYPE_EXECUTOR,
+    MODULE_TYPE_FALLBACK,
+    MODULE_TYPE_HOOK,
+    MODULE_TYPE_PREVALIDATION_HOOK_ERC1271,
+    MODULE_TYPE_PREVALIDATION_HOOK_ERC4337,
+    IPreValidationHookERC1271,
+    IPreValidationHookERC4337
+} from "erc7579/interfaces/IERC7579Module.sol";
 import { Simulator } from "@rhinestone/erc4337-validation/src/Simulator.sol";
 
 contract LaunchpadBase is Test {
@@ -75,11 +84,17 @@ contract LaunchpadBase is Test {
         bytes32 salt;
 
         ModuleInit[] memory validators = new ModuleInit[](1);
-        validators[0] = ModuleInit({ module: address(defaultValidator), initData: bytes("") });
+        validators[0] = ModuleInit({
+            module: address(defaultValidator),
+            initData: bytes(""),
+            moduleType: MODULE_TYPE_VALIDATOR
+        });
         ModuleInit[] memory executors = new ModuleInit[](1);
-        executors[0] = ModuleInit({ module: address(defaultExecutor), initData: bytes("") });
-        ModuleInit[] memory fallbacks = new ModuleInit[](0);
-        ModuleInit[] memory hooks = new ModuleInit[](0);
+        executors[0] = ModuleInit({
+            module: address(defaultExecutor),
+            initData: bytes(""),
+            moduleType: MODULE_TYPE_EXECUTOR
+        });
 
         Safe7579Launchpad.InitData memory initData = Safe7579Launchpad.InitData({
             singleton: address(singleton),
@@ -91,8 +106,6 @@ contract LaunchpadBase is Test {
                 (
                     address(safe7579),
                     executors,
-                    fallbacks,
-                    hooks,
                     Solarray.addresses(makeAddr("attester1"), makeAddr("attester2")),
                     2
                 )

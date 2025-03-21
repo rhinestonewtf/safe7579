@@ -29,6 +29,14 @@ import { LibClone } from "solady/utils/LibClone.sol";
 import { Safe7579Launchpad } from "src/Safe7579Launchpad.sol";
 import { ECDSA } from "solady/utils/ECDSA.sol";
 import { Solarray } from "solarray/Solarray.sol";
+import {
+    MODULE_TYPE_VALIDATOR,
+    MODULE_TYPE_HOOK,
+    MODULE_TYPE_EXECUTOR,
+    MODULE_TYPE_FALLBACK,
+    MODULE_TYPE_PREVALIDATION_HOOK_ERC1271,
+    MODULE_TYPE_PREVALIDATION_HOOK_ERC4337
+} from "erc7579/interfaces/IERC7579Module.sol";
 import "test/dependencies/EntryPoint.sol";
 
 import "forge-std/console2.sol";
@@ -47,18 +55,16 @@ contract DeployAccountScript is Script {
         address safeProxyFactory = address(0x4e1DCf7AD4e460CfD30791CCC4F9c8a4f820ec67);
 
         ModuleInit[] memory validators = new ModuleInit[](1);
-        ModuleInit[] memory executors = new ModuleInit[](0);
-        ModuleInit[] memory fallbacks = new ModuleInit[](0);
-        ModuleInit[] memory hooks = new ModuleInit[](0);
 
-        {
-            // we love stack too deep
-            address[] memory owners = new address[](1);
-            owners[0] = address(0x5027918E940125c63C262e22D1E7FF71e61f67b5);
+        // we love stack too deep
+        address[] memory owners = new address[](1);
+        owners[0] = address(0x5027918E940125c63C262e22D1E7FF71e61f67b5);
 
-            validators[0] =
-                ModuleInit({ module: validator, initData: abi.encode(uint256(1), owners) });
-        }
+        validators[0] = ModuleInit({
+            module: validator,
+            initData: abi.encode(uint256(1), owners),
+            moduleType: MODULE_TYPE_VALIDATOR
+        });
 
         Safe7579Launchpad.InitData memory initData = Safe7579Launchpad.InitData({
             singleton: singleton,
@@ -69,9 +75,7 @@ contract DeployAccountScript is Script {
                 Safe7579Launchpad.initSafe7579,
                 (
                     safe7579,
-                    executors,
-                    fallbacks,
-                    hooks,
+                    validators,
                     Solarray.addresses(
                         address(0x000000333034E9f539ce08819E12c1b8Cb29084d),
                         address(0xA4C777199658a41688E9488c4EcbD7a2925Cc23A)
