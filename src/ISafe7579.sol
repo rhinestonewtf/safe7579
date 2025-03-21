@@ -165,21 +165,14 @@ interface ISafe7579 is IERC7579Account, ISafeOp {
      * want to use Safe7579
      * if this is called by the Launchpad, it is expected that launchpadValidators() was called
      * previously, and the param validators is empty
-     * @param validators validator modules and initData
-     * @param executors executor modules and initData
-     * @param executors executor modules and initData
-     * @param fallbacks fallback modules and initData
-     * @param hooks hook module and initData
+     * @param modules Array of modules to initialize with their respective types
      * @param registryInit (OPTIONAL) registry, attesters and threshold for IERC7484 Registry
      *                    If not provided, the registry will be set to the zero address, and no
      *                    registry checks will be performed
      */
     function initializeAccount(
-        ModuleInit[] memory validators,
-        ModuleInit[] memory executors,
-        ModuleInit[] memory fallbacks,
-        ModuleInit[] memory hooks,
-        RegistryInit memory registryInit
+        ModuleInit[] calldata modules,
+        RegistryInit calldata registryInit
     )
         external;
 

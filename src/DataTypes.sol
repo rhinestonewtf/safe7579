@@ -12,6 +12,7 @@ struct FallbackHandler {
 struct ModuleInit {
     address module;
     bytes initData;
+    uint256 moduleType;
 }
 
 struct RegistryInit {

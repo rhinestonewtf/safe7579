@@ -4,7 +4,14 @@ pragma solidity ^0.8.23;
 import { MultiSend } from "@safe-global/safe-contracts/contracts/libraries/MultiSend.sol";
 import "../SafeERC7579.t.sol";
 import { ModeLib as ModeLibOG } from "erc7579/lib/ModeLib.sol";
-
+import {
+    MODULE_TYPE_PREVALIDATION_HOOK_ERC4337,
+    MODULE_TYPE_PREVALIDATION_HOOK_ERC1271,
+    MODULE_TYPE_HOOK,
+    MODULE_TYPE_VALIDATOR,
+    MODULE_TYPE_FALLBACK,
+    MODULE_TYPE_EXECUTOR
+} from "erc7579/interfaces/IERC7579Module.sol";
 import "forge-std/console2.sol";
 
 contract NoLaunchpad is Safe7579Test {
@@ -17,7 +24,11 @@ contract NoLaunchpad is Safe7579Test {
         address[] memory owners = Solarray.addresses(signer1.addr, signer2.addr);
 
         ModuleInit[] memory validators = new ModuleInit[](1);
-        validators[0] = ModuleInit({ module: address(defaultValidator), initData: bytes("") });
+        validators[0] = ModuleInit({
+            module: address(defaultValidator),
+            initData: bytes(""),
+            moduleType: MODULE_TYPE_VALIDATOR
+        });
 
         bytes memory initializer = abi.encodeCall(
             Safe.setup,
@@ -30,9 +41,6 @@ contract NoLaunchpad is Safe7579Test {
                     (
                         address(safe7579),
                         validators,
-                        new ModuleInit[](0),
-                        new ModuleInit[](0),
-                        new ModuleInit[](0),
                         Solarray.addresses(makeAddr("attester1"), makeAddr("attester2")),
                         2
                     )
