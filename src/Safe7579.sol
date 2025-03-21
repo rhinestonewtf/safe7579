@@ -437,7 +437,7 @@ contract Safe7579 is ISafe7579, SafeOp, SupportViewer, AccessControl, Initialize
     )
         external
         override
-        tryWithHook(module)
+        withHook
         onlyEntryPointOrSelf
     {
         // internal uninstall functions will decode the deInitData param, and return sanitized
