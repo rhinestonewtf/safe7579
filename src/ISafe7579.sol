@@ -281,7 +281,7 @@ interface ISafe7579 is IERC7579Account, ISafeOp {
     error EmergencyUninstallSigError();
 
     event EmergencyHookUninstallRequest(address hook, uint256 time);
-    event EmergencyHookUninstallRequestReset(address hook, uint256 hookType);
+    event EmergencyHookUninstallRequestReset(address hook, uint256 time);
 
     // PreValidation Hooks=
     error PreValidationHookAlreadyInstalled(address currentHook, uint256 moduleType);

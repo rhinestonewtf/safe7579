@@ -482,8 +482,6 @@ contract Safe7579 is ISafe7579, SafeOp, SupportViewer, AccessControl, Initialize
     )
         external
     {
-        // Validate the signature
-        _checkEmergencyUninstallSignature(data, signature);
         // Parse uninstall data
         (uint256 hookType, address hook, bytes calldata deInitData) =
             (data.hookType, data.hook, data.deInitData);
@@ -495,6 +493,9 @@ contract Safe7579 is ISafe7579, SafeOp, SupportViewer, AccessControl, Initialize
             UnsupportedModuleType(hookType)
         );
         require(isModuleInstalled(hookType, hook, deInitData), ModuleNotInstalled(hook, hookType));
+
+        // Validate the signature
+        _checkEmergencyUninstallSignature(data, signature);
 
         // Get the account storage
         uint256 hookTimelock = $emergencyUninstallTime[hook][msg.sender];

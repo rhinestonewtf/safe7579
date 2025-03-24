@@ -585,9 +585,10 @@ abstract contract ModuleManager is ISafe7579, AccessControl, RegistryAdapter {
     {
         address validator = address(bytes20(signature[0:20]));
         ISafe safe = ISafe(msg.sender);
+        bytes32 domainSeparator = safe.domainSeparator();
         // Hash the data
         bytes32 hash = _getEmergencyUninstallDataHash(
-            safe, data.hook, data.hookType, data.deInitData, data.nonce
+            domainSeparator, data.hook, data.hookType, data.deInitData, data.nonce
         );
         // Check if nonce is valid
         require(!$nonces[data.nonce][msg.sender], InvalidNonce());
@@ -597,10 +598,10 @@ abstract contract ModuleManager is ISafe7579, AccessControl, RegistryAdapter {
         // check if validator is enabled. If not, use Safe's checkSignatures()
         if (validator == address(0) || !_isValidatorInstalled(validator)) {
             bytes memory messageData = EIP712.encodeMessageData(
-                safe.domainSeparator(), SAFE_MSG_TYPEHASH, abi.encode(keccak256(abi.encode(hash)))
+                domainSeparator, SAFE_MSG_TYPEHASH, abi.encode(keccak256(abi.encode(hash)))
             );
             bytes32 messageHash = keccak256(messageData);
-            safe.checkSignatures(messageHash, messageData, abi.encode(data));
+            safe.checkSignatures(messageHash, messageData, signature[20:]);
         }
         // if a installed validator module was selected, use 7579 validation module
         else {
@@ -608,7 +609,7 @@ abstract contract ModuleManager is ISafe7579, AccessControl, RegistryAdapter {
                 safe: ISafe(msg.sender),
                 target: validator,
                 callData: abi.encodeCall(
-                    IValidator.isValidSignatureWithSender, (_msgSender(), hash, abi.encode(data))
+                    IValidator.isValidSignatureWithSender, (_msgSender(), hash, signature[20:])
                 )
             });
             require(abi.decode(ret, (bytes4)) == ERC1271_MAGICVALUE, EmergencyUninstallSigError());
@@ -616,19 +617,19 @@ abstract contract ModuleManager is ISafe7579, AccessControl, RegistryAdapter {
     }
 
     function _getEmergencyUninstallDataHash(
-        ISafe safe,
+        bytes32 domainSeparator,
         address hook,
         uint256 hookType,
         bytes calldata data,
         uint256 nonce
     )
         internal
-        view
+        pure
         returns (bytes32)
     {
         return keccak256(
             EIP712.encodeMessageData(
-                safe.domainSeparator(),
+                domainSeparator,
                 EMERGENCY_UNINSTALL_TYPE_HASH,
                 abi.encode(hook, hookType, keccak256(data), nonce)
             )
