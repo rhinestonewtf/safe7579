@@ -137,11 +137,12 @@ interface ISafe7579 is IERC7579Account, ISafeOp {
         external;
 
     /**
-     * Emergency Uninstall a hook
-     * @dev Allows uninstalling hooks without triggering the hook during the uninstall process,
-     * secured by a timelock
+     * Emergency uninstall a hook module
+     * @dev Allows uninstalling hooks without triggering hooks during the uninstall process,
+     *      secured by a timelock. Usable on regular hooks and prevalidation hooks
      * @param data EmergencyUninstall struct
-     * @param signature signature of the data, to be validated on a validator module
+     * @param signature signature of the data, to be validated on a validator module or by
+     *      safe.checkSignatures if no validator module is supplied/installed
      */
     function emergencyUninstallHook(
         EmergencyUninstall calldata data,
