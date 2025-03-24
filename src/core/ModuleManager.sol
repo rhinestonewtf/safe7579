@@ -12,6 +12,7 @@ import { RegistryAdapter } from "./RegistryAdapter.sol";
 import { AccessControl } from "./AccessControl.sol";
 import { CallType, CALLTYPE_STATIC, CALLTYPE_SINGLE } from "../lib/ModeLib.sol";
 import {
+    IValidator,
     MODULE_TYPE_VALIDATOR,
     MODULE_TYPE_EXECUTOR,
     MODULE_TYPE_FALLBACK,
@@ -23,6 +24,8 @@ import {
 } from "erc7579/interfaces/IERC7579Module.sol";
 import { PackedUserOperation } from
     "@ERC4337/account-abstraction/contracts/core/UserOperationLib.sol";
+import { EIP712 } from "../lib/EIP712.sol";
+import { IERC1271 } from "../interfaces/IERC1271.sol";
 
 /**
  * @title ModuleManager
@@ -39,6 +42,24 @@ import { PackedUserOperation } from
  */
 abstract contract ModuleManager is ISafe7579, AccessControl, RegistryAdapter {
     using SentinelList4337Lib for SentinelList4337Lib.SentinelList;
+
+    /// @dev Nonces used for signature replay protection
+    mapping(uint256 nonce => mapping(address smartAccount => bool isUsed)) internal $nonces;
+
+    /// @dev The timelock period for emergency hook uninstallation.
+    uint256 internal constant _EMERGENCY_TIMELOCK = 1 days;
+
+    // Magic value for ERC-1271 valid signature
+    bytes4 constant ERC1271_MAGICVALUE = 0x1626ba7e;
+
+    // keccak256("SafeMessage(bytes message)");
+    bytes32 internal constant SAFE_MSG_TYPEHASH =
+        0x60b3cbf8b4a223d68d641b3b6ddf9a298e7f33710cf3d3a9d1146b5a6150fbca;
+
+    // forgefmt: disable-next-line
+    // keccak256("EmergencyUninstall(address hook,uint256 hookType,bytes deInitData,uint256 nonce)");
+    bytes32 internal constant EMERGENCY_UNINSTALL_TYPE_HASH =
+        0xd3ddfc12654178cc44d4a7b6b969cfdce7ffe6342326ba37825314cffa0fba9c;
 
     /*´:°•.°+.*•´.*:˚.°*.˚•´.°:°•.°•.*•´.*:˚.°*.˚•´.°:°•.°+.*•´.*:*/
     /*                     VALIDATOR MODULES                       */
@@ -348,6 +369,8 @@ abstract contract ModuleManager is ISafe7579, AccessControl, RegistryAdapter {
     /*.•°:°.´+˚.*°.˚:*.´•*.+°.•°:´*.´•*.•°.•°:°.´:•˚°.*°.˚:*.´+°.•*/
 
     mapping(address smartAccount => address globalHook) internal $globalHook;
+    mapping(address hook => mapping(address smartAccount => uint256 emergencyUninstallTime))
+        internal $emergencyUninstallTime;
 
     /**
      * Run precheck for global hook
@@ -552,6 +575,64 @@ abstract contract ModuleManager is ISafe7579, AccessControl, RegistryAdapter {
         } else if (moduleType == MODULE_TYPE_PREVALIDATION_HOOK_ERC1271) {
             delete $preValidationHook1271[msg.sender];
         }
+    }
+
+    function _checkEmergencyUninstallSignature(
+        EmergencyUninstall calldata data,
+        bytes calldata signature
+    )
+        internal
+    {
+        address validator = address(bytes20(signature[0:20]));
+        ISafe safe = ISafe(msg.sender);
+        // Hash the data
+        bytes32 hash = _getEmergencyUninstallDataHash(
+            safe, data.hook, data.hookType, data.deInitData, data.nonce
+        );
+        // Check if nonce is valid
+        require(!$nonces[data.nonce][msg.sender], InvalidNonce());
+        // Mark nonce as used
+        $nonces[data.nonce][msg.sender] = true;
+
+        // check if validator is enabled. If not, use Safe's checkSignatures()
+        if (validator == address(0) || !_isValidatorInstalled(validator)) {
+            bytes memory messageData = EIP712.encodeMessageData(
+                safe.domainSeparator(), SAFE_MSG_TYPEHASH, abi.encode(keccak256(abi.encode(hash)))
+            );
+            bytes32 messageHash = keccak256(messageData);
+            safe.checkSignatures(messageHash, messageData, abi.encode(data));
+        }
+        // if a installed validator module was selected, use 7579 validation module
+        else {
+            bytes memory ret = _staticcallReturn({
+                safe: ISafe(msg.sender),
+                target: validator,
+                callData: abi.encodeCall(
+                    IValidator.isValidSignatureWithSender, (_msgSender(), hash, abi.encode(data))
+                )
+            });
+            require(abi.decode(ret, (bytes4)) == ERC1271_MAGICVALUE, EmergencyUninstallSigError());
+        }
+    }
+
+    function _getEmergencyUninstallDataHash(
+        ISafe safe,
+        address hook,
+        uint256 hookType,
+        bytes calldata data,
+        uint256 nonce
+    )
+        internal
+        view
+        returns (bytes32)
+    {
+        return keccak256(
+            EIP712.encodeMessageData(
+                safe.domainSeparator(),
+                EMERGENCY_UNINSTALL_TYPE_HASH,
+                abi.encode(hook, hookType, keccak256(data), nonce)
+            )
+        );
     }
 
     function getPrevalidationHook(uint256 moduleType) public view returns (address hook) {

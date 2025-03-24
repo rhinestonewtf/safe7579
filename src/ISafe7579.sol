@@ -137,6 +137,19 @@ interface ISafe7579 is IERC7579Account, ISafeOp {
         external;
 
     /**
+     * Emergency Uninstall a hook
+     * @dev Allows uninstalling hooks without triggering the hook during the uninstall process,
+     * secured by a timelock
+     * @param data EmergencyUninstall struct
+     * @param signature signature of the data, to be validated on a validator module
+     */
+    function emergencyUninstallHook(
+        EmergencyUninstall calldata data,
+        bytes calldata signature
+    )
+        external;
+
+    /**
      * Function to check if the account has a certain module installed
      * @param moduleType the module type ID according the ERC-7579 spec
      *      Note: keep in mind that some contracts can be multiple module types at the same time. It
@@ -251,6 +264,8 @@ interface ISafe7579 is IERC7579Account, ISafeOp {
     /*.•°:°.´+˚.*°.˚:*.´•*.+°.•°:´*.´•*.•°.•°:°.´:•˚°.*°.˚:*.´+°.•*/
     error InvalidModule(address module);
     error InvalidModuleType(address module, uint256 moduleType);
+    error ModuleNotInstalled(address module, uint256 moduleType);
+    error InvalidNonce();
 
     // fallback handlers
     error InvalidInput();
@@ -262,8 +277,13 @@ interface ISafe7579 is IERC7579Account, ISafeOp {
     // Hooks
     error HookAlreadyInstalled(address currentHook);
     error InvalidHookType();
+    error EmergencyTimeLockNotExpired();
+    error EmergencyUninstallSigError();
 
-    // PreValidation Hooks
+    event EmergencyHookUninstallRequest(address hook, uint256 time);
+    event EmergencyHookUninstallRequestReset(address hook, uint256 hookType);
+
+    // PreValidation Hooks=
     error PreValidationHookAlreadyInstalled(address currentHook, uint256 moduleType);
 
     // Registry Adapter
