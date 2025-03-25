@@ -344,11 +344,8 @@ contract Safe7579 is ISafe7579, SafeOp, SupportViewer, AccessControl, Initialize
         if (data.length == 0) {
             // Call 1271 pre-validation hook
             (hash,) = _withPreValidationHook(_msgSender(), hash, data);
-            bytes32 messageHash = keccak256(
-                EIP712.encodeMessageData(
-                    safe.domainSeparator(), abi.encode(keccak256(abi.encode(hash)))
-                )
-            );
+            bytes32 messageHash =
+                keccak256(EIP712.encodeMessageData(safe.domainSeparator(), abi.encode(hash)));
 
             require(safe.signedMessages(messageHash) != 0, "Hash not approved");
             // return magic value
@@ -362,9 +359,8 @@ contract Safe7579 is ISafe7579, SafeOp, SupportViewer, AccessControl, Initialize
         // If validation module with address(0) or no valid validator was provided,
         // The signature validation mechanism falls back to Safe's checkSignatures() function
         if (validationModule == address(0) || !_isValidatorInstalled(validationModule)) {
-            bytes memory messageData = EIP712.encodeMessageData(
-                safe.domainSeparator(), abi.encode(keccak256(abi.encode(hash)))
-            );
+            bytes memory messageData =
+                EIP712.encodeMessageData(safe.domainSeparator(), abi.encode(hash));
             bytes32 messageHash = keccak256(messageData);
             safe.checkSignatures(messageHash, messageData, data_);
             return IERC1271.isValidSignature.selector;

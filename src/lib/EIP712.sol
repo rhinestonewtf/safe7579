@@ -25,7 +25,7 @@ library EIP712 {
             bytes1(0x19),
             bytes1(0x01),
             domainSeparator,
-            keccak256(abi.encode(SAFE_MSG_TYPEHASH, message))
+            keccak256(abi.encode(SAFE_MSG_TYPEHASH, keccak256(message)))
         );
     }
 

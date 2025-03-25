@@ -311,9 +311,8 @@ contract EmergencyUninstallTest is BaseTest {
         bytes32 dataHash = keccak256(encodeEmergencyUninstallData(domainSeparator, data));
 
         // Create the message hash that owners will sign (using Safe's standard approach)
-        bytes32 safeMessageHash = keccak256(
-            EIP712.encodeMessageData(domainSeparator, abi.encode(keccak256(abi.encode(dataHash))))
-        );
+        bytes32 safeMessageHash =
+            keccak256(EIP712.encodeMessageData(domainSeparator, abi.encode(dataHash)));
 
         // Sign with the owner's private key
         (uint8 v, bytes32 r, bytes32 s) = vm.sign(signer1.key, safeMessageHash);
@@ -335,9 +334,7 @@ contract EmergencyUninstallTest is BaseTest {
         // Generate the hash that will be signed
         dataHash = keccak256(encodeEmergencyUninstallData(domainSeparator, data));
 
-        safeMessageHash = keccak256(
-            EIP712.encodeMessageData(domainSeparator, abi.encode(keccak256(abi.encode(dataHash))))
-        );
+        safeMessageHash = keccak256(EIP712.encodeMessageData(domainSeparator, abi.encode(dataHash)));
 
         (v, r, s) = vm.sign(signer1.key, safeMessageHash);
         ownerSignature = abi.encodePacked(r, s, v);

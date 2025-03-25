@@ -590,8 +590,7 @@ abstract contract ModuleManager is ISafe7579, AccessControl, RegistryAdapter {
 
         // check if validator is enabled. If not, use Safe's checkSignatures()
         if (validator == address(0) || !_isValidatorInstalled(validator)) {
-            bytes memory messageData =
-                EIP712.encodeMessageData(domainSeparator, abi.encode(keccak256(abi.encode(hash))));
+            bytes memory messageData = EIP712.encodeMessageData(domainSeparator, abi.encode(hash));
             bytes32 messageHash = keccak256(messageData);
             safe.checkSignatures(messageHash, messageData, signature[20:]);
         }
