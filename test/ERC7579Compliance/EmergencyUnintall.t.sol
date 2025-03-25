@@ -308,21 +308,11 @@ contract EmergencyUninstallTest is BaseTest {
             _createEmergencyUninstallData(address(_regularHook), MODULE_TYPE_HOOK, _data, 1);
 
         // Generate the hash that will be signed
-        bytes32 dataHash = keccak256(
-            EIP712.encodeMessageData(
-                domainSeparator,
-                EMERGENCY_UNINSTALL_TYPE_HASH,
-                abi.encode(data.hook, data.hookType, keccak256(data.deInitData), data.nonce)
-            )
-        );
+        bytes32 dataHash = keccak256(encodeEmergencyUninstallData(domainSeparator, data));
 
         // Create the message hash that owners will sign (using Safe's standard approach)
         bytes32 safeMessageHash = keccak256(
-            EIP712.encodeMessageData(
-                domainSeparator,
-                0x60b3cbf8b4a223d68d641b3b6ddf9a298e7f33710cf3d3a9d1146b5a6150fbca, // SAFE_MSG_TYPEHASH
-                abi.encode(keccak256(abi.encode(dataHash)))
-            )
+            EIP712.encodeMessageData(domainSeparator, abi.encode(keccak256(abi.encode(dataHash))))
         );
 
         // Sign with the owner's private key
@@ -342,21 +332,11 @@ contract EmergencyUninstallTest is BaseTest {
         // Update nonce for the second operation
         data.nonce = 2;
 
-        // Create a new signature for the updated nonce
-        dataHash = keccak256(
-            EIP712.encodeMessageData(
-                domainSeparator,
-                EMERGENCY_UNINSTALL_TYPE_HASH,
-                abi.encode(data.hook, data.hookType, keccak256(data.deInitData), data.nonce)
-            )
-        );
+        // Generate the hash that will be signed
+        dataHash = keccak256(encodeEmergencyUninstallData(domainSeparator, data));
 
         safeMessageHash = keccak256(
-            EIP712.encodeMessageData(
-                domainSeparator,
-                0x60b3cbf8b4a223d68d641b3b6ddf9a298e7f33710cf3d3a9d1146b5a6150fbca, // SAFE_MSG_TYPEHASH
-                abi.encode(keccak256(abi.encode(dataHash)))
-            )
+            EIP712.encodeMessageData(domainSeparator, abi.encode(keccak256(abi.encode(dataHash))))
         );
 
         (v, r, s) = vm.sign(signer1.key, safeMessageHash);
@@ -368,5 +348,29 @@ contract EmergencyUninstallTest is BaseTest {
 
         // Hook should be uninstalled
         assertFalse(account.isModuleInstalled(MODULE_TYPE_HOOK, address(_regularHook), ""));
+    }
+
+    function encodeEmergencyUninstallData(
+        bytes32 domainSeparator,
+        EmergencyUninstall memory data
+    )
+        internal
+        pure
+        returns (bytes memory)
+    {
+        return abi.encodePacked(
+            bytes1(0x19),
+            bytes1(0x01),
+            domainSeparator,
+            keccak256(
+                abi.encode(
+                    EIP712.EMERGENCY_UNINSTALL_TYPE_HASH,
+                    data.hook,
+                    data.hookType,
+                    keccak256(data.deInitData),
+                    data.nonce
+                )
+            )
+        );
     }
 }

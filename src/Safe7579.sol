@@ -346,9 +346,7 @@ contract Safe7579 is ISafe7579, SafeOp, SupportViewer, AccessControl, Initialize
             (hash,) = _withPreValidationHook(_msgSender(), hash, data);
             bytes32 messageHash = keccak256(
                 EIP712.encodeMessageData(
-                    safe.domainSeparator(),
-                    SAFE_MSG_TYPEHASH,
-                    abi.encode(keccak256(abi.encode(hash)))
+                    safe.domainSeparator(), abi.encode(keccak256(abi.encode(hash)))
                 )
             );
 
@@ -365,7 +363,7 @@ contract Safe7579 is ISafe7579, SafeOp, SupportViewer, AccessControl, Initialize
         // The signature validation mechanism falls back to Safe's checkSignatures() function
         if (validationModule == address(0) || !_isValidatorInstalled(validationModule)) {
             bytes memory messageData = EIP712.encodeMessageData(
-                safe.domainSeparator(), SAFE_MSG_TYPEHASH, abi.encode(keccak256(abi.encode(hash)))
+                safe.domainSeparator(), abi.encode(keccak256(abi.encode(hash)))
             );
             bytes32 messageHash = keccak256(messageData);
             safe.checkSignatures(messageHash, messageData, data_);
@@ -509,7 +507,7 @@ contract Safe7579 is ISafe7579, SafeOp, SupportViewer, AccessControl, Initialize
             $emergencyUninstallTime[hook][msg.sender] = 0;
             emit EmergencyHookUninstallRequestReset(hook, block.timestamp);
         } else if (block.timestamp >= hookTimelock + _EMERGENCY_TIMELOCK) {
-            // if the timelock expired, clear it and uninstall the hook
+            // if the timelock has passed, clear it and uninstall the hook
             $emergencyUninstallTime[hook][msg.sender] = 0;
             if (hookType == MODULE_TYPE_HOOK) {
                 _uninstallHook(hook, deInitData);
