@@ -12,6 +12,7 @@ import { RegistryAdapter } from "./RegistryAdapter.sol";
 import { AccessControl } from "./AccessControl.sol";
 import { CallType, CALLTYPE_STATIC, CALLTYPE_SINGLE } from "../lib/ModeLib.sol";
 import {
+    IValidator,
     MODULE_TYPE_VALIDATOR,
     MODULE_TYPE_EXECUTOR,
     MODULE_TYPE_FALLBACK,
@@ -23,6 +24,8 @@ import {
 } from "erc7579/interfaces/IERC7579Module.sol";
 import { PackedUserOperation } from
     "@ERC4337/account-abstraction/contracts/core/UserOperationLib.sol";
+import { EIP712 } from "../lib/EIP712.sol";
+import { IERC1271 } from "../interfaces/IERC1271.sol";
 
 /**
  * @title ModuleManager
@@ -39,6 +42,12 @@ import { PackedUserOperation } from
  */
 abstract contract ModuleManager is ISafe7579, AccessControl, RegistryAdapter {
     using SentinelList4337Lib for SentinelList4337Lib.SentinelList;
+
+    /// @dev Nonces used for signature replay protection
+    mapping(uint256 nonce => mapping(address smartAccount => bool isUsed)) internal $nonces;
+
+    /// @dev The timelock period for emergency hook uninstallation.
+    uint256 internal constant _EMERGENCY_TIMELOCK = 1 days;
 
     /*´:°•.°+.*•´.*:˚.°*.˚•´.°:°•.°•.*•´.*:˚.°*.˚•´.°:°•.°+.*•´.*:*/
     /*                     VALIDATOR MODULES                       */
@@ -348,6 +357,8 @@ abstract contract ModuleManager is ISafe7579, AccessControl, RegistryAdapter {
     /*.•°:°.´+˚.*°.˚:*.´•*.+°.•°:´*.´•*.•°.•°:°.´:•˚°.*°.˚:*.´+°.•*/
 
     mapping(address smartAccount => address globalHook) internal $globalHook;
+    mapping(address hook => mapping(address smartAccount => uint256 emergencyUninstallTime))
+        internal $emergencyUninstallTime;
 
     /**
      * Run precheck for global hook
@@ -552,6 +563,68 @@ abstract contract ModuleManager is ISafe7579, AccessControl, RegistryAdapter {
         } else if (moduleType == MODULE_TYPE_PREVALIDATION_HOOK_ERC1271) {
             delete $preValidationHook1271[msg.sender];
         }
+    }
+
+    /**
+     * @dev Check if the emergency uninstall signature is valid, if no validator module is
+     *      supplied/installed, the Safe's checkSignatures() function will be used. Otherwise the
+     *      validator module's isValidSignatureWithSender() function will be used.
+     * @param data emergency uninstall data
+     * @param signature signature of the data
+     */
+    function _checkEmergencyUninstallSignature(
+        EmergencyUninstall calldata data,
+        bytes calldata signature
+    )
+        internal
+    {
+        address validator = address(bytes20(signature[0:20]));
+        ISafe safe = ISafe(msg.sender);
+        bytes32 domainSeparator = safe.domainSeparator();
+        // Hash the data
+        bytes32 hash = _getEmergencyUninstallDataHash(domainSeparator, data);
+        // Check if nonce is valid
+        require(!$nonces[data.nonce][msg.sender], InvalidNonce());
+        // Mark nonce as used
+        $nonces[data.nonce][msg.sender] = true;
+
+        // check if validator is enabled. If not, use Safe's checkSignatures()
+        if (validator == address(0) || !_isValidatorInstalled(validator)) {
+            bytes memory messageData = EIP712.encodeMessageData(domainSeparator, abi.encode(hash));
+            bytes32 messageHash = keccak256(messageData);
+            safe.checkSignatures(messageHash, messageData, signature[20:]);
+        }
+        // if a installed validator module was selected, use 7579 validation module
+        else {
+            bytes memory ret = _staticcallReturn({
+                safe: ISafe(msg.sender),
+                target: validator,
+                callData: abi.encodeCall(
+                    IValidator.isValidSignatureWithSender, (_msgSender(), hash, signature[20:])
+                )
+            });
+            require(
+                abi.decode(ret, (bytes4)) == IERC1271.isValidSignature.selector,
+                EmergencyUninstallSigError()
+            );
+        }
+    }
+
+    /**
+     * @dev Get the hash of the emergency uninstall data
+     * @param domainSeparator EIP712 domain separator
+     * @param data emergency uninstall data
+     * @return hash of the emergency uninstall data
+     */
+    function _getEmergencyUninstallDataHash(
+        bytes32 domainSeparator,
+        EmergencyUninstall calldata data
+    )
+        internal
+        pure
+        returns (bytes32)
+    {
+        return keccak256(EIP712.encodeEmergencyUninstallData(domainSeparator, data));
     }
 
     function getPrevalidationHook(uint256 moduleType) public view returns (address hook) {

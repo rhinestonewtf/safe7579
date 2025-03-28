@@ -20,3 +20,10 @@ struct RegistryInit {
     address[] attesters;
     uint8 threshold;
 }
+
+struct EmergencyUninstall {
+    address hook;
+    uint256 hookType;
+    bytes deInitData;
+    uint256 nonce;
+}
