@@ -513,7 +513,17 @@ contract Safe7579 is ISafe7579, SafeOp, SupportViewer, AccessControl, Initialize
             ) {
                 _uninstallPreValidationHook(hook, deInitData);
             }
-            emit ModuleUninstalled(hookType, hook);
+            // Deinitialize Module via Safe.
+            // We are using "try" here, to avoid DoS. A module could revert in 'onUninstall' and
+            // prevent
+            // the account from removing the module
+            _tryDelegatecall({
+                safe: ISafe(msg.sender),
+                target: UTIL,
+                callData: abi.encodeCall(
+                    ModuleInstallUtil.unInstallModule, (hookType, hook, deInitData)
+                )
+            });
         } else {
             // if the timelock is initiated but not expired, revert
             revert EmergencyTimeLockNotExpired();

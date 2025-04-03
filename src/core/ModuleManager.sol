@@ -248,7 +248,7 @@ abstract contract ModuleManager is ISafe7579, AccessControl, RegistryAdapter {
     }
 
     function _uninstallFallbackHandler(
-        address, /*handler*/
+        address module,
         bytes calldata context
     )
         internal
@@ -259,6 +259,9 @@ abstract contract ModuleManager is ISafe7579, AccessControl, RegistryAdapter {
         (functionSig, moduleDeInitData) = abi.decode(context, (bytes4, bytes));
 
         FallbackHandler storage $fallbacks = $fallbackStorage[functionSig][msg.sender];
+        if ($fallbacks.handler != module) {
+            revert InvalidModuleType(module, MODULE_TYPE_FALLBACK);
+        }
         delete $fallbacks.handler;
     }
 
@@ -427,13 +430,16 @@ abstract contract ModuleManager is ISafe7579, AccessControl, RegistryAdapter {
     }
 
     function _uninstallHook(
-        address, /*hook*/
+        address module,
         bytes calldata data
     )
         internal
         virtual
         returns (bytes memory moduleDeInitData)
     {
+        if ($globalHook[msg.sender] != module) {
+            revert InvalidModuleType(module, MODULE_TYPE_HOOK);
+        }
         delete $globalHook[msg.sender];
         return data;
     }
@@ -550,7 +556,7 @@ abstract contract ModuleManager is ISafe7579, AccessControl, RegistryAdapter {
     }
 
     function _uninstallPreValidationHook(
-        address, /*hook*/
+        address module,
         bytes calldata data
     )
         internal
@@ -559,9 +565,17 @@ abstract contract ModuleManager is ISafe7579, AccessControl, RegistryAdapter {
         uint256 moduleType;
         (moduleType, moduleDeInitData) = abi.decode(data, (uint256, bytes));
         if (moduleType == MODULE_TYPE_PREVALIDATION_HOOK_ERC4337) {
-            delete $preValidationHook4337[msg.sender];
+            if ($preValidationHook4337[msg.sender] != module) {
+                revert InvalidModuleType(module, moduleType);
+            } else {
+                delete $preValidationHook4337[msg.sender];
+            }
         } else if (moduleType == MODULE_TYPE_PREVALIDATION_HOOK_ERC1271) {
-            delete $preValidationHook1271[msg.sender];
+            if ($preValidationHook1271[msg.sender] != module) {
+                revert InvalidModuleType(module, moduleType);
+            } else {
+                delete $preValidationHook1271[msg.sender];
+            }
         }
     }
 
