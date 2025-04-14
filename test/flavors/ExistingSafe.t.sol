@@ -3,6 +3,14 @@ pragma solidity ^0.8.23;
 
 import { Enum } from "@safe-global/safe-contracts/contracts/common/Enum.sol";
 import { Safe7579Test, Solarray, Safe, ModuleInit, Safe7579Launchpad } from "../SafeERC7579.t.sol";
+import {
+    MODULE_TYPE_PREVALIDATION_HOOK_ERC4337,
+    MODULE_TYPE_PREVALIDATION_HOOK_ERC1271,
+    MODULE_TYPE_HOOK,
+    MODULE_TYPE_VALIDATOR,
+    MODULE_TYPE_FALLBACK,
+    MODULE_TYPE_EXECUTOR
+} from "erc7579/interfaces/IERC7579Module.sol";
 
 contract ExistingSafe is Safe7579Test {
     function setUp() public override {
@@ -25,11 +33,17 @@ contract ExistingSafe is Safe7579Test {
         );
         vm.deal(address(safe), 1 ether);
 
-        ModuleInit[] memory validators = new ModuleInit[](1);
-        validators[0] = ModuleInit({ module: address(defaultValidator), initData: bytes("") });
-
-        ModuleInit[] memory executors = new ModuleInit[](1);
-        executors[0] = ModuleInit({ module: address(defaultExecutor), initData: bytes("") });
+        ModuleInit[] memory modules = new ModuleInit[](2);
+        modules[0] = ModuleInit({
+            module: address(defaultValidator),
+            initData: bytes(""),
+            moduleType: MODULE_TYPE_VALIDATOR
+        });
+        modules[1] = ModuleInit({
+            module: address(defaultExecutor),
+            initData: bytes(""),
+            moduleType: MODULE_TYPE_EXECUTOR
+        });
 
         address to = address(launchpad);
         uint256 value = 0;
@@ -37,10 +51,7 @@ contract ExistingSafe is Safe7579Test {
             Safe7579Launchpad.addSafe7579,
             (
                 address(safe7579),
-                validators,
-                executors,
-                new ModuleInit[](0),
-                new ModuleInit[](0),
+                modules,
                 Solarray.addresses(makeAddr("attester1"), makeAddr("attester2")),
                 2
             )

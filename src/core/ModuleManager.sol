@@ -12,6 +12,7 @@ import { RegistryAdapter } from "./RegistryAdapter.sol";
 import { AccessControl } from "./AccessControl.sol";
 import { CallType, CALLTYPE_STATIC, CALLTYPE_SINGLE } from "../lib/ModeLib.sol";
 import {
+    IValidator,
     MODULE_TYPE_VALIDATOR,
     MODULE_TYPE_EXECUTOR,
     MODULE_TYPE_FALLBACK,
@@ -23,6 +24,8 @@ import {
 } from "erc7579/interfaces/IERC7579Module.sol";
 import { PackedUserOperation } from
     "@ERC4337/account-abstraction/contracts/core/UserOperationLib.sol";
+import { EIP712 } from "../lib/EIP712.sol";
+import { IERC1271 } from "../interfaces/IERC1271.sol";
 
 /**
  * @title ModuleManager
@@ -39,6 +42,12 @@ import { PackedUserOperation } from
  */
 abstract contract ModuleManager is ISafe7579, AccessControl, RegistryAdapter {
     using SentinelList4337Lib for SentinelList4337Lib.SentinelList;
+
+    /// @dev Nonces used for signature replay protection
+    mapping(uint256 nonce => mapping(address smartAccount => bool isUsed)) internal $nonces;
+
+    /// @dev The timelock period for emergency hook uninstallation.
+    uint256 internal constant _EMERGENCY_TIMELOCK = 1 days;
 
     /*´:°•.°+.*•´.*:˚.°*.˚•´.°:°•.°•.*•´.*:˚.°*.˚•´.°:°•.°+.*•´.*:*/
     /*                     VALIDATOR MODULES                       */
@@ -59,6 +68,7 @@ abstract contract ModuleManager is ISafe7579, AccessControl, RegistryAdapter {
     )
         internal
         withRegistry(validator, MODULE_TYPE_VALIDATOR)
+        withCorrectModuleType(validator, MODULE_TYPE_VALIDATOR)
         returns (bytes memory moduleInitData)
     {
         $validators.push({ account: msg.sender, newEntry: validator });
@@ -140,6 +150,7 @@ abstract contract ModuleManager is ISafe7579, AccessControl, RegistryAdapter {
     )
         internal
         withRegistry(executor, MODULE_TYPE_EXECUTOR)
+        withCorrectModuleType(executor, MODULE_TYPE_EXECUTOR)
         returns (bytes memory moduleInitData)
     {
         $executors.push({ account: msg.sender, newEntry: executor });
@@ -206,6 +217,7 @@ abstract contract ModuleManager is ISafe7579, AccessControl, RegistryAdapter {
         internal
         virtual
         withRegistry(handler, MODULE_TYPE_FALLBACK)
+        withCorrectModuleType(handler, MODULE_TYPE_FALLBACK)
         returns (bytes memory moduleInitData)
     {
         bytes4 functionSig;
@@ -236,7 +248,7 @@ abstract contract ModuleManager is ISafe7579, AccessControl, RegistryAdapter {
     }
 
     function _uninstallFallbackHandler(
-        address, /*handler*/
+        address module,
         bytes calldata context
     )
         internal
@@ -247,6 +259,9 @@ abstract contract ModuleManager is ISafe7579, AccessControl, RegistryAdapter {
         (functionSig, moduleDeInitData) = abi.decode(context, (bytes4, bytes));
 
         FallbackHandler storage $fallbacks = $fallbackStorage[functionSig][msg.sender];
+        if ($fallbacks.handler != module) {
+            revert InvalidModuleType(module, MODULE_TYPE_FALLBACK);
+        }
         delete $fallbacks.handler;
     }
 
@@ -287,7 +302,7 @@ abstract contract ModuleManager is ISafe7579, AccessControl, RegistryAdapter {
         external
         payable
         virtual
-        withHook(msg.sig)
+        withHook
         returns (bytes memory fallbackRet)
     {
         // using JUMPI to avoid stack too deep
@@ -304,8 +319,8 @@ abstract contract ModuleManager is ISafe7579, AccessControl, RegistryAdapter {
         FallbackHandler storage $fallbacks = $fallbackStorage[msg.sig][msg.sender];
         address handler = $fallbacks.handler;
         CallType calltype = $fallbacks.calltype;
-        // if no handler is set for the msg.sig, try default handlers for ERC721/1155 fallback. If
-        // no default handler is set, revert
+        // if no handler is set for the msg.sig, return msg.sig for erc721/1155 selectors,
+        // otherwise revert
         if (handler == address(0)) {
             /// @solidity memory-safe-assembly
             assembly {
@@ -345,9 +360,11 @@ abstract contract ModuleManager is ISafe7579, AccessControl, RegistryAdapter {
     /*.•°:°.´+˚.*°.˚:*.´•*.+°.•°:´*.´•*.•°.•°:°.´:•˚°.*°.˚:*.´+°.•*/
 
     mapping(address smartAccount => address globalHook) internal $globalHook;
+    mapping(address hook => mapping(address smartAccount => uint256 emergencyUninstallTime))
+        internal $emergencyUninstallTime;
 
     /**
-     * Run precheck hook for global and function selector specific
+     * Run precheck for global hook
      */
     function _preHooks(address globalHook) internal returns (bytes memory global) {
         if (globalHook != address(0)) {
@@ -362,7 +379,7 @@ abstract contract ModuleManager is ISafe7579, AccessControl, RegistryAdapter {
     }
 
     /**
-     * Run post hooks (global and function sig)
+     * Run post hooks
      */
     function _postHooks(address globalHook, bytes memory global) internal {
         if (globalHook != address(0)) {
@@ -378,22 +395,11 @@ abstract contract ModuleManager is ISafe7579, AccessControl, RegistryAdapter {
     /**
      * modifier that executes global hook, and function signature specific hook if enabled
      */
-    modifier withHook(bytes4 selector) {
+    modifier withHook() {
         address globalHook = $globalHook[msg.sender];
         (bytes memory global) = _preHooks(globalHook);
         _;
         _postHooks(globalHook, global);
-    }
-
-    modifier tryWithHook(address module, bytes4 selector) {
-        address globalHook = $globalHook[msg.sender];
-        if (module != globalHook) {
-            (bytes memory global) = _preHooks(globalHook);
-            _;
-            _postHooks(globalHook, global);
-        } else {
-            _;
-        }
     }
 
     /**
@@ -409,6 +415,7 @@ abstract contract ModuleManager is ISafe7579, AccessControl, RegistryAdapter {
         internal
         virtual
         withRegistry(hook, MODULE_TYPE_HOOK)
+        withCorrectModuleType(hook, MODULE_TYPE_HOOK)
         returns (bytes memory moduleInitData)
     {
         // check if any hook is already installed
@@ -423,20 +430,23 @@ abstract contract ModuleManager is ISafe7579, AccessControl, RegistryAdapter {
     }
 
     function _uninstallHook(
-        address, /*hook*/
+        address module,
         bytes calldata data
     )
         internal
         virtual
         returns (bytes memory moduleDeInitData)
     {
+        if ($globalHook[msg.sender] != module) {
+            revert InvalidModuleType(module, MODULE_TYPE_HOOK);
+        }
         delete $globalHook[msg.sender];
         return data;
     }
 
     function _isHookInstalled(address module) internal view returns (bool) {
         address hook = getActiveHook();
-        return hook == module;
+        return module != address(0) && hook == module;
     }
 
     function getActiveHook() public view returns (address hook) {
@@ -446,6 +456,7 @@ abstract contract ModuleManager is ISafe7579, AccessControl, RegistryAdapter {
     /*´:°•.°+.*•´.*:˚.°*.˚•´.°:°•.°•.*•´.*:˚.°*.˚•´.°:°•.°+.*•´.*:*/
     /*                 PREVALIDATION HOOK MODULES                 */
     /*.•°:°.´+˚.*°.˚:*.´•*.+°.•°:´*.´•*.•°.•°:°.´:•˚°.*°.˚:*.´+°.•*/
+
     mapping(address smartAccount => address preValidationHook4337) internal $preValidationHook4337;
     mapping(address smartAccount => address preValidationHook1271) internal $preValidationHook1271;
 
@@ -518,6 +529,7 @@ abstract contract ModuleManager is ISafe7579, AccessControl, RegistryAdapter {
         internal
         virtual
         withRegistry(hook, MODULE_TYPE_PREVALIDATION_HOOK_ERC4337)
+        withCorrectModuleType(hook, MODULE_TYPE_PREVALIDATION_HOOK_ERC4337)
     {
         address currentHook = $preValidationHook4337[msg.sender];
         if (currentHook != address(0)) {
@@ -532,6 +544,7 @@ abstract contract ModuleManager is ISafe7579, AccessControl, RegistryAdapter {
         internal
         virtual
         withRegistry(hook, MODULE_TYPE_PREVALIDATION_HOOK_ERC1271)
+        withCorrectModuleType(hook, MODULE_TYPE_PREVALIDATION_HOOK_ERC1271)
     {
         address currentHook = $preValidationHook1271[msg.sender];
         if (currentHook != address(0)) {
@@ -543,7 +556,7 @@ abstract contract ModuleManager is ISafe7579, AccessControl, RegistryAdapter {
     }
 
     function _uninstallPreValidationHook(
-        address, /*hook*/
+        address module,
         bytes calldata data
     )
         internal
@@ -552,10 +565,80 @@ abstract contract ModuleManager is ISafe7579, AccessControl, RegistryAdapter {
         uint256 moduleType;
         (moduleType, moduleDeInitData) = abi.decode(data, (uint256, bytes));
         if (moduleType == MODULE_TYPE_PREVALIDATION_HOOK_ERC4337) {
-            delete $preValidationHook4337[msg.sender];
+            if ($preValidationHook4337[msg.sender] != module) {
+                revert InvalidModuleType(module, moduleType);
+            } else {
+                delete $preValidationHook4337[msg.sender];
+            }
         } else if (moduleType == MODULE_TYPE_PREVALIDATION_HOOK_ERC1271) {
-            delete $preValidationHook1271[msg.sender];
+            if ($preValidationHook1271[msg.sender] != module) {
+                revert InvalidModuleType(module, moduleType);
+            } else {
+                delete $preValidationHook1271[msg.sender];
+            }
         }
+    }
+
+    /**
+     * @dev Check if the emergency uninstall signature is valid, if no validator module is
+     *      supplied/installed, the Safe's checkSignatures() function will be used. Otherwise the
+     *      validator module's isValidSignatureWithSender() function will be used.
+     * @param data emergency uninstall data
+     * @param signature signature of the data
+     */
+    function _checkEmergencyUninstallSignature(
+        EmergencyUninstall calldata data,
+        bytes calldata signature
+    )
+        internal
+    {
+        address validator = address(bytes20(signature[0:20]));
+        ISafe safe = ISafe(msg.sender);
+        bytes32 domainSeparator = safe.domainSeparator();
+        // Hash the data
+        bytes32 hash = _getEmergencyUninstallDataHash(domainSeparator, data);
+        // Check if nonce is valid
+        require(!$nonces[data.nonce][msg.sender], InvalidNonce());
+        // Mark nonce as used
+        $nonces[data.nonce][msg.sender] = true;
+
+        // check if validator is enabled. If not, use Safe's checkSignatures()
+        if (validator == address(0) || !_isValidatorInstalled(validator)) {
+            bytes memory messageData = EIP712.encodeMessageData(domainSeparator, abi.encode(hash));
+            bytes32 messageHash = keccak256(messageData);
+            safe.checkSignatures(messageHash, messageData, signature[20:]);
+        }
+        // if a installed validator module was selected, use 7579 validation module
+        else {
+            bytes memory ret = _staticcallReturn({
+                safe: ISafe(msg.sender),
+                target: validator,
+                callData: abi.encodeCall(
+                    IValidator.isValidSignatureWithSender, (_msgSender(), hash, signature[20:])
+                )
+            });
+            require(
+                abi.decode(ret, (bytes4)) == IERC1271.isValidSignature.selector,
+                EmergencyUninstallSigError()
+            );
+        }
+    }
+
+    /**
+     * @dev Get the hash of the emergency uninstall data
+     * @param domainSeparator EIP712 domain separator
+     * @param data emergency uninstall data
+     * @return hash of the emergency uninstall data
+     */
+    function _getEmergencyUninstallDataHash(
+        bytes32 domainSeparator,
+        EmergencyUninstall calldata data
+    )
+        internal
+        pure
+        returns (bytes32)
+    {
+        return keccak256(EIP712.encodeEmergencyUninstallData(domainSeparator, data));
     }
 
     function getPrevalidationHook(uint256 moduleType) public view returns (address hook) {
@@ -753,5 +836,15 @@ abstract contract ModuleManager is ISafe7579, AccessControl, RegistryAdapter {
         // memory allocate the moduleInitData to return. This data should be used by the caller to
         // initialize the module
         _moduleDeInitData = moduleDeInitData;
+    }
+
+    /*
+     * @Dev Check's if a module is of a specific type, reverts if not
+     */
+    modifier withCorrectModuleType(address module, uint256 moduleType) {
+        if (!IModule(module).isModuleType(moduleType)) {
+            revert InvalidModuleType(module, moduleType);
+        }
+        _;
     }
 }

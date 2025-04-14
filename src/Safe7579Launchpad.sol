@@ -111,9 +111,7 @@ contract Safe7579Launchpad is
      */
     function initSafe7579(
         address safe7579,
-        ModuleInit[] calldata executors,
-        ModuleInit[] calldata fallbacks,
-        ModuleInit[] calldata hooks,
+        ModuleInit[] calldata modules,
         address[] calldata attesters,
         uint8 threshold
     )
@@ -122,10 +120,7 @@ contract Safe7579Launchpad is
     {
         ISafe(address(this)).enableModule(safe7579);
         ISafe7579(payable(this)).initializeAccount({
-            validators: new ModuleInit[](0),
-            executors: executors,
-            fallbacks: fallbacks,
-            hooks: hooks,
+            modules: modules,
             registryInit: RegistryInit({ registry: REGISTRY, attesters: attesters, threshold: threshold })
         });
     }
@@ -135,10 +130,7 @@ contract Safe7579Launchpad is
      */
     function addSafe7579(
         address safe7579,
-        ModuleInit[] calldata validators,
-        ModuleInit[] calldata executors,
-        ModuleInit[] calldata fallbacks,
-        ModuleInit[] calldata hooks,
+        ModuleInit[] calldata modules,
         address[] calldata attesters,
         uint8 threshold
     )
@@ -147,10 +139,7 @@ contract Safe7579Launchpad is
         ISafe(address(this)).enableModule(safe7579);
         ISafe(address(this)).setFallbackHandler(safe7579);
         ISafe7579(payable(this)).initializeAccount({
-            validators: validators,
-            executors: executors,
-            fallbacks: fallbacks,
-            hooks: hooks,
+            modules: modules,
             registryInit: RegistryInit({ registry: REGISTRY, attesters: attesters, threshold: threshold })
         });
     }
