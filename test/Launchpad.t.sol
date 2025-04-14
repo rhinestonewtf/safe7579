@@ -12,7 +12,7 @@ import { MockRegistry } from "./mocks/MockRegistry.sol";
 import { MockExecutor } from "./mocks/MockExecutor.sol";
 import { MockFallback } from "./mocks/MockFallback.sol";
 import { ExecutionLib } from "erc7579/lib/ExecutionLib.sol";
-import { ModeLib } from "erc7579/lib/ModeLib.sol";
+import { ModeLib } from "src/lib/ModeLib.sol";
 import { IERC7579Account, Execution } from "erc7579/interfaces/IERC7579Account.sol";
 import { MockTarget } from "./mocks/MockTarget.sol";
 
@@ -26,7 +26,16 @@ import { Safe7579Launchpad } from "src/Safe7579Launchpad.sol";
 
 import { Solarray } from "solarray/Solarray.sol";
 import "./dependencies/EntryPoint.sol";
-
+import {
+    MODULE_TYPE_VALIDATOR,
+    MODULE_TYPE_EXECUTOR,
+    MODULE_TYPE_FALLBACK,
+    MODULE_TYPE_HOOK,
+    MODULE_TYPE_PREVALIDATION_HOOK_ERC1271,
+    MODULE_TYPE_PREVALIDATION_HOOK_ERC4337,
+    IPreValidationHookERC1271,
+    IPreValidationHookERC4337
+} from "erc7579/interfaces/IERC7579Module.sol";
 import { Simulator } from "@rhinestone/erc4337-validation/src/Simulator.sol";
 
 contract LaunchpadBase is Test {
@@ -75,11 +84,17 @@ contract LaunchpadBase is Test {
         bytes32 salt;
 
         ModuleInit[] memory validators = new ModuleInit[](1);
-        validators[0] = ModuleInit({ module: address(defaultValidator), initData: bytes("") });
+        validators[0] = ModuleInit({
+            module: address(defaultValidator),
+            initData: bytes(""),
+            moduleType: MODULE_TYPE_VALIDATOR
+        });
         ModuleInit[] memory executors = new ModuleInit[](1);
-        executors[0] = ModuleInit({ module: address(defaultExecutor), initData: bytes("") });
-        ModuleInit[] memory fallbacks = new ModuleInit[](0);
-        ModuleInit[] memory hooks = new ModuleInit[](0);
+        executors[0] = ModuleInit({
+            module: address(defaultExecutor),
+            initData: bytes(""),
+            moduleType: MODULE_TYPE_EXECUTOR
+        });
 
         Safe7579Launchpad.InitData memory initData = Safe7579Launchpad.InitData({
             singleton: address(singleton),
@@ -91,8 +106,6 @@ contract LaunchpadBase is Test {
                 (
                     address(safe7579),
                     executors,
-                    fallbacks,
-                    hooks,
                     Solarray.addresses(makeAddr("attester1"), makeAddr("attester2")),
                     2
                 )
@@ -100,7 +113,7 @@ contract LaunchpadBase is Test {
             safe7579: ISafe7579(safe7579),
             validators: validators,
             callData: abi.encodeCall(
-                IERC7579Account.execute,
+                ISafe7579.execute,
                 (
                     ModeLib.encodeSimpleSingle(),
                     ExecutionLib.encodeSingle({
@@ -165,10 +178,6 @@ contract LaunchpadBase is Test {
                 (address(launchpad), initializer, uint256(salt))
             )
         );
-    }
-
-    function test_foo() public {
-        assertTrue(true);
     }
 
     function getDefaultUserOp(

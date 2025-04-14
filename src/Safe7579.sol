@@ -11,14 +11,16 @@ import {
     CALLTYPE_SINGLE,
     CALLTYPE_BATCH,
     CALLTYPE_DELEGATECALL
-} from "./lib/ModeLib.sol";
+} from "src/lib/ModeLib.sol";
 import { ExecutionLib } from "./lib/ExecutionLib.sol";
 import {
     IValidator,
     MODULE_TYPE_VALIDATOR,
     MODULE_TYPE_HOOK,
     MODULE_TYPE_EXECUTOR,
-    MODULE_TYPE_FALLBACK
+    MODULE_TYPE_FALLBACK,
+    MODULE_TYPE_PREVALIDATION_HOOK_ERC1271,
+    MODULE_TYPE_PREVALIDATION_HOOK_ERC4337
 } from "erc7579/interfaces/IERC7579Module.sol";
 import { ModuleInstallUtil } from "./utils/DCUtil.sol";
 import { AccessControl } from "./core/AccessControl.sol";
@@ -34,6 +36,8 @@ import { _packValidationData } from "@ERC4337/account-abstraction/contracts/core
 import { IEntryPoint } from "@ERC4337/account-abstraction/contracts/interfaces/IEntryPoint.sol";
 import { IERC1271 } from "./interfaces/IERC1271.sol";
 import { SupportViewer } from "./core/SupportViewer.sol";
+import { EmergencyUninstall } from "./DataTypes.sol";
+import { EIP712 } from "./lib/EIP712.sol";
 
 uint256 constant MULTITYPE_MODULE = 0;
 
@@ -56,9 +60,6 @@ contract Safe7579 is ISafe7579, SafeOp, SupportViewer, AccessControl, Initialize
     bytes32 private constant DOMAIN_SEPARATOR_TYPEHASH =
         0x47e79534a245952e8b16893a336b85a3d9ea9fa8c573f3d803afb92a79469218;
 
-    // keccak256("SafeMessage(bytes message)");
-    bytes32 private constant SAFE_MSG_TYPEHASH =
-        0x60b3cbf8b4a223d68d641b3b6ddf9a298e7f33710cf3d3a9d1146b5a6150fbca;
     // keccak256("safeSignature(bytes32,bytes32,bytes,bytes)");
     bytes4 private constant SAFE_SIGNATURE_MAGIC_VALUE = 0x5fd7e97d;
 
@@ -70,7 +71,7 @@ contract Safe7579 is ISafe7579, SafeOp, SupportViewer, AccessControl, Initialize
         bytes calldata executionCalldata
     )
         external
-        withHook(IERC7579Account.execute.selector)
+        withHook
         onlyEntryPointOrSelf
     {
         CallType callType;
@@ -152,7 +153,7 @@ contract Safe7579 is ISafe7579, SafeOp, SupportViewer, AccessControl, Initialize
         external
         override
         onlyExecutorModule
-        withHook(IERC7579Account.executeFromExecutor.selector)
+        withHook
         withRegistry(_msgSender(), MODULE_TYPE_EXECUTOR)
         returns (bytes[] memory returnDatas)
     {
@@ -250,7 +251,7 @@ contract Safe7579 is ISafe7579, SafeOp, SupportViewer, AccessControl, Initialize
      * @inheritdoc ISafe7579
      */
     function validateUserOp(
-        PackedUserOperation calldata userOp,
+        PackedUserOperation memory userOp,
         bytes32 userOpHash,
         uint256 missingAccountFunds
     )
@@ -265,6 +266,12 @@ contract Safe7579 is ISafe7579, SafeOp, SupportViewer, AccessControl, Initialize
         assembly {
             validator := shr(96, nonce)
         }
+
+        // Call 4337 pre-validation hook, the prevalidation hook processes the userOpHash, userOp
+        // and missingAccountFunds which allows for the pre-validation hook to modify and validate
+        // the userOpHash and signature before the actual validation happens
+        (userOpHash, userOp.signature) =
+            _withPreValidationHook(userOpHash, userOp, missingAccountFunds);
 
         // check if validator is enabled. If not, use Safe's checkSignatures()
         if (validator == address(0) || !_isValidatorInstalled(validator)) {
@@ -295,7 +302,7 @@ contract Safe7579 is ISafe7579, SafeOp, SupportViewer, AccessControl, Initialize
      * Function used as signature check fallback, if no valid validation module was selected.
      * will use safe's ECDSA multisig. This code was copied of Safe's ERC4337 module
      */
-    function _validateSignatures(PackedUserOperation calldata userOp)
+    function _validateSignatures(PackedUserOperation memory userOp)
         internal
         view
         returns (uint256 validationData)
@@ -333,32 +340,29 @@ contract Safe7579 is ISafe7579, SafeOp, SupportViewer, AccessControl, Initialize
     {
         ISafe safe = ISafe(msg.sender);
 
-        // check for safe's approved hashes
+        // If signature is empty, check for safe's approved hashes
         if (data.length == 0) {
-            bytes32 messageHash = keccak256(
-                EIP712.encodeMessageData(
-                    safe.domainSeparator(),
-                    SAFE_MSG_TYPEHASH,
-                    abi.encode(keccak256(abi.encode(hash)))
-                )
-            );
+            // Call 1271 pre-validation hook
+            (hash,) = _withPreValidationHook(_msgSender(), hash, data);
+            bytes32 messageHash =
+                keccak256(EIP712.encodeMessageData(safe.domainSeparator(), abi.encode(hash)));
 
             require(safe.signedMessages(messageHash) != 0, "Hash not approved");
             // return magic value
             return IERC1271.isValidSignature.selector;
         }
         address validationModule = address(bytes20(data[:20]));
+        // Call 1271 pre-validation hook
+        bytes memory data_;
+        (hash, data_) = _withPreValidationHook(_msgSender(), hash, data[20:]);
 
         // If validation module with address(0) or no valid validator was provided,
         // The signature validation mechanism falls back to Safe's checkSignatures() function
         if (validationModule == address(0) || !_isValidatorInstalled(validationModule)) {
-            bytes memory messageData = EIP712.encodeMessageData(
-                safe.domainSeparator(), SAFE_MSG_TYPEHASH, abi.encode(keccak256(abi.encode(hash)))
-            );
-
+            bytes memory messageData =
+                EIP712.encodeMessageData(safe.domainSeparator(), abi.encode(hash));
             bytes32 messageHash = keccak256(messageData);
-
-            safe.checkSignatures(messageHash, messageData, data[20:]);
+            safe.checkSignatures(messageHash, messageData, data_);
             return IERC1271.isValidSignature.selector;
         }
 
@@ -366,9 +370,7 @@ contract Safe7579 is ISafe7579, SafeOp, SupportViewer, AccessControl, Initialize
         bytes memory ret = _staticcallReturn({
             safe: ISafe(msg.sender),
             target: validationModule,
-            callData: abi.encodeCall(
-                IValidator.isValidSignatureWithSender, (_msgSender(), hash, data[20:])
-            )
+            callData: abi.encodeCall(IValidator.isValidSignatureWithSender, (_msgSender(), hash, data_))
         });
         magicValue = abi.decode(ret, (bytes4));
     }
@@ -383,7 +385,7 @@ contract Safe7579 is ISafe7579, SafeOp, SupportViewer, AccessControl, Initialize
     )
         external
         override
-        withHook(IERC7579Account.installModule.selector)
+        withHook
         onlyEntryPointOrSelf
     {
         // internal install functions will decode the initData param, and return sanitized
@@ -399,6 +401,11 @@ contract Safe7579 is ISafe7579, SafeOp, SupportViewer, AccessControl, Initialize
             moduleInitData = _installHook(module, initData);
         } else if (moduleType == MULTITYPE_MODULE) {
             moduleInitData = _multiTypeInstall(module, initData);
+        } else if (
+            moduleType == MODULE_TYPE_PREVALIDATION_HOOK_ERC1271
+                || moduleType == MODULE_TYPE_PREVALIDATION_HOOK_ERC4337
+        ) {
+            moduleInitData = _installPreValidationHook(module, initData);
         } else {
             revert UnsupportedModuleType(moduleType);
         }
@@ -423,7 +430,7 @@ contract Safe7579 is ISafe7579, SafeOp, SupportViewer, AccessControl, Initialize
     )
         external
         override
-        tryWithHook(module, IERC7579Account.uninstallModule.selector)
+        withHook
         onlyEntryPointOrSelf
     {
         // internal uninstall functions will decode the deInitData param, and return sanitized
@@ -439,6 +446,11 @@ contract Safe7579 is ISafe7579, SafeOp, SupportViewer, AccessControl, Initialize
             moduleDeInitData = _uninstallHook(module, deInitData);
         } else if (moduleType == MULTITYPE_MODULE) {
             moduleDeInitData = _multiTypeUninstall(module, deInitData);
+        } else if (
+            moduleType == MODULE_TYPE_PREVALIDATION_HOOK_ERC1271
+                || moduleType == MODULE_TYPE_PREVALIDATION_HOOK_ERC4337
+        ) {
+            moduleDeInitData = _uninstallPreValidationHook(module, deInitData);
         } else {
             revert UnsupportedModuleType(moduleType);
         }
@@ -458,12 +470,75 @@ contract Safe7579 is ISafe7579, SafeOp, SupportViewer, AccessControl, Initialize
     /**
      * @inheritdoc ISafe7579
      */
+    function emergencyUninstallHook(
+        EmergencyUninstall calldata data,
+        bytes calldata signature
+    )
+        external
+    {
+        // Parse uninstall data
+        (uint256 hookType, address hook, bytes calldata deInitData) =
+            (data.hookType, data.hook, data.deInitData);
+
+        // Validate the hook is of a supported type and is installed
+        require(
+            hookType == MODULE_TYPE_HOOK || hookType == MODULE_TYPE_PREVALIDATION_HOOK_ERC1271
+                || hookType == MODULE_TYPE_PREVALIDATION_HOOK_ERC4337,
+            UnsupportedModuleType(hookType)
+        );
+        require(isModuleInstalled(hookType, hook, deInitData), ModuleNotInstalled(hook, hookType));
+
+        // Validate the signature
+        _checkEmergencyUninstallSignature(data, signature);
+
+        // Get the account storage
+        uint256 hookTimelock = $emergencyUninstallTime[hook][msg.sender];
+
+        if (hookTimelock == 0) {
+            // if the timelock hasnt been initiated, initiate it
+            $emergencyUninstallTime[hook][msg.sender] = block.timestamp;
+            emit EmergencyHookUninstallRequest(hook, block.timestamp);
+        } else if (block.timestamp >= hookTimelock + 3 * _EMERGENCY_TIMELOCK) {
+            // if the timelock has been left for too long, reset it
+            $emergencyUninstallTime[hook][msg.sender] = 0;
+            emit EmergencyHookUninstallRequestReset(hook, block.timestamp);
+        } else if (block.timestamp >= hookTimelock + _EMERGENCY_TIMELOCK) {
+            // if the timelock has passed, clear it and uninstall the hook
+            $emergencyUninstallTime[hook][msg.sender] = 0;
+            if (hookType == MODULE_TYPE_HOOK) {
+                _uninstallHook(hook, deInitData);
+            } else if (
+                hookType == MODULE_TYPE_PREVALIDATION_HOOK_ERC1271
+                    || hookType == MODULE_TYPE_PREVALIDATION_HOOK_ERC4337
+            ) {
+                _uninstallPreValidationHook(hook, deInitData);
+            }
+            // Deinitialize Module via Safe.
+            // We are using "try" here, to avoid DoS. A module could revert in 'onUninstall' and
+            // prevent
+            // the account from removing the module
+            _tryDelegatecall({
+                safe: ISafe(msg.sender),
+                target: UTIL,
+                callData: abi.encodeCall(
+                    ModuleInstallUtil.unInstallModule, (hookType, hook, deInitData)
+                )
+            });
+        } else {
+            // if the timelock is initiated but not expired, revert
+            revert EmergencyTimeLockNotExpired();
+        }
+    }
+
+    /**
+     * @inheritdoc ISafe7579
+     */
     function isModuleInstalled(
         uint256 moduleType,
         address module,
         bytes calldata additionalContext
     )
-        external
+        public
         view
         returns (bool)
     {
@@ -477,7 +552,12 @@ contract Safe7579 is ISafe7579, SafeOp, SupportViewer, AccessControl, Initialize
         } else if (moduleType == MODULE_TYPE_FALLBACK) {
             return _isFallbackHandlerInstalled(module, additionalContext);
         } else if (moduleType == MODULE_TYPE_HOOK) {
-            return _isHookInstalled(module, additionalContext);
+            return _isHookInstalled(module);
+        } else if (
+            moduleType == MODULE_TYPE_PREVALIDATION_HOOK_ERC1271
+                || moduleType == MODULE_TYPE_PREVALIDATION_HOOK_ERC4337
+        ) {
+            return _isPreValidationHookInstalled(module, additionalContext);
         } else {
             return false;
         }
@@ -489,24 +569,5 @@ contract Safe7579 is ISafe7579, SafeOp, SupportViewer, AccessControl, Initialize
     function getNonce(address safe, address validator) external view returns (uint256 nonce) {
         uint192 key = uint192(bytes24(bytes20(address(validator))));
         nonce = IEntryPoint(entryPoint()).getNonce(safe, key);
-    }
-}
-
-library EIP712 {
-    function encodeMessageData(
-        bytes32 domainSeparator,
-        bytes32 typeHash,
-        bytes memory message
-    )
-        internal
-        pure
-        returns (bytes memory)
-    {
-        return abi.encodePacked(
-            bytes1(0x19),
-            bytes1(0x01),
-            domainSeparator,
-            keccak256(abi.encodePacked(typeHash, message))
-        );
     }
 }

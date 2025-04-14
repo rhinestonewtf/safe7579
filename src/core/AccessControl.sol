@@ -25,6 +25,13 @@ abstract contract AccessControl is HandlerContext, AccountBase {
         _;
     }
 
+    modifier onlySelf() virtual {
+        if (msg.sender != _msgSender()) {
+            revert AccountAccessUnauthorized();
+        }
+        _;
+    }
+
     function entryPoint() public view virtual override returns (address) {
         return 0x0000000071727De22E5E9d8BAf0edAc6f37da032;
     }

@@ -9,18 +9,21 @@ struct FallbackHandler {
     CallType calltype;
 }
 
-enum HookType {
-    GLOBAL,
-    SIG
-}
-
 struct ModuleInit {
     address module;
     bytes initData;
+    uint256 moduleType;
 }
 
 struct RegistryInit {
     IERC7484 registry;
     address[] attesters;
     uint8 threshold;
+}
+
+struct EmergencyUninstall {
+    address hook;
+    uint256 hookType;
+    bytes deInitData;
+    uint256 nonce;
 }

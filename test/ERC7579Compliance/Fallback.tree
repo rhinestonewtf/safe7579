@@ -1,3 +1,35 @@
 FallbackTest
-  When installing global fallbackhandler
-    It should be used with every execution
+├── Basic Functionality
+│   ├── When installing single fallback
+│   │   └── It correctly passes and returns values
+│   ├── When installing static fallback
+│   │   └── It correctly passes and returns values
+│   ├── When installing multiple fallbacks
+│   │   └── It handles different functions correctly
+│   ├── When uninstalling fallback
+│   │   └── It prevents calls after uninstallation
+│   └── When no fallback installed
+│       └── It reverts calls to undefined handlers
+├── Error Handling
+│   └── When installing fallback with invalid call type
+│       └── It reverts the installation
+├── NFT Receiver Functions
+│   ├── Default Handlers
+│   │   ├── When receiving ERC721 tokens
+│   │   │   └── It returns the interface selector
+│   │   ├── When receiving ERC1155 tokens
+│   │   │   └── It returns the interface selector
+│   │   └── When receiving ERC1155 token batch
+│   │       └── It returns the interface selector
+│   └── Custom Overrides
+│       ├── When overriding ERC721 receiver
+│       │   └── It uses custom implementation with tuple return
+│       └── When overriding ERC1155 receivers
+│           └── It uses custom implementation with tuple return
+└── Static vs Single Call Types
+    ├── When using static call type
+    │   └── It prevents state modifications while allowing returns
+    ├── When using single call type
+    │   └── It allows both state modifications and returns
+    └── When using view functions with static call
+        └── It correctly reads state without modification

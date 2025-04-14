@@ -137,6 +137,20 @@ interface ISafe7579 is IERC7579Account, ISafeOp {
         external;
 
     /**
+     * Emergency uninstall a hook module
+     * @dev Allows uninstalling hooks without triggering hooks during the uninstall process,
+     *      secured by a timelock. Usable on regular hooks and prevalidation hooks
+     * @param data EmergencyUninstall struct
+     * @param signature signature of the data, to be validated on a validator module or by
+     *      safe.checkSignatures if no validator module is supplied/installed
+     */
+    function emergencyUninstallHook(
+        EmergencyUninstall calldata data,
+        bytes calldata signature
+    )
+        external;
+
+    /**
      * Function to check if the account has a certain module installed
      * @param moduleType the module type ID according the ERC-7579 spec
      *      Note: keep in mind that some contracts can be multiple module types at the same time. It
@@ -165,21 +179,14 @@ interface ISafe7579 is IERC7579Account, ISafeOp {
      * want to use Safe7579
      * if this is called by the Launchpad, it is expected that launchpadValidators() was called
      * previously, and the param validators is empty
-     * @param validators validator modules and initData
-     * @param executors executor modules and initData
-     * @param executors executor modules and initData
-     * @param fallbacks fallback modules and initData
-     * @param hooks hook module and initData
+     * @param modules Array of modules to initialize with their respective types
      * @param registryInit (OPTIONAL) registry, attesters and threshold for IERC7484 Registry
      *                    If not provided, the registry will be set to the zero address, and no
      *                    registry checks will be performed
      */
     function initializeAccount(
-        ModuleInit[] memory validators,
-        ModuleInit[] memory executors,
-        ModuleInit[] memory fallbacks,
-        ModuleInit[] memory hooks,
-        RegistryInit memory registryInit
+        ModuleInit[] calldata modules,
+        RegistryInit calldata registryInit
     )
         external;
 
@@ -217,11 +224,6 @@ interface ISafe7579 is IERC7579Account, ISafeOp {
      */
     function getActiveHook() external view returns (address hook);
 
-    /**
-     * Get the current active selector hook
-     */
-    function getActiveHook(bytes4 selector) external view returns (address hook);
-
     function getExecutorsPaginated(
         address cursor,
         uint256 size
@@ -229,6 +231,21 @@ interface ISafe7579 is IERC7579Account, ISafeOp {
         external
         view
         returns (address[] memory array, address next);
+
+    /**
+     * Get the current active prevalidation hook for the given module type
+     * @param moduleType the prevalidation hook type
+     */
+    function getPrevalidationHook(uint256 moduleType) external view returns (address hook);
+
+    /**
+     * Get the current active fallback handler and call type for the given selector
+     * @param selector the function selector
+     */
+    function getFallbackHandlerBySelector(bytes4 selector)
+        external
+        view
+        returns (CallType, address);
 
     /*´:°•.°+.*•´.*:˚.°*.˚•´.°:°•.°•.*•´.*:˚.°*.˚•´.°:°•.°+.*•´.*:*/
     /*                        Query Misc                          */
@@ -248,6 +265,8 @@ interface ISafe7579 is IERC7579Account, ISafeOp {
     /*.•°:°.´+˚.*°.˚:*.´•*.+°.•°:´*.´•*.•°.•°:°.´:•˚°.*°.˚:*.´+°.•*/
     error InvalidModule(address module);
     error InvalidModuleType(address module, uint256 moduleType);
+    error ModuleNotInstalled(address module, uint256 moduleType);
+    error InvalidNonce();
 
     // fallback handlers
     error InvalidInput();
@@ -259,6 +278,14 @@ interface ISafe7579 is IERC7579Account, ISafeOp {
     // Hooks
     error HookAlreadyInstalled(address currentHook);
     error InvalidHookType();
+    error EmergencyTimeLockNotExpired();
+    error EmergencyUninstallSigError();
+
+    event EmergencyHookUninstallRequest(address hook, uint256 time);
+    event EmergencyHookUninstallRequestReset(address hook, uint256 time);
+
+    // PreValidation Hooks=
+    error PreValidationHookAlreadyInstalled(address currentHook, uint256 moduleType);
 
     // Registry Adapter
     event ERC7484RegistryConfigured(address indexed smartAccount, IERC7484 indexed registry);
