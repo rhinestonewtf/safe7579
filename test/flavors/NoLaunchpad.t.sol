@@ -23,8 +23,8 @@ contract NoLaunchpad is Safe7579Test {
     function makeSafeWithoutLaunchpad() public returns (address, bytes memory) {
         address[] memory owners = Solarray.addresses(signer1.addr, signer2.addr);
 
-        ModuleInit[] memory validators = new ModuleInit[](1);
-        validators[0] = ModuleInit({
+        ModuleInit[] memory modules = new ModuleInit[](1);
+        modules[0] = ModuleInit({
             module: address(defaultValidator),
             initData: bytes(""),
             moduleType: MODULE_TYPE_VALIDATOR
@@ -40,7 +40,7 @@ contract NoLaunchpad is Safe7579Test {
                     Safe7579Launchpad.addSafe7579,
                     (
                         address(safe7579),
-                        validators,
+                        modules,
                         Solarray.addresses(makeAddr("attester1"), makeAddr("attester2")),
                         2
                     )
