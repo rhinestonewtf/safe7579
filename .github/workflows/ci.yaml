@@ -25,7 +25,12 @@ jobs:
     uses: "rhinestonewtf/reusable-workflows/.github/workflows/forge-release.yaml@main"
     strategy:
       matrix:
-        contract-name: ["Safe7579", "Safe7579Launchpad"]
+        contract-name:
+          [
+            "./src/Safe7579.sol",
+            "./src/Safe7579Launchpad.sol",
+            "./src/utils/NoSafeOwner.sol",
+          ]
     with:
       contract-name: ${{ matrix.contract-name }}
       store-artifacts: true
