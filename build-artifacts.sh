@@ -7,8 +7,8 @@ if [ $# -eq 0 ]; then
     exit 1
 fi
 
-CONTRACT_PATH=$1
-CONTRACT_NAME=$(basename "$CONTRACT_PATH" .sol)
+CONTRACT_NAME=$1
+CONTRACT_PATH="./src/""$1"".sol"
 
 mkdir -p ./artifacts/$CONTRACT_NAME
 FOUNDRY_PROFILE=release forge build $CONTRACT_PATH
