@@ -1,0 +1,43 @@
+[deployments]
+rpcs = [
+    # Mainnet
+    # "https://eth-mainnet.g.alchemy.com/v2/${ALCHEMY_API_KEY}",
+    # "https://eth-sepolia.g.alchemy.com/v2/${ALCHEMY_API_KEY}",
+
+    # # Optimism
+    # "https://opt-mainnet.g.alchemy.com/v2/${ALCHEMY_API_KEY}",
+    # "https://opt-sepolia.g.alchemy.com/v2/${ALCHEMY_API_KEY}",
+    #
+    # # Base
+    "https://base-mainnet.g.alchemy.com/v2/${ALCHEMY_API_KEY}",
+    # "https://base-sepolia.g.alchemy.com/v2/${ALCHEMY_API_KEY}",
+    #
+    # # Arbitrum
+    # "https://arb-mainnet.g.alchemy.com/v2/${ALCHEMY_API_KEY}",
+    # "https://arb-sepolia.g.alchemy.com/v2/${ALCHEMY_API_KEY}",
+    #
+    # # Polygon
+    # "https://polygon-mainnet.g.alchemy.com/v2/${ALCHEMY_API_KEY}",
+    # "https://polygon-amoy.g.alchemy.com/v2/${ALCHEMY_API_KEY}",
+]
+
+[deployments.verifier]
+# required to enable verification
+api_key="${ETHERSCAN_API_KEY}"
+
+[deployments.dependencies]
+
+[deployments.singleton.Safe7579]
+file = "./artifacts/Safe7579/Safe7579.json"
+source_file="./artifacts/Safe7579/verify.json"
+salt = "0x00000000000000000000000000000000000000000b6dfac59180cb003c2a2ee2"
+
+[deployments.singleton.Safe7579Launchpad]
+file = "./artifacts/Safe7579Launchpad/Safe7579Launchpad.json"
+source_file="./artifacts/Safe7579Launchpad/verify.json"
+args_sig = "(address,address)"
+args = [
+"0x0000000071727De22E5E9d8BAf0edAc6f37da032",
+"0x000000000069E2a187AEFFb852bF3cCdC95151B2"
+]
+salt = "0x0000000000000000000000000000000000000000c252bee936886a01c9ae3966"
