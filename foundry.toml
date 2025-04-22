@@ -12,7 +12,7 @@ compiler_version = "0.8.29"
 
 [profile.release]
 optimizer = true
-optimizer_runs = 10000
+optimizer_runs = 3000
 bytecode_hash = 'none'
 
 [rpc_endpoints]
