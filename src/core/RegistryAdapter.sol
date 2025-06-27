@@ -42,17 +42,18 @@ abstract contract RegistryAdapter is ISafe7579, ExecutionHelper {
     )
         internal
     {
-        // sstore value in any case, as this function may be used to disable the use of registry
-        $registry[msg.sender] = registry;
         // registry is an opt in feature for Safe7579. if set, configure trusted attesters
         if (registry != IERC7484(address(0))) {
+            // sstore value in any case, as this function may be used to disable the use of registry
+            $registry[msg.sender] = registry;
+
             _exec({
                 safe: ISafe(msg.sender),
                 target: address(registry),
                 value: 0,
                 callData: abi.encodeCall(IERC7484.trustAttesters, (threshold, attesters))
             });
+            emit ERC7484RegistryConfigured(msg.sender, registry);
         }
-        emit ERC7484RegistryConfigured(msg.sender, registry);
     }
 }
