@@ -25,11 +25,11 @@ abstract contract RegistryAdapter is ISafe7579, ExecutionHelper {
      * This will revert, if not succicient valid attestations are on the registry
      */
     function _checkRegistry(address module, uint256 moduleType) internal view {
-        IERC7484 registry = $registry[msg.sender];
-        if (address(registry) != address(0)) {
-            // this will revert if attestations / threshold are not met
-            registry.checkForAccount(msg.sender, module, moduleType);
-        }
+        // IERC7484 registry = $registry[msg.sender];
+        // if (address(registry) != address(0)) {
+        //     // this will revert if attestations / threshold are not met
+        //     registry.checkForAccount(msg.sender, module, moduleType);
+        // }
     }
 
     /**
@@ -43,17 +43,18 @@ abstract contract RegistryAdapter is ISafe7579, ExecutionHelper {
         internal
     {
         // registry is an opt in feature for Safe7579. if set, configure trusted attesters
-        if (registry != IERC7484(address(0))) {
-            // sstore value in any case, as this function may be used to disable the use of registry
-            $registry[msg.sender] = registry;
-
-            _exec({
-                safe: ISafe(msg.sender),
-                target: address(registry),
-                value: 0,
-                callData: abi.encodeCall(IERC7484.trustAttesters, (threshold, attesters))
-            });
-            emit ERC7484RegistryConfigured(msg.sender, registry);
-        }
+        // if (registry != IERC7484(address(0))) {
+        //     // sstore value in any case, as this function may be used to disable the use of
+        // registry
+        //     $registry[msg.sender] = registry;
+        //
+        //     _exec({
+        //         safe: ISafe(msg.sender),
+        //         target: address(registry),
+        //         value: 0,
+        //         callData: abi.encodeCall(IERC7484.trustAttesters, (threshold, attesters))
+        //     });
+        //     emit ERC7484RegistryConfigured(msg.sender, registry);
+        // }
     }
 }
