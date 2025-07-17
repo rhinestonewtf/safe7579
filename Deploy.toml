@@ -1,11 +1,12 @@
 [deployments]
 rpcs = [
-"https://eth-mainnet.g.alchemy.com/v2/${ALCHEMY_API_KEY}",
+  # "http://localhost:8545",
+# "https://eth-mainnet.g.alchemy.com/v2/${ALCHEMY_API_KEY}",
 # "https://eth-sepolia.g.alchemy.com/v2/${ALCHEMY_API_KEY}",
 # "https://opt-mainnet.g.alchemy.com/v2/${ALCHEMY_API_KEY}",
 # "https://opt-sepolia.g.alchemy.com/v2/${ALCHEMY_API_KEY}",
 # "https://base-mainnet.g.alchemy.com/v2/${ALCHEMY_API_KEY}",
-# "https://base-sepolia.g.alchemy.com/v2/${ALCHEMY_API_KEY}",
+"https://base-sepolia.g.alchemy.com/v2/${ALCHEMY_API_KEY}",
 # "https://arb-mainnet.g.alchemy.com/v2/${ALCHEMY_API_KEY}",
 # "https://arb-sepolia.g.alchemy.com/v2/${ALCHEMY_API_KEY}",
 # "https://polygon-mainnet.g.alchemy.com/v2/${ALCHEMY_API_KEY}",
@@ -63,7 +64,7 @@ api_key="${ETHERSCAN_API_KEY}"
 [deployments.singleton.Safe7579]
 file = "./artifacts/Safe7579/Safe7579.json"
 source_file="./artifacts/Safe7579/verify.json"
-salt = "0x0000000000000000000000000000000000000000d21f121ea506a800a7422403"
+salt = "0x00000000000000000000000000000000000000002167adff4b1b91015953c7c8"
 
 [deployments.singleton.Safe7579Launchpad]
 file = "./artifacts/Safe7579Launchpad/Safe7579Launchpad.json"
@@ -73,4 +74,4 @@ args = [
 "0x0000000071727De22E5E9d8BAf0edAc6f37da032",
 "0x0000000000000000000000000000000000000000"
 ]
-salt = "0x0000000000000000000000000000000000000000c252bee936886a01c9ae3966"
+salt = "0x00000000000000000000000000000000000000006bf462a61733ad0118a1421a"
