@@ -510,6 +510,7 @@ contract FallbackTest is BaseTest {
 
         // Should return address(0) for non-existent handlers
         assertEq(nullHandler, address(0), "Should return address(0) for non-existent handlers");
+        assertTrue(nullCalltype == CallType.wrap(0), "Should return default call type");
 
         vm.stopPrank();
     }
@@ -539,6 +540,7 @@ contract FallbackTest is BaseTest {
         (CallType uninstalledCalltype, address uninstalledHandler) =
             account.getFallbackHandlerBySelector(fnSelector);
         assertEq(uninstalledHandler, address(0), "Handler should be removed after uninstall");
+        assertTrue(uninstalledCalltype == CallType.wrap(0), "Call type should be cleared");
 
         vm.stopPrank();
     }

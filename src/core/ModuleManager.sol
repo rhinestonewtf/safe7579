@@ -262,7 +262,7 @@ abstract contract ModuleManager is ISafe7579, AccessControl, RegistryAdapter {
         if ($fallbacks.handler != module) {
             revert InvalidModuleType(module, MODULE_TYPE_FALLBACK);
         }
-        delete $fallbacks.handler;
+        delete $fallbacks;
     }
 
     function _isFallbackHandlerInstalled(
