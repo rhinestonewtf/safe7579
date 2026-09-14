@@ -5,7 +5,7 @@
   "license": "GPL-3.0",
   "author": {
     "name": "Rhinestone",
-    "url": "https://rhinestone.wtf"
+    "url": "https://www.rhinestone.dev"
   },
   "scripts": {
     "fmt": "forge fmt",
