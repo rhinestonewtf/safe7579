@@ -213,3 +213,5 @@ Thanks to the following people who have contributed to this project:
 </table>
 
 Special Thanks to the Safe Team for their support and guidance in the development of Safe7579.
+
+Maintained by [Rhinestone](https://www.rhinestone.dev), co-author of ERC-7579.
